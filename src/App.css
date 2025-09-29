@@ -1,0 +1,45 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* vh = viewport height. 100vh means 100% of the screen height */
+}
+
+.canvas-container {
+  flex-grow: 1; /* This makes the canvas area take up all available space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.footer-menu {
+  height: 60px;
+  background-color: #333333; /* A dark grey for the footer */
+  color: white;
+  display: flex;
+  justify-content: space-around; /* Space icons evenly */
+  align-items: center;
+  flex-shrink: 0; /* Prevents the footer from shrinking */
+  padding: 0 1rem; /* Add some padding on the sides */
+}
+
+.picflam-canvas {
+  background: linear-gradient(to bottom right, #3f0387, #cca3ff);
+  /* Set the aspect ratio to 9:16 for mobile-first */
+  aspect-ratio: 9 / 16;
+  /* Let the height fill the container, and the width will adjust automatically */
+  height: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.footer-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 24px; /* This controls the icon size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
