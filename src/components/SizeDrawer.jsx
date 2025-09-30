@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import './SizeDrawer.css';
 import { FiX, FiCheck, FiSmartphone, FiSquare, FiMonitor } from 'react-icons/fi';
-import { useState } from 'react';
 
 const SIZE_OPTIONS = [
   {
@@ -20,11 +20,12 @@ const SIZE_OPTIONS = [
   },
 ];
 
-function SizeDrawer({ onClose, onSizeSelect, currentSize, onCanvasSizeChange }) {
+function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) { // Renamed from sizedrawer
   const [selectedSize, setSelectedSize] = useState(currentSize);
 
   const handleConfirm = () => {
-    onClose(true); // Just close the drawer, confirming the change
+    onCanvasSizeChange(selectedSize);
+    onClose(true);
   };
 
   return (
@@ -40,10 +41,7 @@ function SizeDrawer({ onClose, onSizeSelect, currentSize, onCanvasSizeChange }) 
             <button
               key={option.name}
               className={`size-option-button ${selectedSize === option.aspectRatio ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedSize(option.aspectRatio);
-                onCanvasSizeChange(option.aspectRatio); // Live update the canvas
-              }}
+              onClick={() => setSelectedSize(option.aspectRatio)}
             >
               {option.icon}
               <span>{option.aspectRatio}</span>
@@ -55,4 +53,4 @@ function SizeDrawer({ onClose, onSizeSelect, currentSize, onCanvasSizeChange }) 
   );
 }
 
-export default SizeDrawer;
+export default SizeDrawer; // Correctly export the component

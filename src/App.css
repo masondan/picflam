@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Roboto+Mono&family=Lora:wght@700&family=Playfair+Display:wght@700&family=Roboto+Slab:wght@700&family=Caveat:wght@700&family=Dancing+Script:wght@700&family=Pacifico&family=Saira+Stencil+One&family=Ultra&family=Playfair+Display+SC:wght@700&display=swap');
+
 .app-container {
   display: flex;
   flex-direction: column;
@@ -19,7 +22,6 @@
 
 .picflam-canvas {
   /* The canvas itself */
-  background: linear-gradient(to bottom right, #3f0387, #cca3ff);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   transition: aspect-ratio 0.3s ease-in-out;

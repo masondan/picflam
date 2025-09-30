@@ -1,0 +1,22 @@
+/* Using mostly shared styles from SizeDrawer.css for consistency */
+@import url('./Drawer.css');
+
+.gradient-drawer-body {
+  padding: 1.5rem;
+}
+
+.gradient-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.gradient-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}

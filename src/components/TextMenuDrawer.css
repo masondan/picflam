@@ -1,0 +1,41 @@
+@import url('./Drawer.css');
+
+.dark-drawer {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark-drawer .drawer-header {
+  border-bottom: 1px solid #444;
+}
+
+.dark-drawer .drawer-header-button {
+  color: #fff;
+}
+
+.text-menu-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.text-menu-button {
+  background: none;
+  border: none;
+  color: #8e8e93; /* A visible, but not active, grey */
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.text-menu-button.active {
+  color: #000;
+}
+
+.text-menu-button svg {
+  font-size: 24px;
+}

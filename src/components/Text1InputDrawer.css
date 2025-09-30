@@ -1,0 +1,279 @@
+@import url('./Drawer.css');
+
+.text-input-drawer {
+  /* This drawer should only be as tall as needed for the keyboard */
+  max-height: 50vh;
+  height: auto;
+}
+
+.text-input-drawer .drawer-header {
+  padding: 0.5rem 1rem;
+}
+
+.text-input-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.style-icons-tab-row {
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+  gap: 0.5rem;
+}
+
+.style-icon-button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  color: #555;
+  font-size: 20px;
+  padding: 0.5rem;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.style-icon-button.active {
+  background-color: #e0e0e0;
+  border-color: #aaa;
+}
+
+.text-input-area {
+  flex-grow: 1;
+  border: none;
+  padding: 1rem;
+  font-size: 1.2rem;
+  resize: none;
+  outline: none;
+  min-height: 120px;
+  background-color: #f0f2f5;
+}
+
+.slider-controls {
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.slider-group label {
+  width: 80px;
+  font-weight: 500;
+}
+
+.slider-group input[type="range"] {
+  flex-grow: 1;
+}
+
+.font-options {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.font-option-button {
+  background-color: #f0f2f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.font-option-button.active {
+  border-color: #007aff;
+  color: #007aff;
+}
+
+.color-controls {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.color-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.color-group label {
+  font-weight: 500;
+  color: #555;
+}
+
+.swatch-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.color-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.color-picker-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  cursor: pointer;
+}
+.color-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker-input::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.1); }
+.color-picker-input::-moz-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.1); }
+
+.rainbow-button {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 90deg,
+    violet,
+    indigo,
+    blue,
+    green,
+    yellow,
+    orange,
+    red,
+    violet
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.rainbow-button::before {
+  content: '+';
+  color: white;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  pointer-events: none; /* Allows clicks to pass through to the input */
+}
+
+.rainbow-button .color-picker-input {
+  opacity: 0; /* Hide the native color picker UI */
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.style-controls {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.style-button-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.style-toggle-button {
+  background-color: #f0f2f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+}
+
+.style-toggle-button.active {
+  background-color: #d0e8ff;
+  color: #007aff;
+  border-color: #007aff;
+}
+.style-toggle-button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.single-line-slider {
+  padding: 0 1rem; /* Give it some horizontal padding */
+}
+
+.single-line-slider label {
+  width: auto; /* Let the label take its natural width */
+}
+
+.quote-preview-serif {
+  font-family: 'Saira Stencil One', sans-serif;
+  font-size: 24px;
+}
+
+.quote-preview-slab {
+  font-family: 'Ultra', serif;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.quote-preview-fancy {
+  font-family: 'Playfair Display SC', serif;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.toggle-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.toggle-group label {
+  font-weight: 500;
+  color: #555;
+}
+
+.label-toggle-checkbox {
+  /* Simple checkbox styling */
+  width: 20px;
+  height: 20px;
+}
+
+.chequered-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 10px 10px;
+  background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+}
