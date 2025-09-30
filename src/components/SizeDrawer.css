@@ -69,3 +69,9 @@
   cursor: pointer;
   color: #555;
 }
+
+.size-option-button.active {
+  border-color: #007aff;
+  color: #007aff;
+  background-color: #f0f8ff;
+}

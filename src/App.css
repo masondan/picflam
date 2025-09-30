@@ -1,35 +1,49 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* vh = viewport height. 100vh means 100% of the screen height */
+  height: 100dvh;
+  background-color: #eeeeee;
 }
 
 .canvas-container {
-  flex-grow: 1; /* This makes the canvas area take up all available space */
+  /* This is our "centering box" */
+  flex: 1; /* Grow to fill available space */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem;
+  padding: 1.5rem; /* This creates the gray border */
+  overflow: hidden; /* Contain the child */
+  min-height: 0; /* A flexbox-specific fix to allow shrinking */
+  box-sizing: border-box;
+}
+
+.picflam-canvas {
+  /* The canvas itself */
+  background: linear-gradient(to bottom right, #3f0387, #cca3ff);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: aspect-ratio 0.3s ease-in-out;
+
+  /* 
+    This is the key combination:
+    1. Try to be as wide as the container.
+    2. Let aspect-ratio calculate the height.
+    3. But never be taller than the container.
+       If this rule is triggered, the browser will shrink the width to fit.
+  */
+  width: 100%;
+  max-height: 100%;
 }
 
 .footer-menu {
   height: 60px;
-  background-color: #333333; /* A dark grey for the footer */
+  background-color: #333333;
   color: white;
   display: flex;
-  justify-content: space-around; /* Space icons evenly */
+  justify-content: space-around;
   align-items: center;
+  padding: 0 1rem;
   flex-shrink: 0; /* Prevents the footer from shrinking */
-  padding: 0 1rem; /* Add some padding on the sides */
-}
-
-.picflam-canvas {
-  background: linear-gradient(to bottom right, #3f0387, #cca3ff);
-  /* Set the aspect ratio to 9:16 for mobile-first */
-  aspect-ratio: 9 / 16;
-  /* Let the height fill the container, and the width will adjust automatically */
-  height: 100%;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .footer-button {
@@ -37,7 +51,7 @@
   border: none;
   color: white;
   cursor: pointer;
-  font-size: 24px; /* This controls the icon size */
+  font-size: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
