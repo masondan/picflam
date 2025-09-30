@@ -1,0 +1,78 @@
+.slide-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  touch-action: none; /* For dnd-kit */
+}
+
+.slide-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 600px; /* Limit the width on larger screens */
+  box-sizing: border-box;
+}
+
+.canvas-wrapper {
+  flex-grow: 1;
+  min-width: 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.canvas-wrapper.active::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 1px solid #555;
+  border-radius: 12px; /* Match canvas border-radius + border width */
+  pointer-events: none;
+}
+
+.slide-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem;
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.slide-actions button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #555;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.slide-actions button:hover {
+  background-color: #e0e0e0;
+}
+
+.slide-actions button:first-of-type {
+  cursor: grab;
+}
+
+.add-slide-button {
+  /* Style for the add button now inside the action bar */
+  margin-top: auto; /* Pushes it to the bottom */
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+  border-radius: 0;
+}
+
+.add-slide-button:hover {
+  color: #555;
+  border-color: #aaa;
+  transform: scale(1.1);
+}

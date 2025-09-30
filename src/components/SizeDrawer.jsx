@@ -24,8 +24,12 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) { // Renamed f
   const [selectedSize, setSelectedSize] = useState(currentSize);
 
   const handleConfirm = () => {
-    onCanvasSizeChange(selectedSize);
     onClose(true);
+  };
+
+  const handleSizeClick = (aspectRatio) => {
+    setSelectedSize(aspectRatio);
+    onCanvasSizeChange(aspectRatio); // Apply change immediately
   };
 
   return (
@@ -41,7 +45,7 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) { // Renamed f
             <button
               key={option.name}
               className={`size-option-button ${selectedSize === option.aspectRatio ? 'active' : ''}`}
-              onClick={() => setSelectedSize(option.aspectRatio)}
+              onClick={() => handleSizeClick(option.aspectRatio)}
             >
               {option.icon}
               <span>{option.aspectRatio}</span>
