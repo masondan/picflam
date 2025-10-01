@@ -10,7 +10,7 @@ import {
 import {
   arrayMove,
   SortableContext,
-  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {
   FiMaximize,
@@ -22,14 +22,14 @@ import {
   FiInfo
 } from "react-icons/fi";
 import BackgroundDrawer from './components/BackgroundDrawer';
-import SolidColorDrawer from './components/SolidColorDrawer'; // prettier-ignore
-import GradientDrawer from './components/GradientDrawer';
+import ColorDrawer from './components/ColorDrawer';
 import SearchDrawer from './components/SearchDrawer';
 import TextMenuDrawer from './components/TextMenuDrawer';
 import SizeDrawer from './components/SizeDrawer.jsx';
 import Text1InputDrawer from './components/Text1InputDrawer';
 import AboutDrawer from './components/AboutDrawer';
 import SaveDrawer from './components/SaveDrawer';
+import ImageDrawer from './components/ImageDrawer';
 import Slide from './components/Slide';
 
 // Helper function to convert hex color and alpha to rgba
@@ -43,12 +43,12 @@ const hexToRgba = (hex, alpha = 1) => {
 
 const createDefaultSlide = () => ({
   id: Date.now() + Math.random(), // Unique ID for dnd-kit
-  canvasSize: '1/1',
-  background: { type: 'solid', value: '#8A2BE2' },
-  backgroundImage: null,
+  canvasSize: '9/16',
+  background: { type: 'gradient', value: 'linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%)' },
+  imageLayer: null, // This replaces backgroundImage
   logoImage: null,
   // Text 1
-  text1: 'Default Text',
+  text1: '',
   text1Size: 5,
   text1YPosition: 5,
   text1Font: 'Inter',
@@ -63,7 +63,7 @@ const createDefaultSlide = () => ({
   text1QuoteStyle: 'none',
   text1QuoteSize: 5,
   // Text 2
-  text2: 'Smaller Bottom Text',
+  text2: '',
   text2Size: 1.5,
   text2YPosition: 8.5,
   text2Font: 'Inter',
@@ -78,20 +78,21 @@ const createDefaultSlide = () => ({
 
 function App() {
   const [isBackgroundDrawerOpen, setIsBackgroundDrawerOpen] = useState(false);
-  const [isSolidColorDrawerOpen, setIsSolidColorDrawerOpen] = useState(false);
-  const [isGradientDrawerOpen, setIsGradientDrawerOpen] = useState(false);
+  const [isColorDrawerOpen, setIsColorDrawerOpen] = useState(false);
   const [isSearchDrawerOpen, setIsSearchDrawerOpen] = useState(false);
   const [isTextMenuDrawerOpen, setIsTextMenuDrawerOpen] = useState(false);
   const [isSizeDrawerOpen, setIsSizeDrawerOpen] = useState(false);
   const [isText1InputDrawerOpen, setIsText1InputDrawerOpen] = useState(false);
   const [isAboutDrawerOpen, setIsAboutDrawerOpen] = useState(false);
   const [isSaveDrawerOpen, setIsSaveDrawerOpen] = useState(false);
+  const [isImageDrawerOpen, setIsImageDrawerOpen] = useState(false);
 
   // --- Carousel State ---
   const [slides, setSlides] = useState([createDefaultSlide()]);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const activeSlide = slides[activeSlideIndex];
 
+  const slideRefs = useRef([]);
   // Helper to update properties of the active slide immutably
   const updateActiveSlide = (updates) => {
     setSlides(currentSlides =>
@@ -108,6 +109,16 @@ function App() {
   const backgroundImageInputRef = useRef(null);
   const logoImageInputRef = useRef(null);
 
+  useEffect(() => {
+    const activeSlideRef = slideRefs.current[activeSlideIndex];
+    if (activeSlideRef) {
+      activeSlideRef.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      });
+    }
+  }, [activeSlideIndex]);
   const sensors = useSensors(useSensor(PointerSensor));
 
   const handleSearchDrawerOpen = () => {
@@ -125,7 +136,19 @@ function App() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
-        img.onload = () => updateActiveSlide({ backgroundImage: img });
+        img.onload = () => {
+          updateActiveSlide({
+            imageLayer: {
+              img: img,
+              scale: 1,
+              opacity: 1,
+              x: 0, // offset from center (in displayed pixels)
+              y: 0, // offset from center (in displayed pixels)
+              fitMode: 'fit', // 'fit' or 'fill'
+            }
+          });
+          setIsImageDrawerOpen(true); // Open the drawer on image upload
+        };
         img.src = e.target.result; // This is a data URL
       };
       reader.readAsDataURL(file);
@@ -154,7 +177,19 @@ function App() {
   const handleRemoteImageSelect = (imageUrl) => {
     const img = new Image();
     img.crossOrigin = 'Anonymous';
-    img.onload = () => updateActiveSlide({ backgroundImage: img });
+    img.onload = () => {
+      updateActiveSlide({
+        imageLayer: {
+          img: img,
+          scale: 1,
+          opacity: 1,
+          x: 0, // offset from center (in displayed pixels)
+          y: 0, // offset from center (in displayed pixels)
+          fitMode: 'fit',
+        }
+      });
+      setIsImageDrawerOpen(true); // Open the drawer on image select
+    };
     img.src = imageUrl;
     setIsSearchDrawerOpen(false);
   }
@@ -274,7 +309,7 @@ function App() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    const { canvasSize, background, backgroundImage, logoImage } = slideData;
+    const { canvasSize, background, imageLayer, logoImage } = slideData;
 
     // --- High-Resolution Canvas Setup ---
     const baseResolution = 2048; // Use a fixed high resolution for the canvas bitmap
@@ -288,21 +323,46 @@ function App() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // --- Draw Background ---
-    if (background.type === 'solid' && !backgroundImage) {
+    if (background.type === 'solid') {
       ctx.fillStyle = background.value;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-    } else if (background.type === 'gradient' && !backgroundImage) {
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      // This is a simplified version. You might need to parse the gradient string for more complex gradients.
-      const colors = background.value.match(/#[0-9a-fA-F]{6}/g) || [];
-      colors.forEach((color, index) => gradient.addColorStop(index / (colors.length - 1 || 1), color));
+    } else if (background.type === 'gradient') {
+      const gradientRegex = /linear-gradient\((\d+)deg, (.*?) 0%, (.*?) 100%\)/;
+      const match = background.value.match(gradientRegex);
+
+      let gradient;
+      if (match) {
+        const angle = parseInt(match[1], 10) * (Math.PI / 180); // Convert angle to radians
+        const color1 = match[2];
+        const color2 = match[3];
+
+        // Calculate start and end points based on angle
+        const x0 = canvas.width / 2 * (1 - Math.cos(angle));
+        const y0 = canvas.height / 2 * (1 - Math.sin(angle));
+        const x1 = canvas.width / 2 * (1 + Math.cos(angle));
+        const y1 = canvas.height / 2 * (1 + Math.sin(angle));
+
+        gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+      } else {
+        // Fallback for simple gradients if regex fails
+        gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#8A2BE2');
+        gradient.addColorStop(1, '#4B0082');
+      }
+
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    const drawImageOnCanvas = (img, isLogo = false) => {
-      if (!img) return;
+    const drawImageOnCanvas = (layer, isLogo = false) => {
+      if (!layer || !layer.img) return;
+      const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer; // x, y are in displayed pixels
+
       const draw = () => {
+        ctx.globalAlpha = opacity;
+
         if (isLogo) {
           const logoMaxWidth = canvasWidth * 0.25;
           const logoMaxHeight = canvasHeight * 0.25;
@@ -318,19 +378,46 @@ function App() {
           const y = canvasHeight - logoHeight - padding;
           ctx.drawImage(img, x, y, logoWidth, logoHeight);
         } else {
-          // Background image logic
+          // Main image layer logic
+          const displayedCanvasWidth = canvas.offsetWidth;
+          const displayedCanvasHeight = canvas.offsetHeight;
+
           const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-          const canvasAspectRatio = canvasWidth / canvasHeight;
-          let renderWidth, renderHeight;
-          if (imgAspectRatio > canvasAspectRatio) {
-            renderWidth = canvasWidth;
-            renderHeight = renderWidth / imgAspectRatio;
-          } else {
-            renderHeight = canvasHeight;
-            renderWidth = renderHeight * imgAspectRatio;
+          const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
+          let renderWidth, renderHeight; // in displayed pixels
+
+          if (fitMode === 'fill') {
+            if (imgAspectRatio > canvasAspectRatio) {
+              renderHeight = displayedCanvasHeight;
+              renderWidth = renderHeight * imgAspectRatio;
+            } else {
+              renderWidth = displayedCanvasWidth;
+              renderHeight = renderWidth / imgAspectRatio;
+            }
+          } else { // 'fit' mode
+            if (imgAspectRatio > canvasAspectRatio) {
+              renderWidth = displayedCanvasWidth;
+              renderHeight = renderWidth / imgAspectRatio;
+            } else {
+              renderHeight = displayedCanvasHeight;
+              renderWidth = renderHeight * imgAspectRatio;
+            }
           }
-          ctx.drawImage(img, (canvasWidth - renderWidth) / 2, (canvasHeight - renderHeight) / 2, renderWidth, renderHeight);
+
+          renderWidth *= scale;
+          renderHeight *= scale;
+
+          // Convert all units to high-resolution pixels for drawing.
+          // The scale factor is the ratio of the drawing buffer size to the displayed size.
+          const scaleToHighRes = canvas.width / displayedCanvasWidth;
+          const renderWidthHighRes = renderWidth * scaleToHighRes;
+          const renderHeightHighRes = renderHeight * scaleToHighRes;
+          const xHighRes = x * scaleToHighRes;
+          const yHighRes = y * scaleToHighRes;
+
+          ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
         }
+        ctx.globalAlpha = 1.0; // Reset alpha
       };
       if (img.complete) {
         draw();
@@ -338,8 +425,7 @@ function App() {
         img.onload = draw;
       }
     };
-
-    drawImageOnCanvas(backgroundImage);
+    drawImageOnCanvas(imageLayer);
 
     const drawText = (text, size, yPos, font, color, isBold, isItalic, align, lineSpacing, hasShadow, hasOutline, quoteStyle, quoteSize, hasLabel, labelColor, labelTransparency) => {
       const baseFontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
@@ -485,12 +571,13 @@ function App() {
   return (
     <div className="app-container">
       <div className="canvas-container">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={slides.map(s => s.id)} strategy={verticalListSortingStrategy}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} >
+          <SortableContext items={slides.map(s => s.id)} strategy={horizontalListSortingStrategy}>
             {slides.map((slide, index) => (
               <Slide
                 key={slide.id}
                 id={slide.id}
+                ref={el => slideRefs.current[index] = el}
                 slide={slide}
                 isActive={index === activeSlideIndex}
                 onClick={() => setActiveSlideIndex(index)}
@@ -498,6 +585,8 @@ function App() {
                 onDuplicate={() => handleDuplicateSlide(index)}
                 onDelete={() => handleDeleteSlide(index)}
                 drawSlide={drawSlide}
+                onImageUpdate={(updates) => updateActiveSlide({ imageLayer: { ...activeSlide.imageLayer, ...updates } })}
+                onImageDelete={() => updateActiveSlide({ imageLayer: null })}
               />
             ))}
           </SortableContext>
@@ -533,29 +622,27 @@ function App() {
       {isBackgroundDrawerOpen && (
         <BackgroundDrawer
           onClose={() => setIsBackgroundDrawerOpen(false)}
+          onColorClick={() => { setIsBackgroundDrawerOpen(false); setIsColorDrawerOpen(true); }}
           onImageUpload={handleImageUploadClick}
-          onSolidColorClick={() => setIsSolidColorDrawerOpen(true)}
-          onGradientClick={() => setIsGradientDrawerOpen(true)}
           onSearchClick={handleSearchDrawerOpen}
           onLogoClick={handleLogoUploadClick}
+          currentBackground={activeSlide.background}
         />
       )}
 
-      {isSolidColorDrawerOpen && (
-        <SolidColorDrawer
-          onClose={() => setIsSolidColorDrawerOpen(false)}
-          onColorChange={(color) => updateActiveSlide({ background: { type: 'solid', value: color } })}
-          onConfirm={() => setIsSolidColorDrawerOpen(false)}
-          currentColor={activeSlide.background.type === 'solid' ? activeSlide.background.value : '#ffffff'}
+      {isImageDrawerOpen && (
+        <ImageDrawer
+          onClose={() => setIsImageDrawerOpen(false)}
+          imageLayer={activeSlide.imageLayer}
+          onUpdate={(updates) => updateActiveSlide({ imageLayer: { ...activeSlide.imageLayer, ...updates } })}
         />
       )}
 
-      {isGradientDrawerOpen && (
-        <GradientDrawer
-          onClose={() => setIsGradientDrawerOpen(false)}
-          onConfirm={() => setIsGradientDrawerOpen(false)}
-          onGradientChange={(gradient) =>
-            updateActiveSlide({ background: { type: 'gradient', value: gradient } })}
+      {isColorDrawerOpen && (
+        <ColorDrawer
+          onClose={() => setIsColorDrawerOpen(false)}
+          onBackgroundChange={(bg) => updateActiveSlide({ background: bg })}
+          currentBackground={activeSlide.background}
         />
       )}
 
@@ -618,7 +705,7 @@ function App() {
 
       {isSizeDrawerOpen && (
         <SizeDrawer
-          onClose={() => setIsSizeDrawerOpen(false)}
+          onClose={() => setIsSizeDrawerOpen(false)} // Updated: onClose no longer has a parameter
           onCanvasSizeChange={(size) => updateActiveSlide({ canvasSize: size })}
           currentSize={activeSlide.canvasSize}
         />

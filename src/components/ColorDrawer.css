@@ -1,0 +1,147 @@
+@import url('./Drawer.css');
+
+.drawer-content.color-drawer {
+  background-color: #555555;
+  color: #ffffff;
+  height: auto;
+  max-height: 70vh;
+}
+
+.color-drawer .drawer-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  height: auto;
+  padding: 0.5rem 1rem;
+}
+
+.color-drawer .drawer-title {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.color-drawer .drawer-header-button {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 28px;
+}
+
+.color-drawer .drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.color-controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 350px; /* Enforce consistent width for all rows */
+  margin: 0 auto;
+}
+
+.color-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.color-swatch.active {
+  border-color: #ffffff;
+}
+
+.rainbow-button {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: conic-gradient(from 90deg, violet, indigo, blue, green, yellow, orange, red, violet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.color-picker-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  cursor: pointer;
+  opacity: 0;
+}
+
+/* Custom Gradient Slider */
+.custom-gradient-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.custom-gradient-bar {
+  flex-grow: 1;
+  height: 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.custom-color-picker {
+  position: relative;
+}
+
+.custom-color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 20px;
+}
+
+.custom-color-swatch .color-picker-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Gradient Direction */
+.gradient-direction-row {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.gradient-direction-row button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.gradient-direction-row button:hover {
+  opacity: 1;
+}

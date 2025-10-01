@@ -1,0 +1,75 @@
+@import url('./Drawer.css');
+
+.drawer-content.image-drawer {
+  background-color: #555555;
+  color: #ffffff;
+  height: auto;
+  max-height: 80vh;
+}
+
+.image-drawer .drawer-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  height: auto;
+  padding: 0.5rem 1rem;
+}
+
+.image-drawer .drawer-title {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.image-drawer .drawer-header-button {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 28px;
+}
+
+.image-drawer .drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.image-controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.image-control-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.image-mode-button {
+  background-color: #444;
+  color: #fff;
+  border: 1px solid #666;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.image-mode-button.active {
+  background-color: #fff;
+  color: #333;
+  border-color: #fff;
+}
+
+.slider-row {
+  gap: 1rem;
+}
+.slider-row label {
+  flex-basis: 80px;
+  text-align: right;
+}
+.slider-row input[type="range"] {
+  flex-grow: 1;
+}

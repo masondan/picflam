@@ -1,0 +1,60 @@
+.image-transform-control {
+  position: absolute;
+  border: 2px solid #007aff;
+  box-sizing: border-box;
+  cursor: move;
+  touch-action: none; /* Important for pointer events */
+}
+
+.delete-image-button {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  width: 32px;
+  height: 32px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1; /* Ensure icon is centered */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.resize-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border: 2px solid #007aff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.resize-handle.top-left {
+  top: -8px;
+  left: -8px;
+  cursor: nwse-resize;
+}
+
+.resize-handle.top-right {
+  top: -8px;
+  right: -8px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.bottom-left {
+  bottom: -8px;
+  left: -8px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.bottom-right {
+  bottom: -8px;
+  right: -8px;
+  cursor: nwse-resize;
+}

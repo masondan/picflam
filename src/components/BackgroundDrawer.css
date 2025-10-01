@@ -1,24 +1,53 @@
-/* Using mostly shared styles from SizeDrawer.css for consistency */
 @import url('./Drawer.css');
 
-.background-options-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  padding: 1.5rem;
+.drawer-content.background-drawer {
+  background-color: #555555;
+  color: #ffffff;
+  height: auto;
+  max-height: 50vh;
+}
+
+.background-drawer .drawer-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  height: auto;
+  padding: 0.5rem 1rem;
+}
+
+.background-drawer .drawer-title {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.background-drawer .drawer-header-button {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 28px;
+}
+
+.background-drawer .drawer-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70px;
+  gap: 1.5rem; /* A bit more space between icons */
+  padding: 0 1rem;
 }
 
 .background-option-button {
   background: none;
-  border: 1px solid #dddddd;
-  border-radius: 8px;
+  border: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1.5rem 1rem;
-  font-size: 24px;
   cursor: pointer;
-  color: #555;
+  color: #ffffff;
+  font-size: 28px; /* Larger icons */
+  padding: 0.5rem;
+}
+
+.color-swatch-preview {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
 }

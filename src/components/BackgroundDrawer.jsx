@@ -1,34 +1,46 @@
+import { TiTick } from 'react-icons/ti';
+import { FiUpload, FiSearch } from 'react-icons/fi';
+import { PiStar } from 'react-icons/pi';
 import './BackgroundDrawer.css';
-import { FiX, FiDroplet, FiGrid, FiImage, FiSearch, FiStar } from 'react-icons/fi';
 
-function BackgroundDrawer({ onClose, onImageUpload, onSolidColorClick, onGradientClick, onSearchClick, onLogoClick }) {
+function BackgroundDrawer({
+  onClose,
+  onColorClick,
+  onImageUpload,
+  onSearchClick,
+  onLogoClick,
+  currentBackground,
+}) {
+  const getBackgroundStyle = () => {
+    if (currentBackground.type === 'solid') {
+      return { backgroundColor: currentBackground.value };
+    }
+    if (currentBackground.type === 'gradient') {
+      return { backgroundImage: currentBackground.value };
+    }
+    return { backgroundColor: '#ccc' }; // Fallback
+  };
+
   return (
     <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-content" onClick={(e) => e.stopPropagation()}>
+      <div className="drawer-content background-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
+          <div className="drawer-header-button" /> {/* Spacer */}
           <span className="drawer-title">Background</span>
-          <button className="drawer-header-button" onClick={onClose}><FiX /></button>
+          <button className="drawer-header-button" onClick={onClose}><TiTick /></button>
         </div>
-        <div className="drawer-body background-options-grid">
-          <button className="background-option-button" onClick={onSolidColorClick}>
-            <FiDroplet />
-            <span>Solid</span>
+        <div className="drawer-body">
+          <button className="background-option-button" onClick={onColorClick} title="Color">
+            <div className="color-swatch-preview" style={getBackgroundStyle()} />
           </button>
-          <button className="background-option-button" onClick={onGradientClick}>
-            <FiGrid />
-            <span>Gradient</span>
+          <button className="background-option-button" onClick={onImageUpload} title="Upload Image">
+            <FiUpload />
           </button>
-          <button className="background-option-button" onClick={onImageUpload}>
-            <FiImage />
-            <span>Image</span>
-          </button>
-          <button className="background-option-button" onClick={onSearchClick}>
+          <button className="background-option-button" onClick={onSearchClick} title="Search Image">
             <FiSearch />
-            <span>Search</span>
           </button>
-          <button className="background-option-button" onClick={onLogoClick}>
-            <FiStar />
-            <span>Logo</span>
+          <button className="background-option-button" onClick={onLogoClick} title="Logo">
+            <PiStar />
           </button>
         </div>
       </div>

@@ -1,22 +1,20 @@
 import { useState } from 'react';
 import './SizeDrawer.css';
-import { FiX, FiCheck, FiSmartphone, FiSquare, FiMonitor } from 'react-icons/fi';
+import { TiTick } from 'react-icons/ti';
+import { LuRectangleVertical, LuSquare, LuRectangleHorizontal } from 'react-icons/lu';
 
 const SIZE_OPTIONS = [
   {
-    name: 'Portrait',
     aspectRatio: '9/16',
-    icon: <FiSmartphone />,
+    icon: <LuRectangleVertical />,
   },
   {
-    name: 'Square',
     aspectRatio: '1/1',
-    icon: <FiSquare />,
+    icon: <LuSquare />,
   },
   {
-    name: 'Landscape',
     aspectRatio: '16/9',
-    icon: <FiMonitor />,
+    icon: <LuRectangleHorizontal />,
   },
 ];
 
@@ -24,7 +22,7 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) { // Renamed f
   const [selectedSize, setSelectedSize] = useState(currentSize);
 
   const handleConfirm = () => {
-    onClose(true);
+    onClose();
   };
 
   const handleSizeClick = (aspectRatio) => {
@@ -33,23 +31,24 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) { // Renamed f
   };
 
   return (
-    <div className="drawer-overlay" onClick={() => onClose(false)}>
-      <div className="drawer-content" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-overlay" onClick={handleConfirm}>
+      <div className="drawer-content size-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
-          <button className="drawer-header-button" onClick={() => onClose(false)}><FiX /></button>
-          <span className="drawer-title">Canvas Size</span>
-          <button className="drawer-header-button" onClick={handleConfirm}><FiCheck /></button>
+          <div className="drawer-header-button" /> {/* Spacer */}
+          <span className="drawer-title">Format</span>
+          <button className="drawer-header-button" onClick={handleConfirm}><TiTick /></button>
         </div>
         <div className="drawer-body">
           {SIZE_OPTIONS.map((option) => (
-            <button
-              key={option.name}
+            <div
+              key={option.aspectRatio}
               className={`size-option-button ${selectedSize === option.aspectRatio ? 'active' : ''}`}
               onClick={() => handleSizeClick(option.aspectRatio)}
             >
-              {option.icon}
-              <span>{option.aspectRatio}</span>
-            </button>
+              <div className="size-option-icon-wrapper">
+                {option.icon}
+              </div>
+            </div>
           ))}
         </div>
       </div>
