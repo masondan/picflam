@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   height: 100%;
   flex-shrink: 0;
   width: 80vw; /* Each slide takes up 80% of the viewport width */
@@ -59,6 +60,6 @@
   color: #000;
 }
 
-.slide-actions-top button:last-of-type {
+.drag-handle {
   cursor: grab;
 }

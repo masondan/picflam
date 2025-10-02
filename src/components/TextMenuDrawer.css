@@ -1,41 +1,53 @@
 @import url('./Drawer.css');
 
-.dark-drawer {
-  background-color: #333;
-  color: #fff;
+.drawer-content.text-menu-drawer {
+  background-color: #555555;
+  color: #ffffff;
+  height: auto;
+  max-height: 50vh;
 }
 
-.dark-drawer .drawer-header {
-  border-bottom: 1px solid #444;
+.text-menu-drawer .drawer-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  height: auto;
+  padding: 1rem;
 }
 
-.dark-drawer .drawer-header-button {
-  color: #fff;
+.text-menu-drawer .drawer-title {
+  font-weight: 500;
+  color: #ffffff;
 }
 
-.text-menu-buttons {
+.text-menu-drawer .drawer-header-button {
+  color: #ffffff;
+}
+
+.text-menu-drawer .drawer-body {
   display: flex;
-  gap: 1rem;
   justify-content: center;
-  flex-grow: 1;
+  align-items: center;
+  height: 70px;
+  gap: 1rem;
+  padding: 0 1rem;
 }
 
-.text-menu-button {
+.text-option-button {
   background: none;
   border: none;
-  color: #8e8e93; /* A visible, but not active, grey */
   cursor: pointer;
-  font-size: 1rem;
+}
+
+.text-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background-color: #444;
+  color: white;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: 1px solid #666;
 }
 
-.text-menu-button.active {
-  color: #000;
-}
-
-.text-menu-button svg {
-  font-size: 24px;
-}

@@ -20,13 +20,13 @@ import {
   FiDownload,
   FiRotateCcw,
   FiInfo
-} from "react-icons/fi";
+} from 'react-icons/fi';
 import BackgroundDrawer from './components/BackgroundDrawer';
 import ColorDrawer from './components/ColorDrawer';
 import SearchDrawer from './components/SearchDrawer';
-import TextMenuDrawer from './components/TextMenuDrawer';
+import TextMenuDrawer from './components/TextMenuDrawer.jsx';
 import SizeDrawer from './components/SizeDrawer.jsx';
-import Text1InputDrawer from './components/Text1InputDrawer';
+import Text1InputDrawer from './components/Text1InputDrawer.jsx';
 import AboutDrawer from './components/AboutDrawer';
 import SaveDrawer from './components/SaveDrawer';
 import ImageDrawer from './components/ImageDrawer';
@@ -85,7 +85,7 @@ function App() {
   const [isText1InputDrawerOpen, setIsText1InputDrawerOpen] = useState(false);
   const [isAboutDrawerOpen, setIsAboutDrawerOpen] = useState(false);
   const [isSaveDrawerOpen, setIsSaveDrawerOpen] = useState(false);
-  const [isImageDrawerOpen, setIsImageDrawerOpen] = useState(false);
+  const [editingLayer, setEditingLayer] = useState(null); // 'imageLayer', 'logoImage', or null
 
   // --- Carousel State ---
   const [slides, setSlides] = useState([createDefaultSlide()]);
@@ -108,6 +108,7 @@ function App() {
 
   const backgroundImageInputRef = useRef(null);
   const logoImageInputRef = useRef(null);
+  const imageDrawerRef = useRef(null);
 
   useEffect(() => {
     const activeSlideRef = slideRefs.current[activeSlideIndex];
@@ -119,6 +120,33 @@ function App() {
       });
     }
   }, [activeSlideIndex]);
+
+  // Effect to handle clicks outside of the image editor
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!editingLayer) return;
+
+      const activeCanvasWrapper = slideRefs.current[activeSlideIndex]?.getCanvasWrapperRef()?.current;
+      const imageDrawer = imageDrawerRef.current;
+
+      // Do nothing if the click is inside the image controls area
+      if (activeCanvasWrapper?.contains(event.target)) {
+        return;
+      }
+      // Do nothing if the click is inside the image drawer
+      if (imageDrawer?.contains(event.target)) {
+        return;
+      }
+
+      // If the click is outside both, close the editor
+      setEditingLayer(null);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editingLayer, activeSlideIndex]);
+
+
   const sensors = useSensors(useSensor(PointerSensor));
 
   const handleSearchDrawerOpen = () => {
@@ -147,7 +175,7 @@ function App() {
               fitMode: 'fit', // 'fit' or 'fill'
             }
           });
-          setIsImageDrawerOpen(true); // Open the drawer on image upload
+          setEditingLayer('imageLayer'); // Open the drawer and show controls on image upload
         };
         img.src = e.target.result; // This is a data URL
       };
@@ -166,7 +194,20 @@ function App() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
-        img.onload = () => updateActiveSlide({ logoImage: img });
+        img.onload = () => {
+          // Set initial logo properties
+          updateActiveSlide({
+            logoImage: {
+              img: img,
+              scale: 0.5, // Start with a smaller scale
+              opacity: 1.0,
+              x: 0,
+              y: 0,
+              // No fitMode for logo, it's always 'fit' within its transform box
+            }
+          });
+          setEditingLayer('logoImage'); // Activate logo editing
+        };
         img.src = e.target.result; // This is a data URL
       };
       reader.readAsDataURL(file);
@@ -188,7 +229,7 @@ function App() {
           fitMode: 'fit',
         }
       });
-      setIsImageDrawerOpen(true); // Open the drawer on image select
+      setEditingLayer('imageLayer'); // Open the drawer and show controls on image select
     };
     img.src = imageUrl;
     setIsSearchDrawerOpen(false);
@@ -196,14 +237,12 @@ function App() {
 
   const handleText1InputDrawerOpen = () => {
     setActiveTextElement('text1');
-    // TODO: Re-implement cancel functionality
     setIsTextMenuDrawerOpen(false);
     setIsText1InputDrawerOpen(true);
   };
 
   const handleText2InputDrawerOpen = () => {
     setActiveTextElement('text2');
-    // TODO: Re-implement cancel functionality
     setIsTextMenuDrawerOpen(false);
     setIsText1InputDrawerOpen(true);
   };
@@ -230,6 +269,58 @@ function App() {
       setSlides([createDefaultSlide()]);
       setActiveSlideIndex(0);
     }
+  };
+
+  const handleCanvasClick = (index, event) => {
+    setActiveSlideIndex(index);
+
+    const slide = slides[index];
+    const canvasWrapper = slideRefs.current[index]?.getCanvasWrapperRef()?.current;
+    if (!canvasWrapper) {
+      setEditingLayer(null);
+      return;
+    }
+
+    const rect = canvasWrapper.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+
+    // Hit test in reverse order (top layers first)
+    // 1. Check for logo
+    if (slide.logoImage) {
+      const box = getControlBox(canvasWrapper, slide.logoImage);
+      if (clickX >= box.left && clickX <= box.left + box.width &&
+          clickY >= box.top && clickY <= box.top + box.height) {
+        setEditingLayer('logoImage');
+        return;
+      }
+    }
+
+    // 2. Check for main image
+    if (slide.imageLayer) {
+      const box = getControlBox(canvasWrapper, slide.imageLayer);
+      if (clickX >= box.left && clickX <= box.left + box.width &&
+          clickY >= box.top && clickY <= box.top + box.height) {
+        setEditingLayer('imageLayer');
+        return;
+      }
+    }
+
+    // 3. If nothing was hit, deactivate editing
+    setEditingLayer(null);
+  };
+
+  // This is a simplified version of the logic in ImageTransformControl
+  // to calculate the bounding box for hit-testing.
+  const getControlBox = (canvas, imageLayer) => {
+    const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight;
+    const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+    const canvasAspectRatio = canvasWidth / canvasHeight;
+    let renderWidth = (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) ? canvasHeight * imgAspectRatio : canvasWidth;
+    let renderHeight = renderWidth / imgAspectRatio;
+    return { left: (canvasWidth - renderWidth * scale) / 2 + x, top: (canvasHeight - renderHeight * scale) / 2 + y, width: renderWidth * scale, height: renderHeight * scale };
   };
 
   // --- Carousel Logic ---
@@ -359,64 +450,52 @@ function App() {
     const drawImageOnCanvas = (layer, isLogo = false) => {
       if (!layer || !layer.img) return;
       const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer; // x, y are in displayed pixels
-
+    
       const draw = () => {
         ctx.globalAlpha = opacity;
-
-        if (isLogo) {
-          const logoMaxWidth = canvasWidth * 0.25;
-          const logoMaxHeight = canvasHeight * 0.25;
-          const logoAspectRatio = img.naturalWidth / img.naturalHeight;
-          let logoWidth = logoMaxWidth;
-          let logoHeight = logoWidth / logoAspectRatio;
-          if (logoHeight > logoMaxHeight) {
-            logoHeight = logoMaxHeight;
-            logoWidth = logoHeight * logoAspectRatio;
-          }
-          const padding = canvasWidth * 0.05;
-          const x = canvasWidth - logoWidth - padding;
-          const y = canvasHeight - logoHeight - padding;
-          ctx.drawImage(img, x, y, logoWidth, logoHeight);
-        } else {
-          // Main image layer logic
-          const displayedCanvasWidth = canvas.offsetWidth;
-          const displayedCanvasHeight = canvas.offsetHeight;
-
-          const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-          const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
-          let renderWidth, renderHeight; // in displayed pixels
-
-          if (fitMode === 'fill') {
-            if (imgAspectRatio > canvasAspectRatio) {
-              renderHeight = displayedCanvasHeight;
-              renderWidth = renderHeight * imgAspectRatio;
-            } else {
-              renderWidth = displayedCanvasWidth;
-              renderHeight = renderWidth / imgAspectRatio;
-            }
-          } else { // 'fit' mode
-            if (imgAspectRatio > canvasAspectRatio) {
-              renderWidth = displayedCanvasWidth;
-              renderHeight = renderWidth / imgAspectRatio;
-            } else {
-              renderHeight = displayedCanvasHeight;
-              renderWidth = renderHeight * imgAspectRatio;
-            }
-          }
-
-          renderWidth *= scale;
-          renderHeight *= scale;
-
-          // Convert all units to high-resolution pixels for drawing.
-          // The scale factor is the ratio of the drawing buffer size to the displayed size.
-          const scaleToHighRes = canvas.width / displayedCanvasWidth;
-          const renderWidthHighRes = renderWidth * scaleToHighRes;
-          const renderHeightHighRes = renderHeight * scaleToHighRes;
-          const xHighRes = x * scaleToHighRes;
-          const yHighRes = y * scaleToHighRes;
-
-          ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
+    
+        const displayedCanvasWidth = canvas.offsetWidth;
+        const displayedCanvasHeight = canvas.offsetHeight;
+    
+        // Guard against a 0-sized canvas on first render
+        if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) {
+          return;
         }
+    
+        const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+        const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
+        let renderWidth, renderHeight; // in displayed pixels
+    
+        if (fitMode === 'fill') {
+          if (imgAspectRatio > canvasAspectRatio) {
+            renderHeight = displayedCanvasHeight;
+            renderWidth = renderHeight * imgAspectRatio;
+          } else {
+            renderWidth = displayedCanvasWidth;
+            renderHeight = renderWidth / imgAspectRatio;
+          }
+        } else { // 'fit' mode is the default
+          if (imgAspectRatio > canvasAspectRatio) {
+            renderWidth = displayedCanvasWidth;
+            renderHeight = renderWidth / imgAspectRatio;
+          } else {
+            renderHeight = displayedCanvasHeight;
+            renderWidth = renderHeight * imgAspectRatio;
+          }
+        }
+    
+        renderWidth *= scale;
+        renderHeight *= scale;
+    
+        // Convert all units to high-resolution pixels for drawing.
+        const scaleToHighRes = displayedCanvasWidth > 0 ? canvas.width / displayedCanvasWidth : 0;
+        const renderWidthHighRes = renderWidth * scaleToHighRes;
+        const renderHeightHighRes = renderHeight * scaleToHighRes;
+        const xHighRes = x * scaleToHighRes;
+        const yHighRes = y * scaleToHighRes;
+    
+        ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
+    
         ctx.globalAlpha = 1.0; // Reset alpha
       };
       if (img.complete) {
@@ -425,7 +504,7 @@ function App() {
         img.onload = draw;
       }
     };
-    drawImageOnCanvas(imageLayer);
+    drawImageOnCanvas(imageLayer, false);
 
     const drawText = (text, size, yPos, font, color, isBold, isItalic, align, lineSpacing, hasShadow, hasOutline, quoteStyle, quoteSize, hasLabel, labelColor, labelTransparency) => {
       const baseFontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
@@ -565,7 +644,7 @@ function App() {
       drawText(text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, false, false, 'none', 5, text2LabelColor !== 'transparent', text2LabelColor, text2LabelTransparency);
     }
 
-    drawImageOnCanvas(logoImage, true);
+    drawImageOnCanvas(logoImage, false);
   };
 
   return (
@@ -580,20 +659,29 @@ function App() {
                 ref={el => slideRefs.current[index] = el}
                 slide={slide}
                 isActive={index === activeSlideIndex}
-                onClick={() => setActiveSlideIndex(index)}
+                onClick={(e) => handleCanvasClick(index, e)}
                 onAdd={() => handleAddSlide(index)}
                 onDuplicate={() => handleDuplicateSlide(index)}
+                onUndo={() => alert('Undo not implemented yet')}
+                onRedo={() => alert('Redo not implemented yet')}
                 onDelete={() => handleDeleteSlide(index)}
                 drawSlide={drawSlide}
+                editingLayer={index === activeSlideIndex ? editingLayer : null}
                 onImageUpdate={(updates) => updateActiveSlide({ imageLayer: { ...activeSlide.imageLayer, ...updates } })}
-                onImageDelete={() => updateActiveSlide({ imageLayer: null })}
+                onImageDelete={() => { updateActiveSlide({ imageLayer: null }); setEditingLayer(null); }}
+                onLogoUpdate={(updates) => updateActiveSlide({ logoImage: { ...activeSlide.logoImage, ...updates } })}
+                onLogoDelete={() => { updateActiveSlide({ logoImage: null }); setEditingLayer(null); }}
               />
             ))}
           </SortableContext>
         </DndContext>
       </div>
 
-      <div className="footer-menu">
+      <div className={`footer-menu ${
+          isBackgroundDrawerOpen || isColorDrawerOpen || isSearchDrawerOpen || isTextMenuDrawerOpen ||
+          isSizeDrawerOpen || isText1InputDrawerOpen || isAboutDrawerOpen || isSaveDrawerOpen || editingLayer
+          ? 'hidden' : ''
+      }`}>
         <button className="footer-button" onClick={() => setIsSizeDrawerOpen(true)}><FiMaximize /></button>
         <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
         <button className="footer-button" onClick={() => setIsTextMenuDrawerOpen(true)}><FiType /></button>
@@ -630,11 +718,13 @@ function App() {
         />
       )}
 
-      {isImageDrawerOpen && (
+      {editingLayer && activeSlide[editingLayer] && (
         <ImageDrawer
-          onClose={() => setIsImageDrawerOpen(false)}
-          imageLayer={activeSlide.imageLayer}
-          onUpdate={(updates) => updateActiveSlide({ imageLayer: { ...activeSlide.imageLayer, ...updates } })}
+          ref={imageDrawerRef}
+          onClose={() => setEditingLayer(null)}
+          imageLayer={activeSlide[editingLayer]}
+          isLogo={editingLayer === 'logoImage'}
+          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } })}
         />
       )}
 
@@ -696,6 +786,7 @@ function App() {
           onLabelTransparencyChange={(value) => updateActiveSlide({ text2LabelTransparency: value })}
         />
       )}
+
       {isSearchDrawerOpen && (
         <SearchDrawer
           onClose={() => setIsSearchDrawerOpen(false)}

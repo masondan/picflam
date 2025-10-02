@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './SizeDrawer.css';
-import { TiTick } from 'react-icons/ti';
+import { FaCheck } from 'react-icons/fa';
 import { LuRectangleVertical, LuSquare, LuRectangleHorizontal } from 'react-icons/lu';
 
 const SIZE_OPTIONS = [
@@ -35,8 +35,8 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) { // Renamed f
       <div className="drawer-content size-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
           <div className="drawer-header-button" /> {/* Spacer */}
-          <span className="drawer-title">Format</span>
-          <button className="drawer-header-button" onClick={handleConfirm}><TiTick /></button>
+          <span className="drawer-title flex-grow">Format</span>
+          <button className="drawer-header-button" onClick={handleConfirm}><FaCheck /></button>
         </div>
         <div className="drawer-body">
           {SIZE_OPTIONS.map((option) => (

@@ -1,6 +1,6 @@
 .image-transform-control {
   position: absolute;
-  border: 2px solid #007aff;
+  border: 2px solid #888;
   box-sizing: border-box;
   cursor: move;
   touch-action: none; /* Important for pointer events */
@@ -8,11 +8,11 @@
 
 .delete-image-button {
   position: absolute;
-  top: -16px;
-  left: -16px;
-  width: 32px;
-  height: 32px;
-  background-color: #007aff;
+  top: -12px;
+  left: -12px;
+  width: 24px;
+  height: 24px;
+  background-color: #555;
   color: white;
   border: none;
   border-radius: 50%;
@@ -20,41 +20,59 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 22px;
+  font-size: 12px;
   line-height: 1; /* Ensure icon is centered */
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .resize-handle {
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   background-color: white;
-  border: 2px solid #007aff;
+  border: 2px solid #888;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .resize-handle.top-left {
-  top: -8px;
-  left: -8px;
+  top: -6px;
+  left: -6px;
   cursor: nwse-resize;
 }
 
 .resize-handle.top-right {
-  top: -8px;
-  right: -8px;
+  top: -6px;
+  right: -6px;
   cursor: nesw-resize;
 }
 
 .resize-handle.bottom-left {
-  bottom: -8px;
-  left: -8px;
+  bottom: -6px;
+  left: -6px;
   cursor: nesw-resize;
 }
 
 .resize-handle.bottom-right {
-  bottom: -8px;
-  right: -8px;
+  bottom: -6px;
+  right: -6px;
   cursor: nwse-resize;
+}
+
+.guide {
+  position: absolute;
+  background-color: rgba(255, 0, 0, 0.7);
+  z-index: 1; /* Above the image, but behind handles (which will be z-index: 2) */
+}
+
+.vertical-guide {
+  top: -10px;
+  bottom: -10px;
+  width: 1px;
+}
+
+.horizontal-guide {
+  left: -10px;
+  right: -10px;
+  height: 1px;
 }

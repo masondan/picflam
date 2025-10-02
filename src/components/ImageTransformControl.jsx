@@ -1,20 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiX } from 'react-icons/fi';
 import './ImageTransformControl.css';
 
 function ImageTransformControl({ canvasRef, imageLayer, onUpdate, onDelete }) {
   const [controlBox, setControlBox] = useState({ top: 0, left: 0, width: 0, height: 0 });
-  const interactionRef = useRef(null); // Use a ref to avoid re-render issues during drag
+  const interactionRef = useRef(null);
+  const [showGuides, setShowGuides] = useState({ h: false, v: false });
 
-  // This effect recalculates the position of the controls whenever the canvas or image changes
+  // This effect recalculates the position of the controls whenever the image or canvas changes
   useEffect(() => {
-    if (!imageLayer || !imageLayer.img || !canvasRef.current) return;
+    if (!imageLayer || !imageLayer.img || !canvasRef.current) {
+      return;
+    }
 
     const canvas = canvasRef.current;
     const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
 
     const displayedCanvasWidth = canvas.offsetWidth;
     const displayedCanvasHeight = canvas.offsetHeight;
+
+    // Guard against a 0-sized canvas on first render
+    if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) {
+      return;
+    }
+
     const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
     const imgAspectRatio = img.naturalWidth / img.naturalHeight;
 
@@ -51,7 +59,7 @@ function ImageTransformControl({ canvasRef, imageLayer, onUpdate, onDelete }) {
       left: canvas.offsetLeft + imageLeftRelativeToCanvas + x,
     });
 
-  }, [imageLayer, canvasRef]);
+  }, [imageLayer, canvasRef, canvasRef.current]);
 
   const handlePointerMove = (e) => {
     if (!interactionRef.current) return;
@@ -60,17 +68,19 @@ function ImageTransformControl({ canvasRef, imageLayer, onUpdate, onDelete }) {
     const dy = e.clientY - interactionRef.current.startY;
 
     if (interactionRef.current.action === 'move') {
-      onUpdate({
-        x: interactionRef.current.initialX + dx,
-        y: interactionRef.current.initialY + dy,
-      });
-    } else if (interactionRef.current.action === 'resize') {
-      const newWidth = interactionRef.current.initialWidth + dx;
-      const scaleFactor = newWidth / interactionRef.current.initialWidth;
-      let newScale = interactionRef.current.initialScale * scaleFactor;
+      let newX = interactionRef.current.initialX + dx;
+      let newY = interactionRef.current.initialY + dy;
 
-      newScale = Math.max(0.1, Math.min(newScale, 5)); // Clamp scale
-      onUpdate({ scale: newScale });
+      const snapThreshold = 5;
+      const showH = Math.abs(newY) < snapThreshold;
+      const showV = Math.abs(newX) < snapThreshold;
+
+      if (showH) newY = 0;
+      if (showV) newX = 0;
+
+      setShowGuides({ h: showH, v: showV });
+
+      onUpdate({ x: newX, y: newY });
     }
   };
 
@@ -78,13 +88,15 @@ function ImageTransformControl({ canvasRef, imageLayer, onUpdate, onDelete }) {
     interactionRef.current = null;
     window.removeEventListener('pointermove', handlePointerMove);
     window.removeEventListener('pointerup', handlePointerUp);
+    setShowGuides({ h: false, v: false });
   };
 
   const handlePointerDown = (e, action) => {
-    e.preventDefault();
     e.stopPropagation();
+    e.preventDefault(); // Prevent text selection, etc.
+
     interactionRef.current = {
-      action,
+      action: action,
       startX: e.clientX,
       startY: e.clientY,
       initialX: imageLayer.x || 0,
@@ -97,7 +109,8 @@ function ImageTransformControl({ canvasRef, imageLayer, onUpdate, onDelete }) {
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  if (!imageLayer) return null;
+  // This component should not render if the canvas isn't ready.
+  if (!imageLayer || !canvasRef.current) return null;
 
   return (
     <div
@@ -109,22 +122,9 @@ function ImageTransformControl({ canvasRef, imageLayer, onUpdate, onDelete }) {
         height: `${controlBox.height}px`,
       }}
       onPointerDown={(e) => handlePointerDown(e, 'move')}
-      onClick={(e) => e.stopPropagation()} // Prevent drawer from closing
     >
-      <button
-        className="delete-image-button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        <FiX />
-      </button>
-      <div className="resize-handle top-left" onPointerDown={(e) => handlePointerDown(e, 'resize')}></div>
-      <div className="resize-handle top-right" onPointerDown={(e) => handlePointerDown(e, 'resize')}></div>
-      <div className="resize-handle bottom-left" onPointerDown={(e) => handlePointerDown(e, 'resize')}></div>
-      <div className="resize-handle bottom-right" onPointerDown={(e) => handlePointerDown(e, 'resize')}></div>
+      {showGuides.v && <div className="guide vertical-guide" style={{ left: '50%' }}></div>}
+      {showGuides.h && <div className="guide horizontal-guide" style={{ top: '50%' }}></div>}
     </div>
   );
 }

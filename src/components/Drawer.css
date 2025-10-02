@@ -6,8 +6,7 @@
   bottom: 0;
   background-color: transparent;
   display: flex;
-  align-items: flex-end; /* Align drawer to the bottom */
-  z-index: 1000;
+  align-items: flex-end;
 }
 
 .drawer-content {
@@ -39,6 +38,11 @@
 
 .drawer-title {
   font-weight: 700;
+}
+
+.drawer-title.flex-grow {
+  flex-grow: 1;
+  text-align: center;
 }
 
 .drawer-header-button {

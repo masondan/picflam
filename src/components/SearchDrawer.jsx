@@ -1,5 +1,5 @@
 import './SearchDrawer.css';
-import { FiX, FiSearch } from 'react-icons/fi';
+import { FiSearch, FiX } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 
 const PEXELS_API_KEY = import.meta.env.VITE_PEXELS_API_KEY;
@@ -9,6 +9,7 @@ function SearchDrawer({ onClose, onImageSelect }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
 
   const fetchImages = async (searchQuery) => {
     setLoading(true);
@@ -31,7 +32,30 @@ function SearchDrawer({ onClose, onImageSelect }) {
         throw new Error(`Failed to fetch from Pexels: ${response.status} ${response.statusText} - ${errorText}`);
       }
       const data = await response.json();
-      setResults(data.photos);
+      setResults(searchQuery ? data.photos : [...results, ...data.photos]);
+      setNextPageUrl(data.next_page || null);
+    } catch (err) {
+      setError(err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (!nextPageUrl) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(nextPageUrl, {
+        headers: { Authorization: PEXELS_API_KEY },
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch next page from Pexels: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      setResults(prevResults => [...prevResults, ...data.photos]);
+      setNextPageUrl(data.next_page || null);
     } catch (err) {
       setError(err.message);
       console.error(err);
@@ -41,8 +65,7 @@ function SearchDrawer({ onClose, onImageSelect }) {
   };
 
   useEffect(() => {
-    // Fetch curated photos on initial load
-    fetchImages('');
+    fetchImages('Digital');
   }, []);
 
   const handleSearch = (e) => {
@@ -53,13 +76,12 @@ function SearchDrawer({ onClose, onImageSelect }) {
   };
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-content" onClick={(e) => e.stopPropagation()}>
+    <div className="search-modal-overlay" onClick={onClose}>
+      <div className="drawer-content search-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
-          <span className="drawer-title">Search Pexels</span>
-          <button className="drawer-header-button" onClick={onClose}>
-            <FiX />
-          </button>
+          <div className="drawer-header-button" /> {/* Spacer */}
+          <span className="drawer-title flex-grow">Search Pexels</span>
+          <button className="drawer-header-button" onClick={onClose}><FiX /></button>
         </div>
         <div className="search-drawer-body">
           <form className="search-bar" onSubmit={handleSearch}>
@@ -80,6 +102,9 @@ function SearchDrawer({ onClose, onImageSelect }) {
                 <img src={photo.src.medium} alt={photo.alt} />
               </div>
             ))}
+            {!loading && nextPageUrl && (
+              <button className="load-more-button" onClick={loadMore}>Load More</button>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
-import { TiTick } from 'react-icons/ti';
+import { FaCheck } from 'react-icons/fa';
+
 import { FiUpload, FiSearch } from 'react-icons/fi';
 import { PiStar } from 'react-icons/pi';
 import './BackgroundDrawer.css';
@@ -26,8 +27,8 @@ function BackgroundDrawer({
       <div className="drawer-content background-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
           <div className="drawer-header-button" /> {/* Spacer */}
-          <span className="drawer-title">Background</span>
-          <button className="drawer-header-button" onClick={onClose}><TiTick /></button>
+          <span className="drawer-title flex-grow">Background and Image</span>
+          <button className="drawer-header-button" onClick={onClose}><FaCheck /></button>
         </div>
         <div className="drawer-body">
           <button className="background-option-button" onClick={onColorClick} title="Color">

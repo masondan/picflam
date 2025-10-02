@@ -1,86 +1,94 @@
-import { useRef, useEffect, forwardRef } from 'react';
+import { forwardRef, useRef, useEffect, useImperativeHandle } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FiCopy, FiTrash2, FiPlus, FiRotateCcw, FiRotateCw } from 'react-icons/fi';
+import { FiPlus, FiCopy, FiTrash2 } from 'react-icons/fi';
+import { LuUndo2, LuRedo2 } from 'react-icons/lu';
 import { RxDragHandleDots2 } from 'react-icons/rx';
 import ImageTransformControl from './ImageTransformControl';
 import './Slide.css';
 
-const Slide = forwardRef(({
-  slide,
+const Slide = forwardRef(function Slide({
   id,
+  slide,
   isActive,
   onClick,
   onAdd,
   onDuplicate,
   onDelete,
+  onUndo,
+  onRedo,
   drawSlide,
+  editingLayer, // 'imageLayer', 'logoImage', or null
   onImageUpdate,
   onImageDelete,
-}, ref) => {
-  const canvasRef = useRef(null);
-
+  onLogoUpdate,
+  onLogoDelete,
+}, ref) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-    isDragging,
   } = useSortable({ id });
+
+  const canvasRef = useRef(null);
+  const canvasWrapperRef = useRef(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
-  // This effect will redraw the canvas whenever the slide's data changes.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      drawSlide(canvas, slide);
+    if (canvasRef.current) {
+      drawSlide(canvasRef.current, slide);
     }
   }, [slide, drawSlide]);
 
-  const getCanvasStyle = () => {
-    const [aspectX, aspectY] = slide.canvasSize.split('/').map(Number);
-    return {
-      aspectRatio: `${aspectX} / ${aspectY}`,
-      backgroundColor: '#eeeeee',
-    };
-  };
+  useImperativeHandle(ref, () => ({
+    scrollIntoView: (opts) => {
+      canvasRef.current?.parentElement.scrollIntoView(opts);
+    },
+    getCanvasWrapperRef: () => canvasWrapperRef,
+    getCanvasRef: () => canvasRef,
+  }));
 
   return (
-    <div className="slide-wrapper" ref={ref}>
-      <div className="slide-container" ref={setNodeRef} style={style}>
-        <div className={`slide-actions-top ${isActive ? 'visible' : ''}`}>
-          <button onClick={() => onDelete()} title="Delete Slide"><FiTrash2 /></button>
-          <button onClick={() => alert('Undo coming soon!')} title="Undo"><FiRotateCcw /></button>
-          <button onClick={() => alert('Redo coming soon!')} title="Redo"><FiRotateCw /></button>
-          <button onClick={onAdd} title="Add New Slide"><FiPlus /></button>
-          <button onClick={() => onDuplicate()} title="Duplicate Slide"><FiCopy /></button>
-          <button {...attributes} {...listeners} title="Drag to reorder"><RxDragHandleDots2 /></button>
-        </div>
-        <div className="canvas-wrapper" onClick={onClick}>
-          <canvas
-            ref={canvasRef}
-            className="picflam-canvas"
-            style={getCanvasStyle()}
+    <div ref={setNodeRef} style={style} className="slide-wrapper" {...attributes}>
+      <div className={`slide-actions-top ${isActive ? 'visible' : ''}`} onClick={(e) => e.stopPropagation()}>
+        <button onClick={onDelete} title="Delete Slide"><FiTrash2 /></button>
+        <button onClick={onUndo} title="Undo"><LuUndo2 /></button>
+        <button onClick={onRedo} title="Redo"><LuRedo2 /></button>
+        <button onClick={onAdd} title="Add Slide"><FiPlus /></button>
+        <button onClick={onDuplicate} title="Duplicate Slide"><FiCopy /></button>
+        <button {...listeners} title="Drag to Reorder" className="drag-handle"><RxDragHandleDots2 /></button>
+      </div>
+      <div
+        className={`canvas-wrapper ${isActive ? 'active' : ''}`}
+        ref={canvasWrapperRef}
+        onClick={onClick}
+      >
+        <canvas ref={canvasRef} className="picflam-canvas" />
+        {editingLayer === 'imageLayer' && slide.imageLayer && (
+          <ImageTransformControl
+            canvasRef={canvasRef}
+            imageLayer={slide.imageLayer}
+            onUpdate={onImageUpdate}
+            onDelete={onImageDelete}
           />
-          {isActive && slide.imageLayer && (
-            <ImageTransformControl
-              canvasRef={canvasRef}
-              imageLayer={slide.imageLayer}
-              onUpdate={onImageUpdate}
-              onDelete={onImageDelete}
-            />
-          )}
-        </div>
+        )}
+        {editingLayer === 'logoImage' && slide.logoImage && (
+          <ImageTransformControl
+            canvasRef={canvasRef}
+            imageLayer={slide.logoImage}
+            onUpdate={onLogoUpdate}
+            onDelete={onLogoDelete}
+          />
+        )}
       </div>
     </div>
   );
 });
 
-Slide.displayName = 'Slide';
 export default Slide;
