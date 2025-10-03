@@ -1,5 +1,19 @@
 @import url('./Drawer.css');
 
+.drawer-content.save-drawer {
+  background-color: #555555;
+  color: #ffffff;
+}
+
+.save-drawer .drawer-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.save-drawer .drawer-header-button {
+  color: #fff;
+  font-size: 24px;
+}
+
 .save-drawer .drawer-body {
   display: flex;
   flex-direction: column;
@@ -15,6 +29,11 @@
   width: 100%;
 }
 
+.save-slot-saved {
+  position: relative;
+  width: 100px;
+}
+
 .save-slot {
   position: relative;
   display: flex;
@@ -23,16 +42,30 @@
   gap: 0.5rem;
 }
 
+.save-slot-button {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  background-color: #444;
+  border: 2px dashed #666;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.save-slot-button:hover {
+  background-color: #4a4a4a;
+  border-color: #777;
+}
+
 .save-slot-thumbnail {
   width: 100px;
   height: 100px;
   border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background-color: #f0f2f5;
-  border: 2px dashed #ccc;
+  border: 2px solid #666;
   background-size: cover;
   background-position: center;
   transition: transform 0.2s ease-in-out;
@@ -43,22 +76,24 @@
 }
 
 .delete-project-button {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid #ddd;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #e0e0e0;
+  border: none;
   color: #c00;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-top: -16px; /* Overlap with thumbnail */
+  font-size: 12px;
 }
 
 .save-drawer-warning {
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 0.9rem;
+  color: #ccc;
   text-align: center;
-  max-width: 300px;
 }

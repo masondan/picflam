@@ -1,40 +1,52 @@
-import { FiX, FiPlus, FiTrash2 } from 'react-icons/fi';
 import './SaveDrawer.css';
+import { FiCheck } from 'react-icons/fi';
+import { FaTrash } from 'react-icons/fa';
 
-function SaveDrawer({ onClose, savedProjects, onSave, onLoad, onDelete }) {
+function SaveDrawer({
+  onClose,
+  savedProjects,
+  onSave,
+  onLoad,
+  onDelete,
+}) {
   const slots = [0, 1, 2];
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
       <div className="drawer-content save-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
-          <button className="drawer-header-button" onClick={onClose}>
-            <FiX />
-          </button>
-          <span className="drawer-title">Save / Load Project</span>
-          <div className="drawer-header-button" />
+          <div className="drawer-header-button" /> {/* Spacer */}
+          <span className="drawer-title flex-grow">Save/Load</span>
+          <button className="drawer-header-button" onClick={onClose}><FiCheck /></button>
         </div>
         <div className="drawer-body">
           <div className="save-slots-container">
-            {slots.map((slotIndex) => {
-              const project = savedProjects[slotIndex];
+            {slots.map((index) => {
+              const project = savedProjects[index];
               return (
-                <div key={slotIndex} className="save-slot">
-                  <div
-                    className="save-slot-thumbnail"
-                    onClick={() => (project ? onLoad(slotIndex) : onSave(slotIndex))}
-                    style={{ backgroundImage: project ? `url(${project.thumbnail})` : 'none' }}
-                  >
-                    {!project && <FiPlus size={48} color="#ccc" />}
-                  </div>
-                  {project && (
-                    <button className="delete-project-button" onClick={() => onDelete(slotIndex)} title="Delete Project"><FiTrash2 /></button>
+                <div key={index} className="save-slot">
+                  {project ? (
+                    <div className="save-slot-saved">
+                      <div
+                        className="save-slot-thumbnail"
+                        style={{ backgroundImage: `url(${project.thumbnail})` }}
+                        onClick={() => onLoad(index)}
+                        title={`Load Project ${index + 1}`}
+                      />
+                      <button className="delete-project-button" onClick={() => onDelete(index)} title="Delete Project">
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ) : (
+                    <button className="save-slot-button" onClick={() => onSave(index)}>
+                      Save to Slot {index + 1}
+                    </button>
                   )}
                 </div>
               );
             })}
           </div>
-          <p className="save-drawer-warning">Saved projects may be lost if browser cache is cleared.</p>
+          <p className="save-drawer-warning">Saved projects may be lost if cache is cleared.</p>
         </div>
       </div>
     </div>

@@ -5,18 +5,12 @@ function TextMenuDrawer({ onClose, onText1Click, onText2Click }) {
   return (
     <div className="drawer-overlay" onClick={onClose}>
       <div className="drawer-content text-menu-drawer" onClick={(e) => e.stopPropagation()}>
-        <div className="drawer-header">
-          <div className="drawer-header-button" />
-          <span className="drawer-title flex-grow">Text</span>
-          <button className="drawer-header-button" onClick={onClose}><FaCheck /></button>
-        </div>
         <div className="drawer-body">
-          <button className="text-option-button" onClick={onText1Click}>
-            <div className="text-icon">T1</div>
-          </button>
-          <button className="text-option-button" onClick={onText2Click}>
-            <div className="text-icon">T2</div>
-          </button>
+          <div className="text-menu-buttons-wrapper">
+            <button className="text-menu-button" onClick={onText1Click}>Text 1</button>
+            <button className="text-menu-button" onClick={onText2Click}>Text 2</button>
+          </div>
+          <button className="drawer-confirm-button" onClick={onClose}><FaCheck /></button>
         </div>
       </div>
     </div>

@@ -24,9 +24,9 @@ import {
 import BackgroundDrawer from './components/BackgroundDrawer';
 import ColorDrawer from './components/ColorDrawer';
 import SearchDrawer from './components/SearchDrawer';
-import TextMenuDrawer from './components/TextMenuDrawer.jsx';
+import TextMenuDrawer from './components/TextMenuDrawer';
 import SizeDrawer from './components/SizeDrawer.jsx';
-import Text1InputDrawer from './components/Text1InputDrawer.jsx';
+import Text1InputDrawer from './components/Text1InputDrawer';
 import AboutDrawer from './components/AboutDrawer';
 import SaveDrawer from './components/SaveDrawer';
 import ImageDrawer from './components/ImageDrawer';
@@ -45,11 +45,10 @@ const createDefaultSlide = () => ({
   id: Date.now() + Math.random(), // Unique ID for dnd-kit
   canvasSize: '9/16',
   background: { type: 'gradient', value: 'linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%)' },
-  imageLayer: null, // This replaces backgroundImage
+  imageLayer: null,
   logoImage: null,
-  // Text 1
   text1: '',
-  text1Size: 5,
+  text1Size: 4.5,
   text1YPosition: 5,
   text1Font: 'Inter',
   text1Color: '#FFFFFF',
@@ -61,8 +60,7 @@ const createDefaultSlide = () => ({
   text1HasShadow: false,
   text1HasOutline: false,
   text1QuoteStyle: 'none',
-  text1QuoteSize: 5,
-  // Text 2
+  text1QuoteSize: 5, // Centered default quote size
   text2: '',
   text2Size: 1.5,
   text2YPosition: 8.5,
@@ -85,15 +83,14 @@ function App() {
   const [isText1InputDrawerOpen, setIsText1InputDrawerOpen] = useState(false);
   const [isAboutDrawerOpen, setIsAboutDrawerOpen] = useState(false);
   const [isSaveDrawerOpen, setIsSaveDrawerOpen] = useState(false);
-  const [editingLayer, setEditingLayer] = useState(null); // 'imageLayer', 'logoImage', or null
+  const [editingLayer, setEditingLayer] = useState(null);
 
-  // --- Carousel State ---
   const [slides, setSlides] = useState([createDefaultSlide()]);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const activeSlide = slides[activeSlideIndex];
 
   const slideRefs = useRef([]);
-  // Helper to update properties of the active slide immutably
+
   const updateActiveSlide = (updates) => {
     setSlides(currentSlides =>
       currentSlides.map((slide, index) =>
@@ -101,10 +98,9 @@ function App() {
       )
     );
   };
-  // --- Saved Projects State ---
-  const [savedProjects, setSavedProjects] = useState([null, null, null]);
 
   const [activeTextElement, setActiveTextElement] = useState('text1');
+  const [originalSlideState, setOriginalSlideState] = useState(null);
 
   const backgroundImageInputRef = useRef(null);
   const logoImageInputRef = useRef(null);
@@ -121,94 +117,57 @@ function App() {
     }
   }, [activeSlideIndex]);
 
-  // Effect to handle clicks outside of the image editor
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!editingLayer) return;
-
       const activeCanvasWrapper = slideRefs.current[activeSlideIndex]?.getCanvasWrapperRef()?.current;
       const imageDrawer = imageDrawerRef.current;
-
-      // Do nothing if the click is inside the image controls area
-      if (activeCanvasWrapper?.contains(event.target)) {
+      if (activeCanvasWrapper?.contains(event.target) || imageDrawer?.contains(event.target)) {
         return;
       }
-      // Do nothing if the click is inside the image drawer
-      if (imageDrawer?.contains(event.target)) {
-        return;
-      }
-
-      // If the click is outside both, close the editor
       setEditingLayer(null);
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [editingLayer, activeSlideIndex]);
 
-
   const sensors = useSensors(useSensor(PointerSensor));
 
-  const handleSearchDrawerOpen = () => {
-    setIsBackgroundDrawerOpen(false);
-    setIsSearchDrawerOpen(true);
+  const handleSizeDrawerOpen = () => {
+    setOriginalSlideState(activeSlide);
+    setIsSizeDrawerOpen(true);
   };
 
-  const handleImageUploadClick = () => {
-    backgroundImageInputRef.current.click();
-  }
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          updateActiveSlide({
-            imageLayer: {
-              img: img,
-              scale: 1,
-              opacity: 1,
-              x: 0, // offset from center (in displayed pixels)
-              y: 0, // offset from center (in displayed pixels)
-              fitMode: 'fit', // 'fit' or 'fill'
-            }
-          });
-          setEditingLayer('imageLayer'); // Open the drawer and show controls on image upload
-        };
-        img.src = e.target.result; // This is a data URL
-      };
-      reader.readAsDataURL(file);
-      setIsBackgroundDrawerOpen(false);
+  const handleSizeDrawerClose = (confirm) => {
+    if (!confirm && originalSlideState) {
+      updateActiveSlide({ canvasSize: originalSlideState.canvasSize });
     }
+    setOriginalSlideState(null);
+    setIsSizeDrawerOpen(false);
   };
 
-  const handleLogoUploadClick = () => {
-    logoImageInputRef.current.click();
-  };
+  const handleImageUploadClick = () => backgroundImageInputRef.current.click();
+  const handleLogoUploadClick = () => logoImageInputRef.current.click();
 
-  const handleLogoFileChange = (event) => {
+  const handleFileChange = (event, layer) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          // Set initial logo properties
-          updateActiveSlide({
-            logoImage: {
-              img: img,
-              scale: 0.5, // Start with a smaller scale
-              opacity: 1.0,
-              x: 0,
-              y: 0,
-              // No fitMode for logo, it's always 'fit' within its transform box
-            }
-          });
-          setEditingLayer('logoImage'); // Activate logo editing
+          const newLayer = {
+            img: img,
+            scale: layer === 'logoImage' ? 0.5 : 1,
+            opacity: 1,
+            x: 0,
+            y: 0,
+            fitMode: 'fit',
+          };
+          updateActiveSlide({ [layer]: newLayer });
+          setEditingLayer(layer);
         };
-        img.src = e.target.result; // This is a data URL
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
       setIsBackgroundDrawerOpen(false);
@@ -220,48 +179,142 @@ function App() {
     img.crossOrigin = 'Anonymous';
     img.onload = () => {
       updateActiveSlide({
-        imageLayer: {
-          img: img,
-          scale: 1,
-          opacity: 1,
-          x: 0, // offset from center (in displayed pixels)
-          y: 0, // offset from center (in displayed pixels)
-          fitMode: 'fit',
-        }
+        imageLayer: { img: img, scale: 1, opacity: 1, x: 0, y: 0, fitMode: 'fit' }
       });
-      setEditingLayer('imageLayer'); // Open the drawer and show controls on image select
+      setEditingLayer('imageLayer');
     };
     img.src = imageUrl;
     setIsSearchDrawerOpen(false);
-  }
+  };
 
   const handleText1InputDrawerOpen = () => {
     setActiveTextElement('text1');
+    setOriginalSlideState(activeSlide);
     setIsTextMenuDrawerOpen(false);
     setIsText1InputDrawerOpen(true);
   };
 
   const handleText2InputDrawerOpen = () => {
     setActiveTextElement('text2');
+    setOriginalSlideState(activeSlide);
     setIsTextMenuDrawerOpen(false);
     setIsText1InputDrawerOpen(true);
   };
 
-  const handleText1InputDrawerClose = (confirm) => {
-    if (!confirm) {
-      // TODO: Re-implement cancel functionality
+  const handleTextEditorClose = (confirm) => {
+    if (!confirm && originalSlideState) {
+      const oldTextState = {
+        text1: originalSlideState.text1, text1Size: originalSlideState.text1Size, text1YPosition: originalSlideState.text1YPosition, text1Font: originalSlideState.text1Font, text1Color: originalSlideState.text1Color, text1HighlightColor: originalSlideState.text1HighlightColor, text1IsBold: originalSlideState.text1IsBold, text1IsItalic: originalSlideState.text1IsItalic, text1Align: originalSlideState.text1Align, text1LineSpacing: originalSlideState.text1LineSpacing, text1HasShadow: originalSlideState.text1HasShadow, text1HasOutline: originalSlideState.text1HasOutline, text1QuoteStyle: originalSlideState.text1QuoteStyle, text1QuoteSize: originalSlideState.text1QuoteSize,
+        text2: originalSlideState.text2, text2Size: originalSlideState.text2Size, text2YPosition: originalSlideState.text2YPosition, text2Font: originalSlideState.text2Font, text2Color: originalSlideState.text2Color, text2IsBold: originalSlideState.text2IsBold, text2IsItalic: originalSlideState.text2IsItalic, text2Align: originalSlideState.text2Align, text2LineSpacing: originalSlideState.text2LineSpacing, text2LabelColor: originalSlideState.text2LabelColor, text2LabelTransparency: originalSlideState.text2LabelTransparency,
+      };
+      updateActiveSlide(oldTextState);
     }
+    setOriginalSlideState(null);
     setIsText1InputDrawerOpen(false);
+    if (confirm) setIsTextMenuDrawerOpen(true);
   };
 
-  const handleText1InputConfirm = () => {
-    // No need to pass text up, App already has it from live updates
-    setIsText1InputDrawerOpen(false);
-  }
+  const handleFontChange = (fontFamily) => {
+    const isBold = fontFamily === 'Inter';
+    updateActiveSlide({ [`${activeTextElement}Font`]: fontFamily, [`${activeTextElement}IsBold`]: isBold });
+  };
 
-  const handleDownload = () => {
-    // TODO: This needs to be updated to get the ref of the active canvas
-    alert('Download will be re-implemented in a future step.');
+  const handleHasLabelChange = (hasLabel) => {
+    if (activeTextElement === 'text2') {
+      updateActiveSlide({
+        text2LabelColor: hasLabel ? activeSlide.text2LabelColor === 'transparent' ? '#000000' : activeSlide.text2LabelColor : 'transparent'
+      });
+    }
+  };
+
+  // --- Project Save/Load Logic ---
+  const [savedProjects, setSavedProjects] = useState([null, null, null]);
+
+  useEffect(() => {
+    try {
+      const storedProjects = localStorage.getItem('picflam_projects');
+      if (storedProjects) {
+        setSavedProjects(JSON.parse(storedProjects));
+      }
+    } catch (e) {
+      console.error("Failed to load projects from localStorage", e);
+    }
+  }, []);
+
+  const handleSaveProject = (slotIndex) => {
+    const activeCanvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
+    if (!activeCanvas) {
+      alert("Cannot save, active canvas not found.");
+      return;
+    }
+    const thumbnail = activeCanvas.toDataURL('image/jpeg', 0.5);
+    const projectData = { slides, thumbnail };
+
+    const newSavedProjects = [...savedProjects];
+    newSavedProjects[slotIndex] = projectData;
+    setSavedProjects(newSavedProjects);
+    localStorage.setItem('picflam_projects', JSON.stringify(newSavedProjects));
+    alert(`Project saved to slot ${slotIndex + 1}.`);
+  };
+
+  const handleLoadProject = (slotIndex) => {
+    const projectToLoad = savedProjects[slotIndex];
+    if (projectToLoad && window.confirm('Load this project? Any unsaved changes will be lost.')) {
+      // We need to re-create image objects from data URLs
+      // This is a simplified version. A full implementation would handle this.
+      setSlides(projectToLoad.slides);
+      setActiveSlideIndex(0);
+      alert(`Project loaded from slot ${slotIndex + 1}.`);
+    }
+  };
+
+  // --- Project Save/Load Logic ---
+  const [savedProjects, setSavedProjects] = useState([null, null, null]);
+
+  useEffect(() => {
+    try {
+      const storedProjects = localStorage.getItem('picflam_projects');
+      if (storedProjects) {
+        setSavedProjects(JSON.parse(storedProjects));
+      }
+    } catch (e) {
+      console.error("Failed to load projects from localStorage", e);
+    }
+  }, []);
+
+  const handleSaveProject = (slotIndex) => {
+    const activeCanvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
+    if (!activeCanvas) {
+      alert("Cannot save, active canvas not found.");
+      return;
+    }
+    const thumbnail = activeCanvas.toDataURL('image/jpeg', 0.5);
+    const projectData = { slides, thumbnail };
+
+    const newSavedProjects = [...savedProjects];
+    newSavedProjects[slotIndex] = projectData;
+    setSavedProjects(newSavedProjects);
+    localStorage.setItem('picflam_projects', JSON.stringify(newSavedProjects));
+    alert(`Project saved to slot ${slotIndex + 1}.`);
+  };
+
+  const handleLoadProject = (slotIndex) => {
+    const projectToLoad = savedProjects[slotIndex];
+    if (projectToLoad && window.confirm('Load this project? Any unsaved changes will be lost.')) {
+      // This is a simplified version. A full implementation would handle re-creating image objects.
+      setSlides(projectToLoad.slides);
+      setActiveSlideIndex(0);
+      alert(`Project loaded from slot ${slotIndex + 1}.`);
+    }
+  };
+
+  const handleDeleteProject = (slotIndex) => {
+    if (window.confirm(`Are you sure you want to delete project in slot ${slotIndex + 1}?`)) {
+      const newSavedProjects = [...savedProjects];
+      newSavedProjects[slotIndex] = null;
+      setSavedProjects(newSavedProjects);
+      localStorage.setItem('picflam_projects', JSON.stringify(newSavedProjects));
+    }
   };
 
   const handleReset = () => {
@@ -273,57 +326,45 @@ function App() {
 
   const handleCanvasClick = (index, event) => {
     setActiveSlideIndex(index);
-
     const slide = slides[index];
     const canvasWrapper = slideRefs.current[index]?.getCanvasWrapperRef()?.current;
-    if (!canvasWrapper) {
-      setEditingLayer(null);
-      return;
-    }
-
+    if (!canvasWrapper) { setEditingLayer(null); return; }
     const rect = canvasWrapper.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
-    // Hit test in reverse order (top layers first)
-    // 1. Check for logo
+    const getControlBox = (canvas, imageLayer) => {
+      if (!imageLayer || !imageLayer.img) return null;
+      const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
+      const canvasWidth = canvas.offsetWidth;
+      const canvasHeight = canvas.offsetHeight;
+      const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+      const canvasAspectRatio = canvasWidth / canvasHeight;
+      let renderWidth, renderHeight;
+      if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
+        renderHeight = canvasHeight; renderWidth = renderHeight * imgAspectRatio;
+      } else {
+        renderWidth = canvasWidth; renderHeight = renderWidth / imgAspectRatio;
+      }
+      renderWidth *= scale; renderHeight *= scale;
+      return { left: (canvasWidth - renderWidth) / 2 + x, top: (canvasHeight - renderHeight) / 2 + y, width: renderWidth, height: renderHeight };
+    };
+
     if (slide.logoImage) {
       const box = getControlBox(canvasWrapper, slide.logoImage);
-      if (clickX >= box.left && clickX <= box.left + box.width &&
-          clickY >= box.top && clickY <= box.top + box.height) {
-        setEditingLayer('logoImage');
-        return;
+      if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
+        setEditingLayer('logoImage'); return;
       }
     }
-
-    // 2. Check for main image
     if (slide.imageLayer) {
       const box = getControlBox(canvasWrapper, slide.imageLayer);
-      if (clickX >= box.left && clickX <= box.left + box.width &&
-          clickY >= box.top && clickY <= box.top + box.height) {
-        setEditingLayer('imageLayer');
-        return;
+      if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
+        setEditingLayer('imageLayer'); return;
       }
     }
-
-    // 3. If nothing was hit, deactivate editing
     setEditingLayer(null);
   };
 
-  // This is a simplified version of the logic in ImageTransformControl
-  // to calculate the bounding box for hit-testing.
-  const getControlBox = (canvas, imageLayer) => {
-    const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
-    const canvasWidth = canvas.offsetWidth;
-    const canvasHeight = canvas.offsetHeight;
-    const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-    const canvasAspectRatio = canvasWidth / canvasHeight;
-    let renderWidth = (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) ? canvasHeight * imgAspectRatio : canvasWidth;
-    let renderHeight = renderWidth / imgAspectRatio;
-    return { left: (canvasWidth - renderWidth * scale) / 2 + x, top: (canvasHeight - renderHeight * scale) / 2 + y, width: renderWidth * scale, height: renderHeight * scale };
-  };
-
-  // --- Carousel Logic ---
   const handleAddSlide = (index) => {
     const newSlide = createDefaultSlide();
     const newSlides = [...slides];
@@ -342,10 +383,7 @@ function App() {
   };
 
   const handleDeleteSlide = (index) => {
-    if (slides.length <= 1) {
-      alert("You can't delete the last slide.");
-      return;
-    }
+    if (slides.length <= 1) { alert("You can't delete the last slide."); return; }
     if (window.confirm('Are you sure you want to delete this slide?')) {
       const newSlides = slides.filter((_, i) => i !== index);
       setSlides(newSlides);
@@ -364,287 +402,143 @@ function App() {
     }
   };
 
-  // --- Project Save/Load Logic ---
-
-  // Load projects from localStorage on initial render
-  useEffect(() => {
-    try {
-      const storedProjects = localStorage.getItem('picflam_projects');
-      if (storedProjects) {
-        setSavedProjects(JSON.parse(storedProjects));
-      }
-    } catch (e) {
-      console.error("Failed to load projects from localStorage", e);
-    }
-  }, []);
-
-  const handleSaveProject = (slotIndex) => {
-    alert('Save/Load will be re-implemented in a future step.');
-  };
-
-  const handleLoadProject = (slotIndex) => {
-    alert('Save/Load will be re-implemented in a future step.');
-  };
-
-  const handleDeleteProject = (slotIndex) => {
-    if (window.confirm('Delete project? This cannot be undone.')) {
-      const newSavedProjects = [...savedProjects];
-      newSavedProjects[slotIndex] = null;
-      setSavedProjects(newSavedProjects);
-      localStorage.setItem('picflam_projects', JSON.stringify(newSavedProjects));
-    }
-  };
-
-  // This function is now passed to each Slide to draw itself
   const drawSlide = (canvas, slideData) => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-
     const { canvasSize, background, imageLayer, logoImage } = slideData;
-
-    // --- High-Resolution Canvas Setup ---
-    const baseResolution = 2048; // Use a fixed high resolution for the canvas bitmap
+    const baseResolution = 2048;
     const [aspectX, aspectY] = canvasSize.split('/').map(Number);
     const canvasWidth = aspectX > aspectY ? baseResolution : baseResolution * (aspectX / aspectY);
     const canvasHeight = aspectY > aspectX ? baseResolution : baseResolution * (aspectY / aspectX);
-
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-
+    canvas.width = canvasWidth; canvas.height = canvasHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // --- Draw Background ---
     if (background.type === 'solid') {
       ctx.fillStyle = background.value;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else if (background.type === 'gradient') {
       const gradientRegex = /linear-gradient\((\d+)deg, (.*?) 0%, (.*?) 100%\)/;
       const match = background.value.match(gradientRegex);
-
       let gradient;
       if (match) {
-        const angle = parseInt(match[1], 10) * (Math.PI / 180); // Convert angle to radians
-        const color1 = match[2];
-        const color2 = match[3];
-
-        // Calculate start and end points based on angle
-        const x0 = canvas.width / 2 * (1 - Math.cos(angle));
-        const y0 = canvas.height / 2 * (1 - Math.sin(angle));
-        const x1 = canvas.width / 2 * (1 + Math.cos(angle));
-        const y1 = canvas.height / 2 * (1 + Math.sin(angle));
-
+        const angle = parseInt(match[1], 10) * (Math.PI / 180);
+        const color1 = match[2]; const color2 = match[3];
+        const x0 = canvas.width / 2 * (1 - Math.cos(angle)); const y0 = canvas.height / 2 * (1 - Math.sin(angle));
+        const x1 = canvas.width / 2 * (1 + Math.cos(angle)); const y1 = canvas.height / 2 * (1 + Math.sin(angle));
         gradient = ctx.createLinearGradient(x0, y0, x1, y1);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(1, color2);
+        gradient.addColorStop(0, color1); gradient.addColorStop(1, color2);
       } else {
-        // Fallback for simple gradients if regex fails
         gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#8A2BE2');
-        gradient.addColorStop(1, '#4B0082');
+        gradient.addColorStop(0, '#8A2BE2'); gradient.addColorStop(1, '#4B0082');
       }
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    const drawImageOnCanvas = (layer, isLogo = false) => {
+    const drawImageOnCanvas = (layer) => {
       if (!layer || !layer.img) return;
-      const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer; // x, y are in displayed pixels
-    
+      const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer;
       const draw = () => {
         ctx.globalAlpha = opacity;
-    
-        const displayedCanvasWidth = canvas.offsetWidth;
-        const displayedCanvasHeight = canvas.offsetHeight;
-    
-        // Guard against a 0-sized canvas on first render
-        if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) {
-          return;
-        }
-    
+        const displayedCanvasWidth = canvas.offsetWidth; const displayedCanvasHeight = canvas.offsetHeight;
+        if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) return;
         const imgAspectRatio = img.naturalWidth / img.naturalHeight;
         const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
-        let renderWidth, renderHeight; // in displayed pixels
-    
+        let renderWidth, renderHeight;
         if (fitMode === 'fill') {
-          if (imgAspectRatio > canvasAspectRatio) {
-            renderHeight = displayedCanvasHeight;
-            renderWidth = renderHeight * imgAspectRatio;
-          } else {
-            renderWidth = displayedCanvasWidth;
-            renderHeight = renderWidth / imgAspectRatio;
-          }
-        } else { // 'fit' mode is the default
-          if (imgAspectRatio > canvasAspectRatio) {
-            renderWidth = displayedCanvasWidth;
-            renderHeight = renderWidth / imgAspectRatio;
-          } else {
-            renderHeight = displayedCanvasHeight;
-            renderWidth = renderHeight * imgAspectRatio;
-          }
+          if (imgAspectRatio > canvasAspectRatio) { renderHeight = displayedCanvasHeight; renderWidth = renderHeight * imgAspectRatio; }
+          else { renderWidth = displayedCanvasWidth; renderHeight = renderWidth / imgAspectRatio; }
+        } else {
+          if (imgAspectRatio > canvasAspectRatio) { renderWidth = displayedCanvasWidth; renderHeight = renderWidth / imgAspectRatio; }
+          else { renderHeight = displayedCanvasHeight; renderWidth = renderHeight * imgAspectRatio; }
         }
-    
-        renderWidth *= scale;
-        renderHeight *= scale;
-    
-        // Convert all units to high-resolution pixels for drawing.
+        renderWidth *= scale; renderHeight *= scale;
         const scaleToHighRes = displayedCanvasWidth > 0 ? canvas.width / displayedCanvasWidth : 0;
-        const renderWidthHighRes = renderWidth * scaleToHighRes;
-        const renderHeightHighRes = renderHeight * scaleToHighRes;
-        const xHighRes = x * scaleToHighRes;
-        const yHighRes = y * scaleToHighRes;
-    
+        const renderWidthHighRes = renderWidth * scaleToHighRes; const renderHeightHighRes = renderHeight * scaleToHighRes;
+        const xHighRes = x * scaleToHighRes; const yHighRes = y * scaleToHighRes;
         ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
-    
-        ctx.globalAlpha = 1.0; // Reset alpha
+        ctx.globalAlpha = 1.0;
       };
-      if (img.complete) {
-        draw();
-      } else {
-        img.onload = draw;
-      }
+      if (img.complete) { draw(); } else { img.onload = draw; }
     };
-    drawImageOnCanvas(imageLayer, false);
+    drawImageOnCanvas(imageLayer);
 
     const drawText = (text, size, yPos, font, color, isBold, isItalic, align, lineSpacing, hasShadow, hasOutline, quoteStyle, quoteSize, hasLabel, labelColor, labelTransparency) => {
       const baseFontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
       const fontSize = baseFontSize * (size / 5);
-      const finalLineSpacing = (0.8 + (lineSpacing / 10) * (2.5 - 0.8));
+      const finalLineSpacing = 0.8 + (lineSpacing / 10) * (1.4 - 0.8); // Range from 0.8 to 1.4, 1.1 is center
       const lineHeight = fontSize * finalLineSpacing;
       const fontWeight = isBold ? 'bold' : 'normal';
       const fontStyle = isItalic ? 'italic' : 'normal';
       const finalFont = `${fontStyle} ${fontWeight} ${fontSize}px "${font}", sans-serif`;
       const maxWidth = canvasWidth * 0.8;
       const yPosition = canvasHeight * (yPos / 10);
-
-      ctx.font = finalFont;
-      ctx.textAlign = align;
-      ctx.textBaseline = 'middle';
-
-      // Handle both automatic wrapping and manual newlines
-      const paragraphs = text.split('\n');
-      const lines = [];
-      let widestLine = 0;
-
+      ctx.font = finalFont; ctx.textAlign = align; ctx.textBaseline = 'middle';
+      const paragraphs = text.split('\n'); const lines = []; let widestLine = 0;
       paragraphs.forEach(paragraph => {
-        const words = paragraph.split(' ');
-        let line = '';
+        const words = paragraph.split(' '); let line = '';
         for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n] + ' ';
-          const metrics = ctx.measureText(testLine);
-          const testWidth = metrics.width;
+          const testLine = line + words[n] + ' '; const metrics = ctx.measureText(testLine); const testWidth = metrics.width;
           if (testWidth > maxWidth && n > 0) {
-            lines.push(line);
-            if (ctx.measureText(line).width > widestLine) {
-              widestLine = ctx.measureText(line).width;
-            }
+            lines.push(line); if (ctx.measureText(line).width > widestLine) { widestLine = ctx.measureText(line).width; }
             line = words[n] + ' ';
-          } else {
-            line = testLine;
-          }
+          } else { line = testLine; }
         }
-        lines.push(line);
-        if (ctx.measureText(line).width > widestLine) {
-          widestLine = ctx.measureText(line).width;
-        }
+        lines.push(line); if (ctx.measureText(line).width > widestLine) { widestLine = ctx.measureText(line).width; }
       });
-
-      const totalTextHeight = lines.length * lineHeight;
-      let currentY = yPosition - (totalTextHeight / 2) + (lineHeight / 2);
-
+      const totalTextHeight = lines.length * lineHeight; let currentY = yPosition - (totalTextHeight / 2) + (lineHeight / 2);
       if (quoteStyle !== 'none') {
-        const quoteSizeVal = baseFontSize * 2 * (quoteSize / 5);
-        let quoteFont = '';
-        if (quoteStyle === 'serif') {
-          quoteFont = `${quoteSizeVal}px "Saira Stencil One", sans-serif`;
-        } else if (quoteStyle === 'slab') {
-          quoteFont = `${quoteSizeVal}px "Ultra", serif`;
-        } else if (quoteStyle === 'fancy') {
-          quoteFont = `bold ${quoteSizeVal}px "Playfair Display SC", serif`;
-        }
+        const quoteSizeVal = baseFontSize * 4 * (quoteSize / 5); let quoteFont = ''; // Doubled the multiplier from 2 to 4
+        if (quoteStyle === 'serif') { quoteFont = `${quoteSizeVal}px "Saira Stencil One", sans-serif`; }
+        else if (quoteStyle === 'slab') { quoteFont = `${quoteSizeVal}px "Ultra", serif`; }
+        else if (quoteStyle === 'fancy') { quoteFont = `bold ${quoteSizeVal}px "Playfair Display SC", serif`; }
         ctx.font = quoteFont;
         ctx.fillStyle = color;
-        const quoteY = yPosition - (totalTextHeight / 2) - (lineHeight * 0.1);
-        ctx.fillText('“', canvasWidth / 2, quoteY);
+        const quoteY = yPosition - (totalTextHeight / 2) - (quoteSizeVal * 0.6); // Position relative to its own size
+        const originalAlign = ctx.textAlign; // Save original alignment
+        ctx.textAlign = 'center'; // Force center for the quote
+        ctx.fillText('“', canvasWidth / 2, quoteY); // Always draw in the middle
+        ctx.textAlign = originalAlign; // Restore original alignment
       }
-
       ctx.font = finalFont;
-
       if (hasLabel) {
-        ctx.fillStyle = hexToRgba(labelColor, labelTransparency / 10);
-        const padding = lineHeight * 0.4; // A bit more padding
-        const labelY = yPosition - (totalTextHeight / 2);
-        const labelHeight = totalTextHeight + padding;
-        const labelWidth = widestLine + padding * 2; // Use calculated widest line
+        ctx.fillStyle = hexToRgba(labelColor, labelTransparency / 10); const padding = lineHeight * 0.4;
+        const labelY = yPosition - (totalTextHeight / 2); const labelHeight = totalTextHeight + padding;
+        const labelWidth = widestLine + padding * 2;
         ctx.fillRect(canvasWidth / 2 - labelWidth / 2, labelY - padding / 2, labelWidth, labelHeight);
       }
-
       for (let i = 0; i < lines.length; i++) {
-        if (hasShadow) {
-          ctx.shadowColor = 'rgba(0,0,0,0.5)';
-          ctx.shadowBlur = 5;
-          ctx.shadowOffsetX = 5;
-          ctx.shadowOffsetY = 5;
-        } else {
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
-        }
-
-        const lineText = lines[i].trim();
-        const lineParts = lineText.split(/(==[^=]+==)/g);
-        let lineX = canvasWidth / 2;
-        if (align === 'left' && hasLabel) { // Adjust alignment only if there is a label
-          lineX = (canvasWidth - widestLine) / 2;
+        if (hasShadow) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 5; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5; }
+        else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; }
+        const lineText = lines[i].trim(); const lineParts = lineText.split(/(==[^=]+==)/g);
+        let lineX;
+        if (align === 'left') {
+          lineX = (canvasWidth - maxWidth) / 2;
         } else if (align === 'right') {
-          lineX = canvasWidth - (canvasWidth - maxWidth) / 2;
-        }
-        let currentX = lineX;
-        if (align === 'center') {
-          currentX = lineX - (ctx.measureText(lineText).width / 2);
-        }
-        if (align !== 'center') {
-          currentX = lineX;
+          lineX = canvasWidth - ((canvasWidth - maxWidth) / 2);
+        } else { // center
+          lineX = canvasWidth / 2;
         }
 
-        lineParts.forEach(part => {
+        for (const part of lineParts) {
           if (part.startsWith('==') && part.endsWith('==')) {
             const highlightedText = part.substring(2, part.length - 2);
-            ctx.fillStyle = slideData.text1HighlightColor; // Use from slideData
-            ctx.fillText(highlightedText, currentX + (ctx.measureText(highlightedText).width / 2), currentY);
-            currentX += ctx.measureText(highlightedText).width;
+            ctx.fillStyle = slideData.text1HighlightColor;
+            ctx.fillText(highlightedText, lineX, currentY);
           } else {
             ctx.fillStyle = color;
-            ctx.fillText(part, currentX + (ctx.measureText(part).width / 2), currentY);
-            currentX += ctx.measureText(part).width;
+            ctx.fillText(part, lineX, currentY);
           }
-        });
-
-        if (hasOutline) {
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = fontSize * 0.05;
-          ctx.strokeText(lineText, lineX, currentY);
         }
-
+        if (hasOutline) {
+          ctx.strokeStyle = 'black'; ctx.lineWidth = fontSize * 0.05; ctx.strokeText(lineText.replace(/==/g, ''), lineX, currentY);
+        }
         currentY += lineHeight;
       }
     };
-
-    const {
-      text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize,
-      text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, text2LabelColor, text2LabelTransparency
-    } = slideData;
-
-    if (text1) {
-      drawText(text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, false, 'transparent', 0);
-    }
-
-    if (text2) {
-      drawText(text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, false, false, 'none', 5, text2LabelColor !== 'transparent', text2LabelColor, text2LabelTransparency);
-    }
-
-    drawImageOnCanvas(logoImage, false);
+    const { text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, text2LabelColor, text2LabelTransparency } = slideData;
+    if (text1) { drawText(text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, false, 'transparent', 0); }
+    if (text2) { drawText(text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, false, false, 'none', 5, text2LabelColor !== 'transparent', text2LabelColor, text2LabelTransparency); }
+    drawImageOnCanvas(logoImage);
   };
 
   return (
@@ -654,18 +548,10 @@ function App() {
           <SortableContext items={slides.map(s => s.id)} strategy={horizontalListSortingStrategy}>
             {slides.map((slide, index) => (
               <Slide
-                key={slide.id}
-                id={slide.id}
-                ref={el => slideRefs.current[index] = el}
-                slide={slide}
-                isActive={index === activeSlideIndex}
-                onClick={(e) => handleCanvasClick(index, e)}
-                onAdd={() => handleAddSlide(index)}
-                onDuplicate={() => handleDuplicateSlide(index)}
-                onUndo={() => alert('Undo not implemented yet')}
-                onRedo={() => alert('Redo not implemented yet')}
-                onDelete={() => handleDeleteSlide(index)}
-                drawSlide={drawSlide}
+                key={slide.id} id={slide.id} ref={el => slideRefs.current[index] = el}
+                slide={slide} isActive={index === activeSlideIndex} onClick={(e) => handleCanvasClick(index, e)}
+                onAdd={() => handleAddSlide(index)} onDuplicate={() => handleDuplicateSlide(index)}
+                onDelete={() => handleDeleteSlide(index)} drawSlide={drawSlide}
                 editingLayer={index === activeSlideIndex ? editingLayer : null}
                 onImageUpdate={(updates) => updateActiveSlide({ imageLayer: { ...activeSlide.imageLayer, ...updates } })}
                 onImageDelete={() => { updateActiveSlide({ imageLayer: null }); setEditingLayer(null); }}
@@ -677,42 +563,25 @@ function App() {
         </DndContext>
       </div>
 
-      <div className={`footer-menu ${
-          isBackgroundDrawerOpen || isColorDrawerOpen || isSearchDrawerOpen || isTextMenuDrawerOpen ||
-          isSizeDrawerOpen || isText1InputDrawerOpen || isAboutDrawerOpen || isSaveDrawerOpen || editingLayer
-          ? 'hidden' : ''
-      }`}>
-        <button className="footer-button" onClick={() => setIsSizeDrawerOpen(true)}><FiMaximize /></button>
+      <div className={`footer-menu ${isBackgroundDrawerOpen || isColorDrawerOpen || isSearchDrawerOpen || isTextMenuDrawerOpen || isSizeDrawerOpen || isText1InputDrawerOpen || isAboutDrawerOpen || isSaveDrawerOpen || editingLayer ? 'hidden' : ''}`}>
+        <button className="footer-button" onClick={handleSizeDrawerOpen}><FiMaximize /></button>
         <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
         <button className="footer-button" onClick={() => setIsTextMenuDrawerOpen(true)}><FiType /></button>
         <button className="footer-button" onClick={() => setIsSaveDrawerOpen(true)}><FiBookmark /></button>
-        <button className="footer-button" onClick={handleDownload}><FiDownload /></button>
+        <button className="footer-button" onClick={() => alert('Download not implemented yet')}><FiDownload /></button>
         <button className="footer-button" onClick={handleReset}><FiRotateCcw /></button>
         <button className="footer-button" onClick={() => setIsAboutDrawerOpen(true)}><FiInfo /></button>
       </div>
 
-      <input
-        type="file"
-        ref={backgroundImageInputRef}
-        onChange={handleFileChange}
-        accept="image/*"
-        style={{ display: 'none' }}
-      />
-
-      <input
-        type="file"
-        ref={logoImageInputRef}
-        onChange={handleLogoFileChange}
-        accept="image/*"
-        style={{ display: 'none' }}
-      />
+      <input type="file" ref={backgroundImageInputRef} onChange={(e) => handleFileChange(e, 'imageLayer')} accept="image/*" style={{ display: 'none' }} />
+      <input type="file" ref={logoImageInputRef} onChange={(e) => handleFileChange(e, 'logoImage')} accept="image/*" style={{ display: 'none' }} />
 
       {isBackgroundDrawerOpen && (
         <BackgroundDrawer
           onClose={() => setIsBackgroundDrawerOpen(false)}
           onColorClick={() => { setIsBackgroundDrawerOpen(false); setIsColorDrawerOpen(true); }}
           onImageUpload={handleImageUploadClick}
-          onSearchClick={handleSearchDrawerOpen}
+          onSearchClick={() => { setIsBackgroundDrawerOpen(false); setIsSearchDrawerOpen(true); }}
           onLogoClick={handleLogoUploadClick}
           currentBackground={activeSlide.background}
         />
@@ -725,30 +594,20 @@ function App() {
           imageLayer={activeSlide[editingLayer]}
           isLogo={editingLayer === 'logoImage'}
           onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } })}
-        />
+          onImageDelete={() => { updateActiveSlide({ [editingLayer]: null }); setEditingLayer(null); }} />
       )}
 
       {isColorDrawerOpen && (
-        <ColorDrawer
-          onClose={() => setIsColorDrawerOpen(false)}
-          onBackgroundChange={(bg) => updateActiveSlide({ background: bg })}
-          currentBackground={activeSlide.background}
-        />
+        <ColorDrawer onClose={() => setIsColorDrawerOpen(false)} onBackgroundChange={(bg) => updateActiveSlide({ background: bg })} currentBackground={activeSlide.background} />
       )}
 
       {isTextMenuDrawerOpen && (
-        <TextMenuDrawer
-          onClose={() => setIsTextMenuDrawerOpen(false)}
-          onText1Click={handleText1InputDrawerOpen}
-          onText2Click={handleText2InputDrawerOpen}
-          activeTextElement={activeTextElement}
-        />
+        <TextMenuDrawer onClose={() => setIsTextMenuDrawerOpen(false)} onText1Click={handleText1InputDrawerOpen} onText2Click={handleText2InputDrawerOpen} />
       )}
 
       {isText1InputDrawerOpen && (
         <Text1InputDrawer
-          onClose={handleText1InputDrawerClose}
-          onConfirm={handleText1InputConfirm}
+          onClose={() => handleTextEditorClose(false)} onConfirm={() => handleTextEditorClose(true)}
           activeTextElement={activeTextElement}
           text={activeTextElement === 'text1' ? activeSlide.text1 : activeSlide.text2}
           onTextChange={(value) => updateActiveSlide({ [activeTextElement]: value })}
@@ -757,7 +616,7 @@ function App() {
           yPosition={activeTextElement === 'text1' ? activeSlide.text1YPosition : activeSlide.text2YPosition}
           onYPositionChange={(value) => updateActiveSlide({ [`${activeTextElement}YPosition`]: value })}
           font={activeTextElement === 'text1' ? activeSlide.text1Font : activeSlide.text2Font}
-          onFontChange={(value) => updateActiveSlide({ [`${activeTextElement}Font`]: value })}
+          onFontChange={handleFontChange}
           color={activeTextElement === 'text1' ? activeSlide.text1Color : activeSlide.text2Color}
           onColorChange={(value) => updateActiveSlide({ [`${activeTextElement}Color`]: value })}
           highlightColor={activeSlide.text1HighlightColor}
@@ -778,8 +637,8 @@ function App() {
           onQuoteStyleChange={(value) => updateActiveSlide({ text1QuoteStyle: value })}
           quoteSize={activeSlide.text1QuoteSize}
           onQuoteSizeChange={(value) => updateActiveSlide({ text1QuoteSize: value })}
-          hasLabel={activeSlide.text2LabelColor !== 'transparent'}
-          onHasLabelChange={() => {}} // Placeholder
+          hasLabel={activeTextElement === 'text2' && activeSlide.text2LabelColor !== 'transparent'}
+          onHasLabelChange={handleHasLabelChange}
           labelColor={activeSlide.text2LabelColor}
           onLabelColorChange={(value) => updateActiveSlide({ text2LabelColor: value })}
           labelTransparency={activeSlide.text2LabelTransparency}
@@ -788,24 +647,14 @@ function App() {
       )}
 
       {isSearchDrawerOpen && (
-        <SearchDrawer
-          onClose={() => setIsSearchDrawerOpen(false)}
-          onImageSelect={handleRemoteImageSelect}
-        />
+        <SearchDrawer onClose={() => setIsSearchDrawerOpen(false)} onImageSelect={handleRemoteImageSelect} />
       )}
 
       {isSizeDrawerOpen && (
-        <SizeDrawer
-          onClose={() => setIsSizeDrawerOpen(false)} // Updated: onClose no longer has a parameter
-          onCanvasSizeChange={(size) => updateActiveSlide({ canvasSize: size })}
-          currentSize={activeSlide.canvasSize}
-        />
+        <SizeDrawer onClose={handleSizeDrawerClose} onCanvasSizeChange={(size) => updateActiveSlide({ canvasSize: size })} currentSize={activeSlide.canvasSize} />
       )}
 
-      {isAboutDrawerOpen && (
-        <AboutDrawer onClose={() => setIsAboutDrawerOpen(false)} />
-      )}
-
+      {isAboutDrawerOpen && (<AboutDrawer onClose={() => setIsAboutDrawerOpen(false)} />)}
       {isSaveDrawerOpen && (
         <SaveDrawer
           onClose={() => setIsSaveDrawerOpen(false)}

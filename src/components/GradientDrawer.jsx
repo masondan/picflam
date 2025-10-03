@@ -1,46 +1,84 @@
-import './GradientDrawer.css';
-import { FiX, FiCheck } from 'react-icons/fi';
+import { forwardRef } from 'react';
+import './ImageDrawer.css';
+import { FaCheck, FaExpand, FaCompress, FaTrash } from 'react-icons/fa';
+import { FiChevronDown } from 'react-icons/fi';
+import { MdOutlineOpacity, MdOutlineZoomOutMap } from 'react-icons/md';
 
-const DEFAULT_GRADIENTS = [
-  { name: 'Sunrise', value: 'linear-gradient(to right, #ff9966, #ff5e62)' },
-  { name: 'Ocean', value: 'linear-gradient(to right, #43c6ac, #191654)' },
-  { name: 'Sunset', value: 'linear-gradient(to right, #ff512f, #dd2476)' },
-  { name: 'Forest', value: 'linear-gradient(to right, #5a3f37, #2c7744)' },
-  { name: 'Grape', value: 'linear-gradient(to right, #c31432, #240b36)' },
-  { name: 'Sky', value: 'linear-gradient(to right, #0072ff, #00c6ff)' },
-];
+const ImageDrawer = forwardRef(function ImageDrawer({
+  onClose,
+  imageLayer,
+  isLogo,
+  onUpdate,
+  onImageDelete,
+}, ref) {
 
-function GradientDrawer({ onClose, onConfirm, onGradientChange }) {
+  if (!imageLayer) return null;
+
+  // The `onClose` from App.jsx doesn't take a parameter, so we wrap it.
+  const handleClose = () => onClose(true);
+  const handleCancel = () => onClose(false);
+
   return (
-    <div className="drawer-overlay" onClick={() => onClose(false)}>
-      <div className="drawer-content" onClick={(e) => e.stopPropagation()}>
-        <div className="drawer-header">
-          <button
-            className="drawer-header-button"
-            onClick={() => onClose(false)}
-          >
-            <FiX />
-          </button>
-          <span className="drawer-title">Gradient</span>
-          <button className="drawer-header-button" onClick={() => onConfirm()}>
-            <FiCheck />
-          </button>
+    <div className="drawer-overlay" onClick={handleCancel}>
+      <div className="drawer-content image-drawer" onClick={(e) => e.stopPropagation()} ref={ref}>
+        <div className="image-drawer-header">
+          <button className="drawer-header-button"><FiChevronDown /></button>
+          <div className="image-editor-tabs">
+            {/* In a future step, we can add more tabs and state to switch between them */}
+            <button className="style-icon-button active"><MdOutlineZoomOutMap /></button>
+          </div>
+          <button className="drawer-header-button" onClick={handleClose}><FaCheck /></button>
         </div>
-        <div className="gradient-drawer-body">
-          <div className="gradient-swatches">
-            {DEFAULT_GRADIENTS.map((gradient) => (
-              <button
-                key={gradient.name}
-                className="gradient-swatch"
-                style={{ background: gradient.value }}
-                onClick={() => onGradientChange(gradient.value)}
-              />
-            ))}
+        <div className="image-drawer-body">
+          <div className="control-row">
+            <span className="slider-label">Size</span>
+            <input
+              type="range"
+              min="0.1"
+              max="3"
+              step="0.01"
+              value={imageLayer.scale}
+              onChange={(e) => onUpdate({ scale: parseFloat(e.target.value) })}
+              className="slider"
+            />
+            {!isLogo && (
+              <div className="fit-mode-icons">
+                <button
+                  className={`fit-mode-button ${imageLayer.fitMode === 'fit' ? 'active' : ''}`}
+                  onClick={() => onUpdate({ fitMode: 'fit' })}
+                  title="Fit"
+                >
+                  <FaCompress />
+                </button>
+                <button
+                  className={`fit-mode-button ${imageLayer.fitMode === 'fill' ? 'active' : ''}`}
+                  onClick={() => onUpdate({ fitMode: 'fill' })}
+                  title="Fill"
+                >
+                  <FaExpand />
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="control-row">
+            <span className="slider-label">Opacity</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={imageLayer.opacity}
+              onChange={(e) => onUpdate({ opacity: parseFloat(e.target.value) })}
+              className="slider"
+            />
+            <button className="delete-button" onClick={onImageDelete} title="Delete">
+              <FaTrash />
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
-}
+});
 
-export default GradientDrawer;
+export default ImageDrawer;
