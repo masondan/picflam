@@ -1,14 +1,36 @@
 @import url('./Drawer.css');
 
+.drawer-content.about-drawer {
+  height: 60px;
+  max-height: 60px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow: none;
+  border-top: none;
+  background-color: #555555;
+  color: #ccc;
+}
+
 .about-drawer .drawer-body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  position: relative;
+  height: 100%;
+  padding: 0 1rem;
 }
 
 .about-text {
-  font-size: 1.1rem;
-  color: #555;
-  text-align: center;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.about-drawer .drawer-confirm-button {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
 }

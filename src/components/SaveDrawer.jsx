@@ -39,7 +39,7 @@ function SaveDrawer({
                     </div>
                   ) : (
                     <button className="save-slot-button" onClick={() => onSave(index)}>
-                      Save to Slot {index + 1}
+                      +
                     </button>
                   )}
                 </div>

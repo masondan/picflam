@@ -46,11 +46,13 @@
   width: 100px;
   height: 100px;
   border-radius: 8px;
-  background-color: #444;
+  background-color: #777777;
   border: 2px dashed #666;
   color: #ccc;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 48px;
+  font-weight: 200;
+  line-height: 1;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -81,7 +83,7 @@
   right: -8px;
   background: #e0e0e0;
   border: none;
-  color: #c00;
+  color: #555555;
   border-radius: 50%;
   width: 24px;
   height: 24px;

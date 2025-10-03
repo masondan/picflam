@@ -227,48 +227,28 @@ function App() {
     }
   };
 
-  // --- Project Save/Load Logic ---
-  const [savedProjects, setSavedProjects] = useState([null, null, null]);
-
-  useEffect(() => {
-    try {
-      const storedProjects = localStorage.getItem('picflam_projects');
-      if (storedProjects) {
-        setSavedProjects(JSON.parse(storedProjects));
-      }
-    } catch (e) {
-      console.error("Failed to load projects from localStorage", e);
-    }
-  }, []);
-
-  const handleSaveProject = (slotIndex) => {
+  const handleDownload = async () => {
     const activeCanvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
     if (!activeCanvas) {
-      alert("Cannot save, active canvas not found.");
+      alert('Could not find the canvas to download.');
       return;
     }
-    const thumbnail = activeCanvas.toDataURL('image/jpeg', 0.5);
-    const projectData = { slides, thumbnail };
 
-    const newSavedProjects = [...savedProjects];
-    newSavedProjects[slotIndex] = projectData;
-    setSavedProjects(newSavedProjects);
-    localStorage.setItem('picflam_projects', JSON.stringify(newSavedProjects));
-    alert(`Project saved to slot ${slotIndex + 1}.`);
-  };
+    try {
+      // Force a re-draw at high resolution and wait for it to complete
+      await drawSlide(activeCanvas, activeSlide);
 
-  const handleLoadProject = (slotIndex) => {
-    const projectToLoad = savedProjects[slotIndex];
-    if (projectToLoad && window.confirm('Load this project? Any unsaved changes will be lost.')) {
-      // We need to re-create image objects from data URLs
-      // This is a simplified version. A full implementation would handle this.
-      setSlides(projectToLoad.slides);
-      setActiveSlideIndex(0);
-      alert(`Project loaded from slot ${slotIndex + 1}.`);
+      // Now that the promise is resolved, the canvas should be ready.
+      const link = document.createElement('a');
+      link.download = 'picflam-export.png';
+      link.href = activeCanvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error("Failed to draw slide for download:", error);
+      alert("An error occurred while preparing the download. Please check the console for details.");
     }
   };
 
-  // --- Project Save/Load Logic ---
   const [savedProjects, setSavedProjects] = useState([null, null, null]);
 
   useEffect(() => {
@@ -402,8 +382,8 @@ function App() {
     }
   };
 
-  const drawSlide = (canvas, slideData) => {
-    if (!canvas) return;
+  const drawSlide = (canvas, slideData) => new Promise((resolve, reject) => {
+    if (!canvas) return reject(new Error('Canvas not found'));
     const ctx = canvas.getContext('2d');
     const { canvasSize, background, imageLayer, logoImage } = slideData;
     const baseResolution = 2048;
@@ -434,33 +414,47 @@ function App() {
       ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    const drawImageOnCanvas = (layer) => {
-      if (!layer || !layer.img) return;
+    const drawImageOnCanvas = (layer) => new Promise((resolveDraw) => {
+      if (!layer || !layer.img) return resolveDraw();
       const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer;
-      const draw = () => {
-        ctx.globalAlpha = opacity;
-        const displayedCanvasWidth = canvas.offsetWidth; const displayedCanvasHeight = canvas.offsetHeight;
-        if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) return;
-        const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-        const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
-        let renderWidth, renderHeight;
-        if (fitMode === 'fill') {
-          if (imgAspectRatio > canvasAspectRatio) { renderHeight = displayedCanvasHeight; renderWidth = renderHeight * imgAspectRatio; }
-          else { renderWidth = displayedCanvasWidth; renderHeight = renderWidth / imgAspectRatio; }
-        } else {
-          if (imgAspectRatio > canvasAspectRatio) { renderWidth = displayedCanvasWidth; renderHeight = renderWidth / imgAspectRatio; }
-          else { renderHeight = displayedCanvasHeight; renderWidth = renderHeight * imgAspectRatio; }
+
+      const doDrawing = () => {
+        try {
+          ctx.globalAlpha = opacity;
+          const displayedCanvasWidth = canvas.offsetWidth;
+          const displayedCanvasHeight = canvas.offsetHeight;
+          if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) return resolveDraw();
+          const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+          const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
+          let renderWidth, renderHeight;
+          if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
+            renderHeight = displayedCanvasHeight; renderWidth = renderHeight * imgAspectRatio;
+          } else {
+            renderWidth = displayedCanvasWidth; renderHeight = renderWidth / imgAspectRatio;
+          }
+          renderWidth *= scale; renderHeight *= scale;
+          const scaleToHighRes = displayedCanvasWidth > 0 ? canvas.width / displayedCanvasWidth : 0;
+          const renderWidthHighRes = renderWidth * scaleToHighRes; const renderHeightHighRes = renderHeight * scaleToHighRes;
+          const xHighRes = x * scaleToHighRes; const yHighRes = y * scaleToHighRes;
+          ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
+          ctx.globalAlpha = 1.0;
+          resolveDraw();
+        } catch (e) {
+          console.error("Error drawing image:", e);
+          resolveDraw(); // Resolve anyway to not block the process
         }
-        renderWidth *= scale; renderHeight *= scale;
-        const scaleToHighRes = displayedCanvasWidth > 0 ? canvas.width / displayedCanvasWidth : 0;
-        const renderWidthHighRes = renderWidth * scaleToHighRes; const renderHeightHighRes = renderHeight * scaleToHighRes;
-        const xHighRes = x * scaleToHighRes; const yHighRes = y * scaleToHighRes;
-        ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
-        ctx.globalAlpha = 1.0;
       };
-      if (img.complete) { draw(); } else { img.onload = draw; }
-    };
-    drawImageOnCanvas(imageLayer);
+
+      if (img.complete && img.naturalWidth) {
+        doDrawing();
+      } else {
+        img.onload = doDrawing;
+        img.onerror = () => {
+          console.error(`Failed to load image for drawing: ${img.src.slice(0, 100)}...`);
+          resolveDraw(); // Resolve anyway
+        };
+      }
+    });
 
     const drawText = (text, size, yPos, font, color, isBold, isItalic, align, lineSpacing, hasShadow, hasOutline, quoteStyle, quoteSize, hasLabel, labelColor, labelTransparency) => {
       const baseFontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
@@ -536,10 +530,19 @@ function App() {
       }
     };
     const { text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, text2LabelColor, text2LabelTransparency } = slideData;
-    if (text1) { drawText(text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, false, 'transparent', 0); }
-    if (text2) { drawText(text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, false, false, 'none', 5, text2LabelColor !== 'transparent', text2LabelColor, text2LabelTransparency); }
-    drawImageOnCanvas(logoImage);
-  };
+
+    // Chain the drawing promises
+    drawImageOnCanvas(imageLayer)
+      .then(() => {
+        if (text1) { drawText(text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, false, 'transparent', 0); }
+        if (text2) { drawText(text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, false, false, 'none', 5, text2LabelColor !== 'transparent', text2LabelColor, text2LabelTransparency); }
+        return drawImageOnCanvas(logoImage);
+      })
+      .then(() => {
+        resolve(); // All drawing is complete
+      })
+      .catch(reject); // Catch any error from the drawing chain
+  });
 
   return (
     <div className="app-container">
@@ -568,7 +571,7 @@ function App() {
         <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
         <button className="footer-button" onClick={() => setIsTextMenuDrawerOpen(true)}><FiType /></button>
         <button className="footer-button" onClick={() => setIsSaveDrawerOpen(true)}><FiBookmark /></button>
-        <button className="footer-button" onClick={() => alert('Download not implemented yet')}><FiDownload /></button>
+        <button className="footer-button" onClick={handleDownload}><FiDownload /></button>
         <button className="footer-button" onClick={handleReset}><FiRotateCcw /></button>
         <button className="footer-button" onClick={() => setIsAboutDrawerOpen(true)}><FiInfo /></button>
       </div>
