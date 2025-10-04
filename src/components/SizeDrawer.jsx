@@ -1,44 +1,37 @@
-import './SizeDrawer.css';
-import { FaCheck } from 'react-icons/fa';
+import { FiCheck } from 'react-icons/fi';
 import { LuRectangleVertical, LuSquare, LuRectangleHorizontal } from 'react-icons/lu';
+import './SizeDrawer.css';
 
-const SIZE_OPTIONS = [
-  {
-    aspectRatio: '9/16',
-    icon: <LuRectangleVertical />,
-  },
-  {
-    aspectRatio: '1/1',
-    icon: <LuSquare />,
-  },
-  {
-    aspectRatio: '16/9',
-    icon: <LuRectangleHorizontal />,
-  },
-];
+function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) {
+  const sizes = [
+    { id: '9/16', icon: <LuRectangleVertical />, label: 'Portrait' },
+    { id: '1/1', icon: <LuSquare />, label: 'Square' },
+    { id: '16/9', icon: <LuRectangleHorizontal />, label: 'Landscape' },
+  ];
 
-function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) { // Renamed from sizedrawer
   return (
     <div className="drawer-overlay" onClick={() => onClose(false)}>
       <div className="drawer-content size-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-body">
-          {SIZE_OPTIONS.map((option) => (
-            <div
-              key={option.aspectRatio}
-              className={`size-option-button ${currentSize === option.aspectRatio ? 'active' : ''}`}
-              onClick={() => onCanvasSizeChange(option.aspectRatio)}
-            >
-              <div className="size-option-icon-wrapper">
-                {option.icon}
-              </div>
-            </div>
-          ))}
-          <div className="drawer-button-divider" />
-          <button className="drawer-confirm-button" onClick={() => onClose(true)}><FaCheck /></button>
+          <div className="size-options-wrapper">
+            {sizes.map((size) => (
+              <button
+                key={size.id}
+                className={`size-option-button ${currentSize === size.id ? 'active' : ''}`}
+                onClick={() => onCanvasSizeChange(size.id)}
+                title={size.label}
+              >
+                <div className="size-option-icon-wrapper">{size.icon}</div>
+              </button>
+            ))}
+          </div>
+          <button className="drawer-confirm-button" onClick={() => onClose(true)}>
+            <FiCheck />
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-export default SizeDrawer; // Correctly export the component
+export default SizeDrawer;

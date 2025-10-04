@@ -2,8 +2,8 @@
 
 .drawer-content.text-menu-drawer {
   /* Match footer height and remove rounded corners */
-  height: 60px;
-  max-height: 60px;
+  height: 70px;
+  max-height: 70px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   box-shadow: none; /* Remove shadow to align perfectly with footer */
