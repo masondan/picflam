@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TiTick } from 'react-icons/ti';
-import { FiPlus, FiArrowUp, FiArrowDown, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { FiPlus, FiArrowUp, FiArrowDown, FiArrowLeft, FiArrowRight, FiCheck } from 'react-icons/fi';
 import './ColorDrawer.css';
 
 const SOLID_COLORS = ['#FFFFFF', '#000000', '#007c1f', '#00679d', '#b20715'];
@@ -78,8 +77,8 @@ function ColorDrawer({ onClose, onBackgroundChange, currentBackground }) {
       <div className="drawer-content color-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
           <div className="drawer-header-button" /> {/* Spacer */}
-          <span className="drawer-title">Colour</span>
-          <button className="drawer-header-button" onClick={onClose}><TiTick /></button>
+          <span className="drawer-title">Background</span>
+          <button className="drawer-header-button" onClick={onClose}><FiCheck /></button>
         </div>
         <div className="drawer-body">
           <div className="color-controls-wrapper">

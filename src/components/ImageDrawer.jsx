@@ -1,8 +1,8 @@
 import { forwardRef } from 'react';
 import './ImageDrawer.css';
-import { FaCheck, FaTrash } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import { RiFullscreenFill, RiFullscreenExitLine } from 'react-icons/ri';
-import { FiChevronDown } from 'react-icons/fi';
+import { FiChevronDown, FiCheck } from 'react-icons/fi';
 import { MdOutlineZoomOutMap } from 'react-icons/md';
 
 const ImageDrawer = forwardRef(function ImageDrawer({
@@ -22,7 +22,7 @@ const ImageDrawer = forwardRef(function ImageDrawer({
           <div className="image-editor-tabs">
             <button className="style-icon-button active"><MdOutlineZoomOutMap /></button>
           </div>
-          <button className="drawer-header-button" onClick={onClose}><FaCheck /></button>
+          <button className="drawer-header-button" onClick={onClose}><FiCheck /></button>
         </div>
         <div className="image-drawer-body">
           <div className="control-row">

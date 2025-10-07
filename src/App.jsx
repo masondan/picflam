@@ -170,7 +170,7 @@ function App() {
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
-      setIsBackgroundDrawerOpen(false);
+      // Keep the background drawer open in the background
     }
   };
 
@@ -184,7 +184,7 @@ function App() {
       setEditingLayer('imageLayer');
     };
     img.src = imageUrl;
-    setIsSearchDrawerOpen(false);
+    setIsSearchDrawerOpen(false); // Close search, return to background drawer
   };
 
   const handleText1InputDrawerOpen = () => {
@@ -582,15 +582,27 @@ function App() {
       {isBackgroundDrawerOpen && (
         <BackgroundDrawer
           onClose={() => setIsBackgroundDrawerOpen(false)}
-          onColorClick={() => { setIsBackgroundDrawerOpen(false); setIsColorDrawerOpen(true); }}
+          onColorClick={() => setIsColorDrawerOpen(true)}
           onImageUpload={handleImageUploadClick}
-          onSearchClick={() => { setIsBackgroundDrawerOpen(false); setIsSearchDrawerOpen(true); }}
+          onSearchClick={() => setIsSearchDrawerOpen(true)}
           onLogoClick={handleLogoUploadClick}
           currentBackground={activeSlide.background}
         />
       )}
 
-      {editingLayer && activeSlide[editingLayer] && (
+      {isColorDrawerOpen && (
+        <ColorDrawer
+          onClose={() => setIsColorDrawerOpen(false)} // This will now reveal the BackgroundDrawer
+          onBackgroundChange={(bg) => updateActiveSlide({ background: bg })}
+          currentBackground={activeSlide.background}
+        />
+      )}
+
+      {isSearchDrawerOpen && (
+        <SearchDrawer onClose={() => setIsSearchDrawerOpen(false)} onImageSelect={handleRemoteImageSelect} />
+      )}
+
+      {isBackgroundDrawerOpen && editingLayer && activeSlide[editingLayer] && (
         <ImageDrawer
           ref={imageDrawerRef}
           onClose={() => setEditingLayer(null)}
@@ -598,14 +610,6 @@ function App() {
           isLogo={editingLayer === 'logoImage'}
           onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } })}
           onImageDelete={() => { updateActiveSlide({ [editingLayer]: null }); setEditingLayer(null); }} />
-      )}
-
-      {isColorDrawerOpen && (
-        <ColorDrawer onClose={() => setIsColorDrawerOpen(false)} onBackgroundChange={(bg) => updateActiveSlide({ background: bg })} currentBackground={activeSlide.background} />
-      )}
-
-      {isTextMenuDrawerOpen && (
-        <TextMenuDrawer onClose={() => setIsTextMenuDrawerOpen(false)} onText1Click={handleText1InputDrawerOpen} onText2Click={handleText2InputDrawerOpen} />
       )}
 
       {isText1InputDrawerOpen && (
@@ -649,8 +653,8 @@ function App() {
         />
       )}
 
-      {isSearchDrawerOpen && (
-        <SearchDrawer onClose={() => setIsSearchDrawerOpen(false)} onImageSelect={handleRemoteImageSelect} />
+      {isTextMenuDrawerOpen && (
+        <TextMenuDrawer onClose={() => setIsTextMenuDrawerOpen(false)} onText1Click={handleText1InputDrawerOpen} onText2Click={handleText2InputDrawerOpen} />
       )}
 
       {isSizeDrawerOpen && (
