@@ -114,6 +114,7 @@
   top: -3px; /* Nudge it up just a little more */
   left: 0;
   margin: 0;
+  width: 100%;
 }
 
 .slider::-webkit-slider-thumb {
