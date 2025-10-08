@@ -19,8 +19,10 @@ import {
   FiBookmark,
   FiDownload,
   FiRotateCcw,
-  FiInfo
+  FiInfo,
+  FiCheck
 } from 'react-icons/fi';
+import { FaTrash } from 'react-icons/fa';
 import BackgroundDrawer from './components/BackgroundDrawer';
 import ColorDrawer from './components/ColorDrawer';
 import SearchDrawer from './components/SearchDrawer';
@@ -117,20 +119,6 @@ function App() {
     }
   }, [activeSlideIndex]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!editingLayer) return;
-      const activeCanvasWrapper = slideRefs.current[activeSlideIndex]?.getCanvasWrapperRef()?.current;
-      const imageDrawer = imageDrawerRef.current;
-      if (activeCanvasWrapper?.contains(event.target) || imageDrawer?.contains(event.target)) {
-        return;
-      }
-      setEditingLayer(null);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [editingLayer, activeSlideIndex]);
-
   const sensors = useSensors(useSensor(PointerSensor));
 
   const handleSizeDrawerOpen = () => {
@@ -170,7 +158,7 @@ function App() {
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
-      // Keep the background drawer open in the background
+      setIsBackgroundDrawerOpen(false);
     }
   };
 
@@ -184,7 +172,8 @@ function App() {
       setEditingLayer('imageLayer');
     };
     img.src = imageUrl;
-    setIsSearchDrawerOpen(false); // Close search, return to background drawer
+    setIsSearchDrawerOpen(false);
+    setIsBackgroundDrawerOpen(false);
   };
 
   const handleText1InputDrawerOpen = () => {
@@ -306,9 +295,13 @@ function App() {
 
   const handleCanvasClick = (index, event) => {
     setActiveSlideIndex(index);
+
     const slide = slides[index];
     const canvasWrapper = slideRefs.current[index]?.getCanvasWrapperRef()?.current;
-    if (!canvasWrapper) { setEditingLayer(null); return; }
+    if (!canvasWrapper) {
+      setEditingLayer(null);
+      return;
+    }
     const rect = canvasWrapper.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
@@ -322,28 +315,41 @@ function App() {
       const canvasAspectRatio = canvasWidth / canvasHeight;
       let renderWidth, renderHeight;
       if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
-        renderHeight = canvasHeight; renderWidth = renderHeight * imgAspectRatio;
+        renderHeight = canvasHeight;
+        renderWidth = renderHeight * imgAspectRatio;
       } else {
-        renderWidth = canvasWidth; renderHeight = renderWidth / imgAspectRatio;
+        renderWidth = canvasWidth;
+        renderHeight = renderWidth / imgAspectRatio;
       }
-      renderWidth *= scale; renderHeight *= scale;
-      return { left: (canvasWidth - renderWidth) / 2 + x, top: (canvasHeight - renderHeight) / 2 + y, width: renderWidth, height: renderHeight };
+      renderWidth *= scale;
+      renderHeight *= scale;
+      return {
+        left: (canvasWidth - renderWidth) / 2 + x,
+        top: (canvasHeight - renderHeight) / 2 + y,
+        width: renderWidth,
+        height: renderHeight
+      };
     };
 
     if (slide.logoImage) {
       const box = getControlBox(canvasWrapper, slide.logoImage);
       if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
-        setEditingLayer('logoImage'); return;
+        // If the click is on the logo, ensure it's the active layer and do nothing else.
+        if (editingLayer !== 'logoImage') setEditingLayer('logoImage');
+        return;
       }
     }
     if (slide.imageLayer) {
       const box = getControlBox(canvasWrapper, slide.imageLayer);
       if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
-        setEditingLayer('imageLayer'); return;
+        // If the click is on the main image, ensure it's the active layer and do nothing else.
+        if (editingLayer !== 'imageLayer') setEditingLayer('imageLayer');
+        return;
       }
     }
-    setEditingLayer(null);
+
   };
+
 
   const handleAddSlide = (index) => {
     const newSlide = createDefaultSlide();
@@ -483,7 +489,7 @@ function App() {
       if (quoteStyle !== 'none') {
         const quoteSizeVal = baseFontSize * 4 * (quoteSize / 5); let quoteFont = ''; // Doubled the multiplier from 2 to 4
         if (quoteStyle === 'serif') { quoteFont = `${quoteSizeVal}px "Saira Stencil One", sans-serif`; }
-        else if (quoteStyle === 'slab') { quoteFont = `${quoteSizeVal}px "Ultra", serif`; }
+        else if (quoteStyle === 'slab') { quoteFont = `bold ${quoteSizeVal}px "Ultra", serif`; }
         else if (quoteStyle === 'fancy') { quoteFont = `bold ${quoteSizeVal}px "Playfair Display SC", serif`; }
         ctx.font = quoteFont;
         ctx.fillStyle = color;
@@ -556,10 +562,8 @@ function App() {
                 onAdd={() => handleAddSlide(index)} onDuplicate={() => handleDuplicateSlide(index)}
                 onDelete={() => handleDeleteSlide(index)} drawSlide={drawSlide}
                 editingLayer={index === activeSlideIndex ? editingLayer : null}
-                onImageUpdate={(updates) => updateActiveSlide({ imageLayer: { ...activeSlide.imageLayer, ...updates } })}
-                onImageDelete={() => { updateActiveSlide({ imageLayer: null }); setEditingLayer(null); }}
-                onLogoUpdate={(updates) => updateActiveSlide({ logoImage: { ...activeSlide.logoImage, ...updates } })}
-                onLogoDelete={() => { updateActiveSlide({ logoImage: null }); setEditingLayer(null); }}
+                onLayerUpdate={(layer, updates) => updateActiveSlide({ [layer]: { ...activeSlide[layer], ...updates } })}
+                onLayerDelete={(layer) => { updateActiveSlide({ [layer]: null }); setEditingLayer(null); }}
               />
             ))}
           </SortableContext>
@@ -602,14 +606,13 @@ function App() {
         <SearchDrawer onClose={() => setIsSearchDrawerOpen(false)} onImageSelect={handleRemoteImageSelect} />
       )}
 
-      {isBackgroundDrawerOpen && editingLayer && activeSlide[editingLayer] && (
+      {editingLayer && activeSlide[editingLayer] && (
         <ImageDrawer
           ref={imageDrawerRef}
           onClose={() => setEditingLayer(null)}
           imageLayer={activeSlide[editingLayer]}
           isLogo={editingLayer === 'logoImage'}
-          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } })}
-          onImageDelete={() => { updateActiveSlide({ [editingLayer]: null }); setEditingLayer(null); }} />
+          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } })} />
       )}
 
       {isText1InputDrawerOpen && (

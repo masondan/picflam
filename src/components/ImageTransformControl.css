@@ -1,78 +1,24 @@
-.image-transform-control {
+.image-transform-controls {
   position: absolute;
-  border: 2px solid #888;
+  pointer-events: all; /* Make the entire control area interactive */
+  border: 2px solid #e0e0e0;
   box-sizing: border-box;
-  cursor: move;
-  touch-action: none; /* Important for pointer events */
 }
 
-.delete-image-button {
+.image-delete-button {
   position: absolute;
-  top: -12px;
-  left: -12px;
-  width: 24px;
-  height: 24px;
-  background-color: #555;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
   border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 1; /* Ensure icon is centered */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.resize-handle {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background-color: white;
-  border: 2px solid #888;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.resize-handle.top-left {
-  top: -6px;
-  left: -6px;
-  cursor: nwse-resize;
-}
-
-.resize-handle.top-right {
-  top: -6px;
-  right: -6px;
-  cursor: nesw-resize;
-}
-
-.resize-handle.bottom-left {
-  bottom: -6px;
-  left: -6px;
-  cursor: nesw-resize;
-}
-
-.resize-handle.bottom-right {
-  bottom: -6px;
-  right: -6px;
-  cursor: nwse-resize;
-}
-
-.guide {
-  position: absolute;
-  background-color: rgba(255, 0, 0, 0.7);
-  z-index: 1; /* Above the image, but behind handles (which will be z-index: 2) */
-}
-
-.vertical-guide {
-  top: -10px;
-  bottom: -10px;
-  width: 1px;
-}
-
-.horizontal-guide {
-  left: -10px;
-  right: -10px;
-  height: 1px;
+  padding: 0;
 }

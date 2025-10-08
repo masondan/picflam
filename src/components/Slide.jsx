@@ -19,10 +19,8 @@ const Slide = forwardRef(function Slide({
   onRedo,
   drawSlide,
   editingLayer, // 'imageLayer', 'logoImage', or null
-  onImageUpdate,
-  onImageDelete,
-  onLogoUpdate,
-  onLogoDelete,
+  onLayerUpdate,
+  onLayerDelete,
 }, ref) {
   const {
     attributes,
@@ -54,6 +52,28 @@ const Slide = forwardRef(function Slide({
     getCanvasRef: () => canvasRef,
   }));
 
+  const getControlBox = (imageLayer) => {
+    const canvas = canvasWrapperRef.current;
+    if (!imageLayer || !imageLayer.img || !canvas) return null;
+
+    const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight;
+    const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+    const canvasAspectRatio = canvasWidth / canvasHeight;
+
+    let renderWidth, renderHeight;
+    if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
+      renderHeight = canvasHeight;
+      renderWidth = renderHeight * imgAspectRatio;
+    } else {
+      renderWidth = canvasWidth;
+      renderHeight = renderWidth / imgAspectRatio;
+    }
+    renderWidth *= scale; renderHeight *= scale;
+    return { left: (canvasWidth - renderWidth) / 2 + x, top: (canvasHeight - renderHeight) / 2 + y, width: renderWidth, height: renderHeight };
+  };
+
   return (
     <div ref={setNodeRef} style={style} className="slide-wrapper" {...attributes}>
       <div className={`slide-actions-top ${isActive ? 'visible' : ''}`} onClick={(e) => e.stopPropagation()}>
@@ -72,18 +92,18 @@ const Slide = forwardRef(function Slide({
         <canvas ref={canvasRef} className="picflam-canvas" />
         {editingLayer === 'imageLayer' && slide.imageLayer && (
           <ImageTransformControl
-            canvasRef={canvasRef}
-            imageLayer={slide.imageLayer}
-            onUpdate={onImageUpdate}
-            onDelete={onImageDelete}
+            layer={slide.imageLayer}
+            bounds={getControlBox(slide.imageLayer)}
+            onUpdate={(updates) => onLayerUpdate('imageLayer', updates)}
+            onDelete={() => onLayerDelete('imageLayer')}
           />
         )}
         {editingLayer === 'logoImage' && slide.logoImage && (
           <ImageTransformControl
-            canvasRef={canvasRef}
-            imageLayer={slide.logoImage}
-            onUpdate={onLogoUpdate}
-            onDelete={onLogoDelete}
+            layer={slide.logoImage}
+            bounds={getControlBox(slide.logoImage)}
+            onUpdate={(updates) => onLayerUpdate('logoImage', updates)}
+            onDelete={() => onLayerDelete('logoImage')}
           />
         )}
       </div>
