@@ -1,10 +1,10 @@
-import { forwardRef, useRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useRef, useEffect, useImperativeHandle, useLayoutEffect, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FiPlus, FiCopy, FiTrash2 } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa';
-import { LuUndo2, LuRedo2 } from 'react-icons/lu';
 import { RxDragHandleDots2 } from 'react-icons/rx';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ImageTransformControl from './ImageTransformControl';
 import './Slide.css';
 
@@ -22,6 +22,10 @@ const Slide = forwardRef(function Slide({
   editingLayer, // 'imageLayer', 'logoImage', or null
   onLayerUpdate,
   onLayerDelete,
+  hasPrev,
+  hasNext,
+  onPrev,
+  onNext,
 }, ref) {
   const {
     attributes,
@@ -33,6 +37,24 @@ const Slide = forwardRef(function Slide({
 
   const canvasRef = useRef(null);
   const canvasWrapperRef = useRef(null);
+  const slideWrapperRef = useRef(null);
+
+  // Re-measure canvas on layout changes to avoid initial overlay offset
+  const [canvasMeasureTick, setCanvasMeasureTick] = useState(0);
+  useLayoutEffect(() => {
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
+
+    const handleWindowResize = () => setCanvasMeasureTick((t) => t + 1);
+    const ro = new ResizeObserver(() => setCanvasMeasureTick((t) => t + 1));
+    ro.observe(canvasEl);
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, []);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -47,48 +69,96 @@ const Slide = forwardRef(function Slide({
 
   useImperativeHandle(ref, () => ({
     scrollIntoView: (opts) => {
-      canvasRef.current?.parentElement.scrollIntoView(opts);
+      slideWrapperRef.current?.scrollIntoView(opts);
     },
     getCanvasWrapperRef: () => canvasWrapperRef,
     getCanvasRef: () => canvasRef,
+    getSlideWrapperRef: () => slideWrapperRef,
   }));
 
+  // After image layers change, schedule a re-measure on the next frame
+  useLayoutEffect(() => {
+    const raf = requestAnimationFrame(() => setCanvasMeasureTick((t) => t + 1));
+    return () => cancelAnimationFrame(raf);
+  }, [slide.imageLayer, slide.logoImage, slide.canvasSize]);
+
   const getControlBox = (imageLayer) => {
-    const canvas = canvasWrapperRef.current;
-    if (!imageLayer || !imageLayer.img || !canvas) return null;
+    const wrapper = canvasWrapperRef.current;
+    const canvasEl = canvasRef.current;
+    if (!imageLayer || !imageLayer.img || !wrapper || !canvasEl) return null;
 
     const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
-    const canvasWidth = canvas.offsetWidth;
-    const canvasHeight = canvas.offsetHeight;
+
+    // Use the actual CSS size and on-screen position of the canvas to compute the overlay
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const canvasCssWidth = canvasRect.width;
+    const canvasCssHeight = canvasRect.height;
+
     const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-    const canvasAspectRatio = canvasWidth / canvasHeight;
+    const canvasAspectRatio = canvasCssWidth / canvasCssHeight;
 
     let renderWidth, renderHeight;
     if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
-      renderHeight = canvasHeight;
+      renderHeight = canvasCssHeight;
       renderWidth = renderHeight * imgAspectRatio;
     } else {
-      renderWidth = canvasWidth;
+      renderWidth = canvasCssWidth;
       renderHeight = renderWidth / imgAspectRatio;
     }
-    renderWidth *= scale; renderHeight *= scale;
-    return { left: (canvasWidth - renderWidth) / 2 + x, top: (canvasHeight - renderHeight) / 2 + y, width: renderWidth, height: renderHeight };
+
+    renderWidth *= scale;
+    renderHeight *= scale;
+
+    // Position within the canvas (centered image area) plus user translation x/y
+    const leftWithinCanvas = (canvasCssWidth - renderWidth) / 2 + x;
+    const topWithinCanvas = (canvasCssHeight - renderHeight) / 2 + y;
+
+    // Convert to wrapper-relative coordinates for absolutely positioned overlay
+    const left = (canvasRect.left - wrapperRect.left) + leftWithinCanvas;
+    const top = (canvasRect.top - wrapperRect.top) + topWithinCanvas;
+
+    return {
+      left: Math.round(left),
+      top: Math.round(top),
+      width: Math.round(renderWidth),
+      height: Math.round(renderHeight)
+    };
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="slide-wrapper" {...attributes}>
-      <div className={`slide-actions-top ${isActive ? 'visible' : ''}`} onClick={(e) => e.stopPropagation()}>
+    <div ref={(el) => { setNodeRef(el); slideWrapperRef.current = el; }} style={style} className="slide-wrapper" {...attributes}>
+      <div
+        className={`slide-actions-top visible`}
+        onClick={(e) => e.stopPropagation()}
+        style={{ opacity: isActive ? 1 : 0.8 }}
+      >
+        <button
+          className="nav-chevron left"
+          onClick={onPrev}
+          style={{ visibility: hasPrev ? 'visible' : 'hidden' }}
+          title="Previous Slide"
+        >
+          <FiChevronLeft />
+        </button>
         <button onClick={onDelete} title="Delete Slide"><FiTrash2 /></button>
-        <button onClick={onUndo} title="Undo"><LuUndo2 /></button>
-        <button onClick={onRedo} title="Redo"><LuRedo2 /></button>
         <button onClick={onAdd} title="Add Slide"><FiPlus /></button>
         <button onClick={onDuplicate} title="Duplicate Slide"><FiCopy /></button>
         <button {...listeners} title="Drag to Reorder" className="drag-handle"><RxDragHandleDots2 /></button>
+        <button
+          className="nav-chevron right"
+          onClick={onNext}
+          style={{ visibility: hasNext ? 'visible' : 'hidden' }}
+          title="Next Slide"
+        >
+          <FiChevronRight />
+        </button>
       </div>
       <div
         className={`canvas-wrapper ${isActive ? 'active' : ''}`}
         ref={canvasWrapperRef}
         onClick={onClick}
+        data-canvas-measure={canvasMeasureTick}
       >
         <canvas ref={canvasRef} className="picflam-canvas" />
         {editingLayer && (

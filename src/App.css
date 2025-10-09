@@ -20,7 +20,7 @@
   overflow-y: hidden;
   min-height: 0; /* A flexbox-specific fix to allow shrinking */
   box-sizing: border-box;
-  gap: 2rem; /* More space for horizontal layout */
+  gap: 0; /* No gap so neighboring slides do not peek */
 
   /* Snap scrolling to center slides */
   scroll-snap-type: x mandatory;

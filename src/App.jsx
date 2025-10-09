@@ -92,6 +92,7 @@ function App() {
   const activeSlide = slides[activeSlideIndex];
 
   const slideRefs = useRef([]);
+  const isNavScrolling = useRef(false);
 
   const updateActiveSlide = (updates) => {
     setSlides(currentSlides =>
@@ -111,15 +112,24 @@ function App() {
   useEffect(() => {
     const activeSlideRef = slideRefs.current[activeSlideIndex];
     if (activeSlideRef) {
-      activeSlideRef.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest'
+      isNavScrolling.current = true;
+      requestAnimationFrame(() => {
+        activeSlideRef.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+          block: 'nearest'
+        });
       });
     }
   }, [activeSlideIndex]);
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10, // small movement required to start a drag; allows casual swipe to scroll
+      },
+    })
+  );
 
   const handleSizeDrawerOpen = () => {
     setOriginalSlideState(activeSlide);
@@ -176,18 +186,31 @@ function App() {
     setIsBackgroundDrawerOpen(false);
   };
 
-  const handleText1InputDrawerOpen = () => {
+  const handleText1InputDrawerOpen = (minimized = false) => {
     setActiveTextElement('text1');
     setOriginalSlideState(activeSlide);
     setIsTextMenuDrawerOpen(false);
     setIsText1InputDrawerOpen(true);
+    if (minimized) {
+      // Defer to next tick so the drawer is in the DOM before toggling minimize
+      setTimeout(() => {
+        const toggleBtn = document.querySelector('.text-editor-drawer .drawer-header-button');
+        if (toggleBtn) toggleBtn.click();
+      }, 0);
+    }
   };
 
-  const handleText2InputDrawerOpen = () => {
+  const handleText2InputDrawerOpen = (minimized = false) => {
     setActiveTextElement('text2');
     setOriginalSlideState(activeSlide);
     setIsTextMenuDrawerOpen(false);
     setIsText1InputDrawerOpen(true);
+    if (minimized) {
+      setTimeout(() => {
+        const toggleBtn = document.querySelector('.text-editor-drawer .drawer-header-button');
+        if (toggleBtn) toggleBtn.click();
+      }, 0);
+    }
   };
 
   const handleTextEditorClose = (confirm) => {
@@ -287,9 +310,8 @@ function App() {
   };
 
   const handleImageDrawerClose = () => {
-    if (editingLayer === 'imageLayer') {
-      setIsBackgroundDrawerOpen(true);
-    }
+    // Always return to the background/image import drawer on confirm
+    setIsBackgroundDrawerOpen(true);
     setEditingLayer(null);
   };
 
@@ -298,6 +320,134 @@ function App() {
       setSlides([createDefaultSlide()]);
       setActiveSlideIndex(0);
     }
+  };
+
+  // Compute the CSS-pixel bounding box of a text block relative to the canvas, then convert to wrapper-relative coords
+  const computeTextBounds = (canvasEl, wrapperEl, slideData, which) => {
+    if (!canvasEl || !wrapperEl) return null;
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const wrapperRect = wrapperEl.getBoundingClientRect();
+    const canvasCssWidth = canvasRect.width;
+    const canvasCssHeight = canvasRect.height;
+
+    const isText1 = which === 'text1';
+    const text = isText1 ? slideData.text1 : slideData.text2;
+    if (!text) return null;
+
+    const size = isText1 ? slideData.text1Size : slideData.text2Size;
+    const yPos = isText1 ? slideData.text1YPosition : slideData.text2YPosition;
+    const font = isText1 ? slideData.text1Font : slideData.text2Font;
+    const isBold = isText1 ? slideData.text1IsBold : slideData.text2IsBold;
+    const isItalic = isText1 ? slideData.text1IsItalic : slideData.text2IsItalic;
+    const align = isText1 ? slideData.text1Align : slideData.text2Align;
+    const lineSpacing = isText1 ? slideData.text1LineSpacing : slideData.text2LineSpacing;
+
+    // CSS pixel font metrics parallel to drawText
+    const baseFontSize = Math.min(canvasCssWidth, canvasCssHeight) * 0.1;
+    const fontSize = baseFontSize * (size / 5);
+    const finalLineSpacing = 0.8 + (lineSpacing / 10) * (1.4 - 0.8);
+    const lineHeight = fontSize * finalLineSpacing;
+    const maxWidth = canvasCssWidth * 0.8;
+    const yPosition = canvasCssHeight * (yPos / 10);
+
+    // Measure wrapped lines using the same algorithm
+    const ctx = canvasEl.getContext('2d');
+    ctx.save();
+    const fontWeight = isBold ? 'bold' : 'normal';
+    const fontStyle = isItalic ? 'italic' : 'normal';
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${font}", sans-serif`;
+    ctx.textBaseline = 'middle';
+    const paragraphs = text.split('\n');
+    const lines = [];
+    let widestLine = 0;
+
+    for (const paragraph of paragraphs) {
+      const words = paragraph.split(' ');
+      let line = '';
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const testWidth = ctx.measureText(testLine).width;
+        if (testWidth > maxWidth && n > 0) {
+          lines.push(line);
+          const widthLine = ctx.measureText(line).width;
+          if (widthLine > widestLine) widestLine = widthLine;
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+      const widthLine = ctx.measureText(line).width;
+      if (widthLine > widestLine) widestLine = widthLine;
+    }
+    ctx.restore();
+
+    const totalTextHeight = lines.length * lineHeight;
+    const textTop = yPosition - (totalTextHeight / 2);
+    let left;
+    if (align === 'left') {
+      left = (canvasCssWidth - maxWidth) / 2;
+    } else if (align === 'right') {
+      left = canvasCssWidth - ((canvasCssWidth - maxWidth) / 2) - widestLine;
+    } else {
+      left = (canvasCssWidth / 2) - (widestLine / 2);
+    }
+    let top = textTop;
+    let width = widestLine;
+    let height = totalTextHeight;
+
+    // Include label background for text2 if present (centered rectangle)
+    if (!isText1 && slideData.text2LabelColor !== 'transparent') {
+      const paddingHorizontal = lineHeight * 0.6;
+      const paddingTop = lineHeight * 0.5;
+      const paddingBottom = lineHeight * 0.3;
+      const labelWidth = widestLine + paddingHorizontal * 2;
+      const labelHeight = totalTextHeight + paddingTop + paddingBottom;
+      const labelX = (canvasCssWidth - labelWidth) / 2;
+      const labelY = yPosition - (totalTextHeight / 2) - paddingTop;
+
+      left = labelX;
+      top = labelY;
+      width = labelWidth;
+      height = labelHeight;
+    }
+
+    // Optionally include leading quote for text1
+    if (isText1 && slideData.text1QuoteStyle && slideData.text1QuoteStyle !== 'none') {
+      const quoteStyle = slideData.text1QuoteStyle;
+      const quoteSize = slideData.text1QuoteSize;
+      const quoteSizeVal = (Math.min(canvasCssWidth, canvasCssHeight) * 0.1) * 4 * (quoteSize / 5);
+      const ctx2 = canvasEl.getContext('2d');
+      ctx2.save();
+      if (quoteStyle === 'serif') {
+        ctx2.font = `bold ${quoteSizeVal}px "Playfair Display", serif`;
+      } else if (quoteStyle === 'slab') {
+        ctx2.font = `${quoteSizeVal}px "Alfa Slab One", cursive`;
+      } else {
+        ctx2.font = `${quoteSizeVal}px "Saira Stencil One", sans-serif`;
+      }
+      const m = ctx2.measureText('“');
+      const quoteHeight = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+      ctx2.restore();
+      const gap = fontSize * 0.4;
+      let yOffset = 0;
+      if (quoteStyle === 'serif') yOffset = -fontSize * 0.2;
+      const quoteTop = textTop - gap - quoteHeight + yOffset;
+      const newTop = Math.min(top, quoteTop);
+      height = (top + height) - newTop;
+      top = newTop;
+    }
+
+    // Convert to wrapper-relative coordinates
+    const absLeft = (canvasRect.left - wrapperRect.left) + left;
+    const absTop = (canvasRect.top - wrapperRect.top) + top;
+
+    return {
+      left: Math.round(absLeft),
+      top: Math.round(absTop),
+      width: Math.round(width),
+      height: Math.round(height),
+    };
   };
 
   const handleCanvasClick = (index, event) => {
@@ -318,6 +468,21 @@ function App() {
     const rect = canvasWrapper.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
+
+    // Hit test text blocks first (Text2 on top of Text1 by typical visual order)
+    const canvasEl = slideRefs.current[index]?.getCanvasRef()?.current;
+    const text2Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text2');
+    if (text2Box && clickX >= text2Box.left && clickX <= text2Box.left + text2Box.width && clickY >= text2Box.top && clickY <= text2Box.top + text2Box.height) {
+      setEditingLayer(null);
+      handleText2InputDrawerOpen(true);
+      return;
+    }
+    const text1Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text1');
+    if (text1Box && clickX >= text1Box.left && clickX <= text1Box.left + text1Box.width && clickY >= text1Box.top && clickY <= text1Box.top + text1Box.height) {
+      setEditingLayer(null);
+      handleText1InputDrawerOpen(true);
+      return;
+    }
 
     const getControlBox = (canvas, imageLayer) => {
       if (!imageLayer || !imageLayer.img) return null;
@@ -364,7 +529,8 @@ function App() {
 
 
   const handleAddSlide = (index) => {
-    const newSlide = createDefaultSlide();
+    const baseAspect = slides[0]?.canvasSize || '9/16';
+    const newSlide = { ...createDefaultSlide(), canvasSize: baseAspect };
     const newSlides = [...slides];
     newSlides.splice(index + 1, 0, newSlide);
     setSlides(newSlides);
@@ -641,6 +807,57 @@ function App() {
       .catch(reject); // Catch any error from the drawing chain
   });
 
+  // Keep active slide in sync with scroll via IntersectionObserver
+  useEffect(() => {
+    const container = document.querySelector('.canvas-container');
+    if (!container) return;
+    const entriesMap = new Map();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => entriesMap.set(entry.target, entry.intersectionRatio));
+        if (isNavScrolling.current) return;
+        // Pick the slide with the highest intersection ratio
+        let bestIndex = activeSlideIndex;
+        let bestRatio = -1;
+        slideRefs.current.forEach((ref, i) => {
+          const el = ref?.getSlideWrapperRef?.()?.current; // slide-wrapper
+          const ratio = el ? (entriesMap.get(el) ?? 0) : 0;
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestIndex = i;
+          }
+        });
+        if (bestIndex !== activeSlideIndex) setActiveSlideIndex(bestIndex);
+      },
+      { root: container, threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+
+    // Observe each slide wrapper
+    slideRefs.current.forEach((ref) => {
+      const wrapper = ref?.getSlideWrapperRef?.()?.current;
+      if (wrapper) observer.observe(wrapper);
+    });
+
+    return () => observer.disconnect();
+  }, [slides.length]);
+
+  // Clear programmatic-scroll guard after scroll settles
+  useEffect(() => {
+    const container = document.querySelector('.canvas-container');
+    if (!container) return;
+    let t;
+    const onScroll = () => {
+      if (!isNavScrolling.current) return;
+      clearTimeout(t);
+      t = setTimeout(() => { isNavScrolling.current = false; }, 220);
+    };
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      container.removeEventListener('scroll', onScroll);
+      clearTimeout(t);
+    };
+  }, []);
+
   return (
     <div className="app-container">
       <div className="canvas-container">
@@ -659,6 +876,26 @@ function App() {
                   setEditingLayer(null);
                   if (layer === 'imageLayer') {
                     setIsBackgroundDrawerOpen(true);
+                  }
+                }}
+                hasPrev={index > 0}
+                hasNext={index < slides.length - 1}
+                onPrev={() => {
+                  if (index > 0) {
+                    isNavScrolling.current = true;
+                    setActiveSlideIndex(index - 1);
+                    requestAnimationFrame(() => {
+                      slideRefs.current[index - 1]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    });
+                  }
+                }}
+                onNext={() => {
+                  if (index < slides.length - 1) {
+                    isNavScrolling.current = true;
+                    setActiveSlideIndex(index + 1);
+                    requestAnimationFrame(() => {
+                      slideRefs.current[index + 1]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    });
                   }
                 }}
               />

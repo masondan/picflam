@@ -1,7 +1,10 @@
 .image-transform-controls {
   position: absolute;
   pointer-events: all; /* Make the entire control area interactive */
-  border: 2px solid #e0e0e0;
+  /* Remove border to prevent any visual gap caused by box sizing and sub-pixels */
+  border: none;
+  /* Draw an inside edge highlight that visually matches a border without adding size */
+  box-shadow: inset 0 0 0 2px #e0e0e0;
   box-sizing: border-box;
 }
 
