@@ -2,6 +2,7 @@ import { forwardRef, useRef, useEffect, useImperativeHandle } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FiPlus, FiCopy, FiTrash2 } from 'react-icons/fi';
+import { FaTrash } from 'react-icons/fa';
 import { LuUndo2, LuRedo2 } from 'react-icons/lu';
 import { RxDragHandleDots2 } from 'react-icons/rx';
 import ImageTransformControl from './ImageTransformControl';
@@ -90,6 +91,18 @@ const Slide = forwardRef(function Slide({
         onClick={onClick}
       >
         <canvas ref={canvasRef} className="picflam-canvas" />
+        {editingLayer && (
+          <button
+            className="delete-layer-button"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent the canvas click from firing
+              onLayerDelete(editingLayer);
+            }}
+            title="Delete Image"
+          >
+            <FaTrash />
+          </button>
+        )}
         {editingLayer === 'imageLayer' && slide.imageLayer && (
           <ImageTransformControl
             layer={slide.imageLayer}

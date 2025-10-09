@@ -63,3 +63,27 @@
 .drag-handle {
   cursor: grab;
 }
+
+.delete-layer-button {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.delete-layer-button:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}

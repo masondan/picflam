@@ -286,6 +286,13 @@ function App() {
     }
   };
 
+  const handleImageDrawerClose = () => {
+    if (editingLayer === 'imageLayer') {
+      setIsBackgroundDrawerOpen(true);
+    }
+    setEditingLayer(null);
+  };
+
   const handleReset = () => {
     if (window.confirm('Are you sure you want to start over? This will delete all slides.')) {
       setSlides([createDefaultSlide()]);
@@ -327,8 +334,7 @@ function App() {
         renderWidth = canvasWidth;
         renderHeight = renderWidth / imgAspectRatio;
       }
-      renderWidth *= scale;
-      renderHeight *= scale;
+      renderWidth *= scale; renderHeight *= scale;
       return {
         left: (canvasWidth - renderWidth) / 2 + x,
         top: (canvasHeight - renderHeight) / 2 + y,
@@ -493,53 +499,132 @@ function App() {
       });
       const totalTextHeight = lines.length * lineHeight; let currentY = yPosition - (totalTextHeight / 2) + (lineHeight / 2);
       if (quoteStyle !== 'none') {
-        const quoteSizeVal = baseFontSize * 4 * (quoteSize / 5); let quoteFont = ''; // Doubled the multiplier from 2 to 4
-        if (quoteStyle === 'serif') { quoteFont = `${quoteSizeVal}px "Saira Stencil One", sans-serif`; }
-        else if (quoteStyle === 'slab') { quoteFont = `bold ${quoteSizeVal}px "Ultra", serif`; }
-        else if (quoteStyle === 'fancy') { quoteFont = `bold ${quoteSizeVal}px "Playfair Display SC", serif`; }
+        const quoteSizeVal = baseFontSize * 4 * (quoteSize / 5); let quoteFont = '';
+        if (quoteStyle === 'serif') { quoteFont = `bold ${quoteSizeVal}px "Playfair Display", serif`; }
+        else if (quoteStyle === 'slab') { quoteFont = `${quoteSizeVal}px "Alfa Slab One", cursive`; }
+        else if (quoteStyle === 'fancy') { quoteFont = `${quoteSizeVal}px "Saira Stencil One", sans-serif`; }
         ctx.font = quoteFont;
         ctx.fillStyle = color;
-        const quoteY = yPosition - (totalTextHeight / 2) - (quoteSizeVal * 0.6); // Position relative to its own size
-        const originalAlign = ctx.textAlign; // Save original alignment
-        ctx.textAlign = 'center'; // Force center for the quote
-        ctx.fillText('“', canvasWidth / 2, quoteY); // Always draw in the middle
-        ctx.textAlign = originalAlign; // Restore original alignment
+
+        // The issue is that the quote itself has vertical dimension. 
+        // We need to account for it.
+        const textMetrics = ctx.measureText('“');
+        const quoteHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+
+        // We calculate the top of the main text block.
+        const textTop = yPosition - (totalTextHeight / 2);
+        
+        // The desired gap, proportional to the main text's font size.
+        const gap = fontSize * 0.4;
+
+        let yOffset = 0;
+        if (quoteStyle === 'serif') {
+            yOffset = -fontSize * 0.2; // Nudge serif quote up slightly
+        }
+
+        // Position the TOP of the quote glyph at textTop - gap - quoteHeight
+        const quoteY = textTop - gap - quoteHeight + yOffset;
+
+        const originalAlign = ctx.textAlign;
+        const originalBaseline = ctx.textBaseline;
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top'; // Align by the top of the glyph
+        ctx.fillText('“', canvasWidth / 2, quoteY);
+
+        ctx.textAlign = originalAlign;
+        ctx.textBaseline = originalBaseline;
       }
       ctx.font = finalFont;
       if (hasLabel) {
-        ctx.fillStyle = hexToRgba(labelColor, labelTransparency / 10); const padding = lineHeight * 0.4;
-        const labelY = yPosition - (totalTextHeight / 2); const labelHeight = totalTextHeight + padding;
-        const labelWidth = widestLine + padding * 2;
-        ctx.fillRect(canvasWidth / 2 - labelWidth / 2, labelY - padding / 2, labelWidth, labelHeight);
+        ctx.fillStyle = hexToRgba(labelColor, labelTransparency / 10);
+        const paddingHorizontal = lineHeight * 0.6;
+        const paddingTop = lineHeight * 0.5;
+        const paddingBottom = lineHeight * 0.3;
+        const cornerRadius = lineHeight * 0.3;
+
+        const labelWidth = widestLine + paddingHorizontal * 2;
+        const labelHeight = totalTextHeight + paddingTop + paddingBottom;
+        const labelX = (canvasWidth - labelWidth) / 2;
+        const labelY = yPosition - (totalTextHeight / 2) - paddingTop;
+
+        ctx.beginPath();
+        ctx.roundRect(labelX, labelY, labelWidth, labelHeight, cornerRadius);
+        ctx.fill();
       }
+
       for (let i = 0; i < lines.length; i++) {
-        if (hasShadow) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 5; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5; }
-        else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; }
-        const lineText = lines[i].trim(); const lineParts = lineText.split(/(==[^=]+==)/g);
-        let lineX;
-        if (align === 'left') {
-          lineX = (canvasWidth - maxWidth) / 2;
-        } else if (align === 'right') {
-          lineX = canvasWidth - ((canvasWidth - maxWidth) / 2);
-        } else { // center
-          lineX = canvasWidth / 2;
+        const lineText = lines[i].trim();
+        const lineParts = lineText.split(/(==[^=]+==)/g).filter(p => p); // Filter out empty strings
+
+        if (lineParts.length === 0) {
+          currentY += lineHeight;
+          continue;
         }
 
-        for (const part of lineParts) {
-          if (part.startsWith('==') && part.endsWith('==')) {
-            const highlightedText = part.substring(2, part.length - 2);
-            ctx.fillStyle = slideData.text1HighlightColor;
-            ctx.fillText(highlightedText, lineX, currentY);
-          } else {
-            ctx.fillStyle = color;
-            ctx.fillText(part, lineX, currentY);
-          }
+        // 1. Prepare measured parts
+        const measuredParts = lineParts.map(part => {
+            const isHighlight = part.startsWith('==') && part.endsWith('==');
+            const text = isHighlight ? part.substring(2, part.length - 2) : part;
+            const width = ctx.measureText(text).width;
+            return { text, width, isHighlight };
+        });
+        const totalLineWidth = measuredParts.reduce((sum, part) => sum + part.width, 0);
+
+        // 2. Determine initial X coordinate
+        let currentX;
+        if (align === 'left') {
+            currentX = (canvasWidth - maxWidth) / 2;
+        } else if (align === 'right') {
+            currentX = canvasWidth - ((canvasWidth - maxWidth) / 2) - totalLineWidth;
+        } else { // center
+            currentX = (canvasWidth / 2) - (totalLineWidth / 2);
         }
-        if (hasOutline) {
-          ctx.strokeStyle = 'black'; ctx.lineWidth = fontSize * 0.05; ctx.strokeText(lineText.replace(/==/g, ''), lineX, currentY);
+
+        // 3. Draw the parts sequentially
+        ctx.textAlign = 'left'; // We are manually positioning, so always draw from the left.
+
+        for (const part of measuredParts) {
+            // Set styles for this part
+            ctx.fillStyle = part.isHighlight ? slideData.text1HighlightColor : color;
+            if (hasShadow) {
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 5;
+                ctx.shadowOffsetY = 5;
+            }
+
+            // Draw the text part
+            ctx.fillText(part.text, currentX, currentY);
+
+            // Draw outline for this part if needed
+            if (hasOutline) {
+                // Temporarily remove shadow for outline drawing, then re-apply if needed
+                if (hasShadow) {
+                    ctx.shadowColor = 'transparent';
+                }
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = fontSize * 0.05;
+                ctx.strokeText(part.text, currentX, currentY);
+                if (hasShadow) {
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                }
+            }
+
+            // Advance the X position for the next part
+            currentX += part.width;
         }
+
+        // Reset shadow for next line
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
         currentY += lineHeight;
       }
+      // Restore original text align after the loop
+      ctx.textAlign = align;
     };
     const { text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, text2LabelColor, text2LabelTransparency } = slideData;
 
@@ -569,7 +654,13 @@ function App() {
                 onDelete={() => handleDeleteSlide(index)} drawSlide={drawSlide}
                 editingLayer={index === activeSlideIndex ? editingLayer : null}
                 onLayerUpdate={(layer, updates) => updateActiveSlide({ [layer]: { ...activeSlide[layer], ...updates } })}
-                onLayerDelete={(layer) => { updateActiveSlide({ [layer]: null }); setEditingLayer(null); }}
+                onLayerDelete={(layer) => {
+                  updateActiveSlide({ [layer]: null });
+                  setEditingLayer(null);
+                  if (layer === 'imageLayer') {
+                    setIsBackgroundDrawerOpen(true);
+                  }
+                }}
               />
 
             ))}
@@ -616,10 +707,10 @@ function App() {
       {editingLayer && activeSlide[editingLayer] && (
         <ImageDrawer
           ref={imageDrawerRef}
-          onClose={() => setEditingLayer(null)}
+          onClose={handleImageDrawerClose}
           imageLayer={activeSlide[editingLayer]}
           isLogo={editingLayer === 'logoImage'}
-          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } })} />
+          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } }) } />
       )}
 
       {isText1InputDrawerOpen && (

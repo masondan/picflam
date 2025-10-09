@@ -60,6 +60,13 @@ function Text1InputDrawer({
   const [colorTarget, setColorTarget] = useState('text'); // 'text', 'highlight', or 'label'
   const [isMinimized, setIsMinimized] = useState(false);
 
+  const handleTabClick = (tab) => {
+    if (isMinimized) {
+      setIsMinimized(false);
+    }
+    setActiveTab(tab);
+  };
+
   const handleConfirmClick = () => {
     onConfirm();
   };
@@ -97,11 +104,11 @@ function Text1InputDrawer({
             {isMinimized ? <FiChevronUp /> : <FiChevronDown />}
           </button>
           <div className="text-editor-tabs">
-            <button className={`style-icon-button ${activeTab === 'edit' ? 'active' : ''}`} onClick={() => setActiveTab('edit')}><FiEdit3 /></button>
-            <button className={`style-icon-button ${activeTab === 'font' ? 'active' : ''}`} onClick={() => setActiveTab('font')}><RxFontFamily /></button>
-            <button className={`style-icon-button ${activeTab === 'size' ? 'active' : ''}`} onClick={() => setActiveTab('size')}><FiMove /></button>
-            <button className={`style-icon-button ${activeTab === 'color' ? 'active' : ''}`} onClick={() => setActiveTab('color')}><MdOutlineColorLens /></button>
-            <button className={`style-icon-button ${activeTab === 'style' ? 'active' : ''}`} onClick={() => setActiveTab('style')}><LuSettings2 /></button>
+            <button className={`style-icon-button ${activeTab === 'edit' ? 'active' : ''}`} onClick={() => handleTabClick('edit')}><FiEdit3 /></button>
+            <button className={`style-icon-button ${activeTab === 'font' ? 'active' : ''}`} onClick={() => handleTabClick('font')}><RxFontFamily /></button>
+            <button className={`style-icon-button ${activeTab === 'size' ? 'active' : ''}`} onClick={() => handleTabClick('size')}><FiMove /></button>
+            <button className={`style-icon-button ${activeTab === 'color' ? 'active' : ''}`} onClick={() => handleTabClick('color')}><MdOutlineColorLens /></button>
+            <button className={`style-icon-button ${activeTab === 'style' ? 'active' : ''}`} onClick={() => handleTabClick('style')}><LuSettings2 /></button>
           </div>
           <button className="drawer-header-button" onClick={handleConfirmClick}><FiCheck /></button>
         </div>
