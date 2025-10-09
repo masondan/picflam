@@ -296,6 +296,12 @@ function App() {
   const handleCanvasClick = (index, event) => {
     setActiveSlideIndex(index);
 
+    // If the click is on an existing transform control, do nothing. This prevents
+    // an active image from being deselected when trying to drag it.
+    if (event.target.closest('.image-transform-controls')) {
+      return;
+    }
+
     const slide = slides[index];
     const canvasWrapper = slideRefs.current[index]?.getCanvasWrapperRef()?.current;
     if (!canvasWrapper) {
@@ -334,20 +340,20 @@ function App() {
     if (slide.logoImage) {
       const box = getControlBox(canvasWrapper, slide.logoImage);
       if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
-        // If the click is on the logo, ensure it's the active layer and do nothing else.
-        if (editingLayer !== 'logoImage') setEditingLayer('logoImage');
+        setEditingLayer('logoImage');
         return;
       }
     }
     if (slide.imageLayer) {
       const box = getControlBox(canvasWrapper, slide.imageLayer);
       if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
-        // If the click is on the main image, ensure it's the active layer and do nothing else.
-        if (editingLayer !== 'imageLayer') setEditingLayer('imageLayer');
+        setEditingLayer('imageLayer');
         return;
       }
     }
 
+    // If we get here, the click was on the canvas background, not on any image layer. Deselect.
+    setEditingLayer(null);
   };
 
 
@@ -565,6 +571,7 @@ function App() {
                 onLayerUpdate={(layer, updates) => updateActiveSlide({ [layer]: { ...activeSlide[layer], ...updates } })}
                 onLayerDelete={(layer) => { updateActiveSlide({ [layer]: null }); setEditingLayer(null); }}
               />
+
             ))}
           </SortableContext>
         </DndContext>

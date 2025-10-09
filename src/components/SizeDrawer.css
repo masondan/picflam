@@ -34,7 +34,7 @@
   margin: 0 0.5rem;
 }
 
-.drawer-confirm-button {
+.size-drawer .drawer-confirm-button {
   position: absolute;
   right: 1rem;
   top: 50%;

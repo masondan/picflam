@@ -31,7 +31,7 @@
   padding: 0.5rem;
 }
 
-.drawer-confirm-button {
+.background-drawer .drawer-confirm-button {
   background: none;
   border: none;
   color: #fff;

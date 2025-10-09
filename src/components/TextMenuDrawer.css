@@ -40,7 +40,7 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.drawer-confirm-button {
+.text-menu-drawer .drawer-confirm-button {
   position: absolute; /* Position separately from the centered buttons */
   right: 1rem;
   top: 50%;
