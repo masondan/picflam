@@ -15,24 +15,18 @@ import {
 import {
   FiMaximize,
   FiImage,
-  FiType,
   FiBookmark,
   FiDownload,
-  FiRotateCcw,
-  FiInfo,
-  FiCheck
+  FiRotateCcw
 } from 'react-icons/fi';
-import { FaTrash } from 'react-icons/fa';
 import BackgroundDrawer from './components/BackgroundDrawer';
 import ColorDrawer from './components/ColorDrawer';
 import SearchDrawer from './components/SearchDrawer';
-import TextMenuDrawer from './components/TextMenuDrawer';
 import SizeDrawer from './components/SizeDrawer.jsx';
-import Text1InputDrawer from './components/Text1InputDrawer';
-import AboutDrawer from './components/AboutDrawer';
 import SaveDrawer from './components/SaveDrawer';
 import ImageDrawer from './components/ImageDrawer';
 import Slide from './components/Slide';
+import TextToolbar from './components/TextToolbar';
 
 // Helper function to convert hex color and alpha to rgba
 const hexToRgba = (hex, alpha = 1) => {
@@ -80,12 +74,11 @@ function App() {
   const [isBackgroundDrawerOpen, setIsBackgroundDrawerOpen] = useState(false);
   const [isColorDrawerOpen, setIsColorDrawerOpen] = useState(false);
   const [isSearchDrawerOpen, setIsSearchDrawerOpen] = useState(false);
-  const [isTextMenuDrawerOpen, setIsTextMenuDrawerOpen] = useState(false);
   const [isSizeDrawerOpen, setIsSizeDrawerOpen] = useState(false);
-  const [isText1InputDrawerOpen, setIsText1InputDrawerOpen] = useState(false);
-  const [isAboutDrawerOpen, setIsAboutDrawerOpen] = useState(false);
   const [isSaveDrawerOpen, setIsSaveDrawerOpen] = useState(false);
   const [editingLayer, setEditingLayer] = useState(null);
+  const [textEditMode, setTextEditMode] = useState(null); // null | 'text1' | 'text2'
+  const [textToolbarTab, setTextToolbarTab] = useState('edit');
 
   const [slides, setSlides] = useState([createDefaultSlide()]);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
@@ -102,8 +95,7 @@ function App() {
     );
   };
 
-  const [activeTextElement, setActiveTextElement] = useState('text1');
-  const [originalSlideState, setOriginalSlideState] = useState(null);
+    const [originalSlideState, setOriginalSlideState] = useState(null);
 
   const backgroundImageInputRef = useRef(null);
   const logoImageInputRef = useRef(null);
@@ -186,51 +178,10 @@ function App() {
     setIsBackgroundDrawerOpen(false);
   };
 
-  const handleText1InputDrawerOpen = (minimized = false) => {
-    setActiveTextElement('text1');
-    setOriginalSlideState(activeSlide);
-    setIsTextMenuDrawerOpen(false);
-    setIsText1InputDrawerOpen(true);
-    if (minimized) {
-      // Defer to next tick so the drawer is in the DOM before toggling minimize
-      setTimeout(() => {
-        const toggleBtn = document.querySelector('.text-editor-drawer .drawer-header-button');
-        if (toggleBtn) toggleBtn.click();
-      }, 0);
-    }
-  };
-
-  const handleText2InputDrawerOpen = (minimized = false) => {
-    setActiveTextElement('text2');
-    setOriginalSlideState(activeSlide);
-    setIsTextMenuDrawerOpen(false);
-    setIsText1InputDrawerOpen(true);
-    if (minimized) {
-      setTimeout(() => {
-        const toggleBtn = document.querySelector('.text-editor-drawer .drawer-header-button');
-        if (toggleBtn) toggleBtn.click();
-      }, 0);
-    }
-  };
-
-  const handleTextEditorClose = (confirm) => {
-    if (!confirm && originalSlideState) {
-      const oldTextState = {
-        text1: originalSlideState.text1, text1Size: originalSlideState.text1Size, text1YPosition: originalSlideState.text1YPosition, text1Font: originalSlideState.text1Font, text1Color: originalSlideState.text1Color, text1HighlightColor: originalSlideState.text1HighlightColor, text1IsBold: originalSlideState.text1IsBold, text1IsItalic: originalSlideState.text1IsItalic, text1Align: originalSlideState.text1Align, text1LineSpacing: originalSlideState.text1LineSpacing, text1HasShadow: originalSlideState.text1HasShadow, text1HasOutline: originalSlideState.text1HasOutline, text1QuoteStyle: originalSlideState.text1QuoteStyle, text1QuoteSize: originalSlideState.text1QuoteSize,
-        text2: originalSlideState.text2, text2Size: originalSlideState.text2Size, text2YPosition: originalSlideState.text2YPosition, text2Font: originalSlideState.text2Font, text2Color: originalSlideState.text2Color, text2IsBold: originalSlideState.text2IsBold, text2IsItalic: originalSlideState.text2IsItalic, text2Align: originalSlideState.text2Align, text2LineSpacing: originalSlideState.text2LineSpacing, text2LabelColor: originalSlideState.text2LabelColor, text2LabelTransparency: originalSlideState.text2LabelTransparency,
-      };
-      updateActiveSlide(oldTextState);
-    }
-    setOriginalSlideState(null);
-    setIsText1InputDrawerOpen(false);
-    if (confirm) setIsTextMenuDrawerOpen(true);
-  };
-
-  const handleFontChange = (fontFamily) => {
-    const isBold = fontFamily === 'Inter';
-    updateActiveSlide({ [`${activeTextElement}Font`]: fontFamily, [`${activeTextElement}IsBold`]: isBold });
-  };
-
+  
+  
+  
+  
   // Ensure quote fonts are loaded before drawing, so first tap uses the correct font
   useEffect(() => {
     const style = activeSlide.text1QuoteStyle;
@@ -253,14 +204,7 @@ function App() {
     } catch {}
   }, [activeSlide.text1QuoteStyle, activeSlide.text1QuoteSize, activeSlideIndex]);
 
-  const handleHasLabelChange = (hasLabel) => {
-    if (activeTextElement === 'text2') {
-      updateActiveSlide({
-        text2LabelColor: hasLabel ? activeSlide.text2LabelColor === 'transparent' ? '#000000' : activeSlide.text2LabelColor : 'transparent'
-      });
-    }
-  };
-
+  
   const handleDownload = async () => {
     const activeCanvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
     if (!activeCanvas) {
@@ -425,7 +369,14 @@ function App() {
       const paddingBottom = lineHeight * 0.3;
       const labelWidth = widestLine + paddingHorizontal * 2;
       const labelHeight = totalTextHeight + paddingTop + paddingBottom;
-      const labelX = (canvasCssWidth - labelWidth) / 2;
+      let labelX;
+      if (align === 'left') {
+        labelX = (canvasCssWidth - maxWidth) / 2 - paddingHorizontal;
+      } else if (align === 'right') {
+        labelX = canvasCssWidth - ((canvasCssWidth - maxWidth) / 2) - widestLine - paddingHorizontal;
+      } else {
+        labelX = (canvasCssWidth / 2) - (widestLine / 2) - paddingHorizontal;
+      }
       const labelY = yPosition - (totalTextHeight / 2) - paddingTop;
 
       left = labelX;
@@ -495,13 +446,15 @@ function App() {
     const text2Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text2');
     if (text2Box && clickX >= text2Box.left && clickX <= text2Box.left + text2Box.width && clickY >= text2Box.top && clickY <= text2Box.top + text2Box.height) {
       setEditingLayer(null);
-      handleText2InputDrawerOpen(true);
+      setTextEditMode('text2');
+      setTextToolbarTab('menu');
       return;
     }
     const text1Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text1');
     if (text1Box && clickX >= text1Box.left && clickX <= text1Box.left + text1Box.width && clickY >= text1Box.top && clickY <= text1Box.top + text1Box.height) {
       setEditingLayer(null);
-      handleText1InputDrawerOpen(true);
+      setTextEditMode('text1');
+      setTextToolbarTab('menu');
       return;
     }
 
@@ -731,8 +684,16 @@ function App() {
 
         const labelWidth = widestLine + paddingHorizontal * 2;
         const labelHeight = totalTextHeight + paddingTop + paddingBottom;
-        const labelX = (canvasWidth - labelWidth) / 2;
         const labelY = yPosition - (totalTextHeight / 2) - paddingTop;
+        let labelX;
+        if (align === 'left') {
+          labelX = (canvasWidth - maxWidth) / 2 - paddingHorizontal;
+        } else if (align === 'right') {
+          labelX = canvasWidth - ((canvasWidth - maxWidth) / 2) - widestLine - paddingHorizontal;
+        } else {
+          // center
+          labelX = (canvasWidth / 2) - (widestLine / 2) - paddingHorizontal;
+        }
 
         ctx.beginPath();
         ctx.roundRect(labelX, labelY, labelWidth, labelHeight, cornerRadius);
@@ -925,14 +886,14 @@ function App() {
         </DndContext>
       </div>
 
-      <div className={`footer-menu ${isBackgroundDrawerOpen || isColorDrawerOpen || isSearchDrawerOpen || isTextMenuDrawerOpen || isSizeDrawerOpen || isText1InputDrawerOpen || isAboutDrawerOpen || isSaveDrawerOpen || editingLayer ? 'hidden' : ''}`}>
+      <div className={`footer-menu ${isBackgroundDrawerOpen || isColorDrawerOpen || isSearchDrawerOpen || isSizeDrawerOpen || isSaveDrawerOpen || editingLayer || textEditMode ? 'hidden' : ''}`}>
         <button className="footer-button" onClick={handleSizeDrawerOpen}><FiMaximize /></button>
         <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
-        <button className="footer-button" onClick={() => setIsTextMenuDrawerOpen(true)}><FiType /></button>
+        <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('menu'); }}>T1</button>
+        <button className="footer-button t-button" onClick={() => { setTextEditMode('text2'); setTextToolbarTab('menu'); }}>T2</button>
         <button className="footer-button" onClick={() => setIsSaveDrawerOpen(true)}><FiBookmark /></button>
         <button className="footer-button" onClick={handleDownload}><FiDownload /></button>
         <button className="footer-button" onClick={handleReset}><FiRotateCcw /></button>
-        <button className="footer-button" onClick={() => setIsAboutDrawerOpen(true)}><FiInfo /></button>
       </div>
 
       <input type="file" ref={backgroundImageInputRef} onChange={(e) => handleFileChange(e, 'imageLayer')} accept="image/*" style={{ display: 'none' }} />
@@ -970,56 +931,10 @@ function App() {
           onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } }) } />
       )}
 
-      {isText1InputDrawerOpen && (
-        <Text1InputDrawer
-          onClose={() => handleTextEditorClose(false)} onConfirm={() => handleTextEditorClose(true)}
-          activeTextElement={activeTextElement}
-          text={activeTextElement === 'text1' ? activeSlide.text1 : activeSlide.text2}
-          onTextChange={(value) => updateActiveSlide({ [activeTextElement]: value })}
-          size={activeTextElement === 'text1' ? activeSlide.text1Size : activeSlide.text2Size}
-          onSizeChange={(value) => updateActiveSlide({ [`${activeTextElement}Size`]: value })}
-          yPosition={activeTextElement === 'text1' ? activeSlide.text1YPosition : activeSlide.text2YPosition}
-          onYPositionChange={(value) => updateActiveSlide({ [`${activeTextElement}YPosition`]: value })}
-          font={activeTextElement === 'text1' ? activeSlide.text1Font : activeSlide.text2Font}
-          onFontChange={handleFontChange}
-          color={activeTextElement === 'text1' ? activeSlide.text1Color : activeSlide.text2Color}
-          onColorChange={(value) => updateActiveSlide({ [`${activeTextElement}Color`]: value })}
-          highlightColor={activeSlide.text1HighlightColor}
-          onHighlightColorChange={(value) => updateActiveSlide({ text1HighlightColor: value })}
-          isBold={activeTextElement === 'text1' ? activeSlide.text1IsBold : activeSlide.text2IsBold}
-          onIsBoldChange={(value) => updateActiveSlide({ [`${activeTextElement}IsBold`]: value })}
-          isItalic={activeTextElement === 'text1' ? activeSlide.text1IsItalic : activeSlide.text2IsItalic}
-          onIsItalicChange={(value) => updateActiveSlide({ [`${activeTextElement}IsItalic`]: value })}
-          textAlign={activeTextElement === 'text1' ? activeSlide.text1Align : activeSlide.text2Align}
-          onTextAlignChange={(value) => updateActiveSlide({ [`${activeTextElement}Align`]: value })}
-          lineSpacing={activeTextElement === 'text1' ? activeSlide.text1LineSpacing : activeSlide.text2LineSpacing}
-          onLineSpacingChange={(value) => updateActiveSlide({ [`${activeTextElement}LineSpacing`]: value })}
-          hasShadow={activeSlide.text1HasShadow}
-          onHasShadowChange={(value) => updateActiveSlide({ text1HasShadow: value })}
-          hasOutline={activeSlide.text1HasOutline}
-          onHasOutlineChange={(value) => updateActiveSlide({ text1HasOutline: value })}
-          quoteStyle={activeSlide.text1QuoteStyle}
-          onQuoteStyleChange={(value) => updateActiveSlide({ text1QuoteStyle: value })}
-          quoteSize={activeSlide.text1QuoteSize}
-          onQuoteSizeChange={(value) => updateActiveSlide({ text1QuoteSize: value })}
-          hasLabel={activeTextElement === 'text2' && activeSlide.text2LabelColor !== 'transparent'}
-          onHasLabelChange={handleHasLabelChange}
-          labelColor={activeSlide.text2LabelColor}
-          onLabelColorChange={(value) => updateActiveSlide({ text2LabelColor: value })}
-          labelTransparency={activeSlide.text2LabelTransparency}
-          onLabelTransparencyChange={(value) => updateActiveSlide({ text2LabelTransparency: value })}
-        />
-      )}
-
-      {isTextMenuDrawerOpen && (
-        <TextMenuDrawer onClose={() => setIsTextMenuDrawerOpen(false)} onText1Click={handleText1InputDrawerOpen} onText2Click={handleText2InputDrawerOpen} />
-      )}
-
       {isSizeDrawerOpen && (
         <SizeDrawer onClose={handleSizeDrawerClose} onCanvasSizeChange={(size) => updateActiveSlide({ canvasSize: size })} currentSize={activeSlide.canvasSize} />
       )}
 
-      {isAboutDrawerOpen && (<AboutDrawer onClose={() => setIsAboutDrawerOpen(false)} />)}
       {isSaveDrawerOpen && (
         <SaveDrawer
           onClose={() => setIsSaveDrawerOpen(false)}
@@ -1027,6 +942,72 @@ function App() {
           onSave={handleSaveProject}
           onLoad={handleLoadProject}
           onDelete={handleDeleteProject}
+        />
+      )}
+
+      {textEditMode && (
+        <TextToolbar
+          mode={textEditMode}
+          tab={textToolbarTab}
+          setTab={setTextToolbarTab}
+          value={textEditMode==='text1' ? activeSlide.text1 : activeSlide.text2}
+          onChangeValue={(val) => updateActiveSlide({ [textEditMode]: val })}
+          font={textEditMode==='text1' ? activeSlide.text1Font : activeSlide.text2Font}
+          onChangeFont={(f) => {
+            const key = textEditMode==='text1' ? 'text1Font' : 'text2Font';
+            const boldKey = textEditMode==='text1' ? 'text1IsBold' : 'text2IsBold';
+            updateActiveSlide({ [key]: f, [boldKey]: (f==='Inter') });
+          }}
+          size={textEditMode==='text1' ? activeSlide.text1Size : activeSlide.text2Size}
+          onChangeSize={(v) => {
+            const key = textEditMode==='text1' ? 'text1Size' : 'text2Size';
+            updateActiveSlide({ [key]: v });
+          }}
+          yPosition={textEditMode==='text1' ? activeSlide.text1YPosition : activeSlide.text2YPosition}
+          onChangeY={(v) => {
+            const key = textEditMode==='text1' ? 'text1YPosition' : 'text2YPosition';
+            updateActiveSlide({ [key]: v });
+          }}
+          color={textEditMode==='text1' ? activeSlide.text1Color : activeSlide.text2Color}
+          onChangeColor={(c) => {
+            const key = textEditMode==='text1' ? 'text1Color' : 'text2Color';
+            updateActiveSlide({ [key]: c });
+          }}
+          highlightColor={activeSlide.text1HighlightColor}
+          onChangeHighlightColor={(c) => updateActiveSlide({ text1HighlightColor: c })}
+          labelColor={activeSlide.text2LabelColor}
+          onChangeLabelColor={(c) => updateActiveSlide({ text2LabelColor: c })}
+          labelEnabled={activeSlide.text2LabelColor !== 'transparent'}
+          onToggleLabel={(on) => updateActiveSlide({ text2LabelColor: on ? (activeSlide.text2LabelColor==='transparent' ? '#000000' : activeSlide.text2LabelColor) : 'transparent' })}
+          labelOpacity={activeSlide.text2LabelTransparency}
+          onChangeLabelOpacity={(v) => updateActiveSlide({ text2LabelTransparency: v })}
+          isBold={textEditMode==='text1' ? activeSlide.text1IsBold : activeSlide.text2IsBold}
+          onToggleBold={() => {
+            const key = textEditMode==='text1' ? 'text1IsBold' : 'text2IsBold';
+            updateActiveSlide({ [key]: !(textEditMode==='text1' ? activeSlide.text1IsBold : activeSlide.text2IsBold) });
+          }}
+          isItalic={textEditMode==='text1' ? activeSlide.text1IsItalic : activeSlide.text2IsItalic}
+          onToggleItalic={() => {
+            const key = textEditMode==='text1' ? 'text1IsItalic' : 'text2IsItalic';
+            updateActiveSlide({ [key]: !(textEditMode==='text1' ? activeSlide.text1IsItalic : activeSlide.text2IsItalic) });
+          }}
+          align={textEditMode==='text1' ? activeSlide.text1Align : activeSlide.text2Align}
+          onCycleAlign={() => {
+            const cur = textEditMode==='text1' ? activeSlide.text1Align : activeSlide.text2Align;
+            const next = cur==='left' ? 'center' : cur==='center' ? 'right' : 'left';
+            const key = textEditMode==='text1' ? 'text1Align' : 'text2Align';
+            updateActiveSlide({ [key]: next });
+          }}
+          lineSpacing={textEditMode==='text1' ? activeSlide.text1LineSpacing : activeSlide.text2LineSpacing}
+          onChangeLineSpacing={(v) => {
+            const key = textEditMode==='text1' ? 'text1LineSpacing' : 'text2LineSpacing';
+            updateActiveSlide({ [key]: v });
+          }}
+          quoteStyle={activeSlide.text1QuoteStyle}
+          onChangeQuoteStyle={(s) => updateActiveSlide({ text1QuoteStyle: s })}
+          quoteSize={activeSlide.text1QuoteSize}
+          onChangeQuoteSize={(v) => updateActiveSlide({ text1QuoteSize: v })}
+          onClose={() => setTextEditMode(null)}
         />
       )}
     </div>
