@@ -231,6 +231,28 @@ function App() {
     updateActiveSlide({ [`${activeTextElement}Font`]: fontFamily, [`${activeTextElement}IsBold`]: isBold });
   };
 
+  // Ensure quote fonts are loaded before drawing, so first tap uses the correct font
+  useEffect(() => {
+    const style = activeSlide.text1QuoteStyle;
+    if (!style || style === 'none') return;
+    const fontSpec = style === 'serif'
+      ? `bold 100px "Playfair Display"`
+      : style === 'slab'
+        ? `100px "Alfa Slab One"`
+        : `100px "Saira Stencil One"`;
+    try {
+      if (document.fonts && document.fonts.load) {
+        document.fonts.load(fontSpec, '“').then(() => {
+          const canvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
+          if (canvas) {
+            // Redraw with the loaded font
+            drawSlide(canvas, activeSlide).catch(() => {});
+          }
+        });
+      }
+    } catch {}
+  }, [activeSlide.text1QuoteStyle, activeSlide.text1QuoteSize, activeSlideIndex]);
+
   const handleHasLabelChange = (hasLabel) => {
     if (activeTextElement === 'text2') {
       updateActiveSlide({
@@ -412,7 +434,7 @@ function App() {
       height = labelHeight;
     }
 
-    // Optionally include leading quote for text1
+    // Optionally include leading quote for text1 (match draw positioning)
     if (isText1 && slideData.text1QuoteStyle && slideData.text1QuoteStyle !== 'none') {
       const quoteStyle = slideData.text1QuoteStyle;
       const quoteSize = slideData.text1QuoteSize;
@@ -427,12 +449,11 @@ function App() {
         ctx2.font = `${quoteSizeVal}px "Saira Stencil One", sans-serif`;
       }
       const m = ctx2.measureText('“');
-      const quoteHeight = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+      const quoteHeight = ((m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0)) || quoteSizeVal;
       ctx2.restore();
-      const gap = fontSize * 0.4;
-      let yOffset = 0;
-      if (quoteStyle === 'serif') yOffset = -fontSize * 0.2;
-      const quoteTop = textTop - gap - quoteHeight + yOffset;
+      const gap = (quoteStyle === 'slab' ? lineHeight * 0.35 : lineHeight * 0.4); // match drawText gap
+      const quoteBottom = textTop - gap;
+      const quoteTop = quoteBottom - quoteHeight;
       const newTop = Math.min(top, quoteTop);
       height = (top + height) - newTop;
       top = newTop;
@@ -665,38 +686,37 @@ function App() {
       });
       const totalTextHeight = lines.length * lineHeight; let currentY = yPosition - (totalTextHeight / 2) + (lineHeight / 2);
       if (quoteStyle !== 'none') {
-        const quoteSizeVal = baseFontSize * 4 * (quoteSize / 5); let quoteFont = '';
+        const quoteSizeVal = baseFontSize * 4 * (quoteSize / 5);
+        let quoteFont = '';
         if (quoteStyle === 'serif') { quoteFont = `bold ${quoteSizeVal}px "Playfair Display", serif`; }
         else if (quoteStyle === 'slab') { quoteFont = `${quoteSizeVal}px "Alfa Slab One", cursive`; }
         else if (quoteStyle === 'fancy') { quoteFont = `${quoteSizeVal}px "Saira Stencil One", sans-serif`; }
         ctx.font = quoteFont;
         ctx.fillStyle = color;
 
-        // The issue is that the quote itself has vertical dimension. 
-        // We need to account for it.
-        const textMetrics = ctx.measureText('“');
-        const quoteHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
-
-        // We calculate the top of the main text block.
+        // Anchor the visible bottom of the glyph to a fixed gap above the text block
         const textTop = yPosition - (totalTextHeight / 2);
-        
-        // The desired gap, proportional to the main text's font size.
-        const gap = fontSize * 0.4;
-
-        let yOffset = 0;
-        if (quoteStyle === 'serif') {
-            yOffset = -fontSize * 0.2; // Nudge serif quote up slightly
-        }
-
-        // Position the TOP of the quote glyph at textTop - gap - quoteHeight
-        const quoteY = textTop - gap - quoteHeight + yOffset;
+        const gap = (quoteStyle === 'slab' ? lineHeight * 0.35 : lineHeight * 0.4);
+        const quoteBottom = textTop - gap;
+        const m = ctx.measureText('“');
 
         const originalAlign = ctx.textAlign;
         const originalBaseline = ctx.textBaseline;
-
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'top'; // Align by the top of the glyph
-        ctx.fillText('“', canvasWidth / 2, quoteY);
+
+        if (quoteStyle === 'slab') {
+          // For slab, anchor bottom exactly using full glyph height from top baseline
+          const height = ((m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0)) || quoteSizeVal;
+          const quoteTop = quoteBottom - height;
+          ctx.textBaseline = 'top';
+          ctx.fillText('“', canvasWidth / 2, quoteTop);
+        } else {
+          // Serif/fancy: current behavior (works well for serif); anchor by top using ascent
+          const ascent = (m.actualBoundingBoxAscent || 0) || (quoteSizeVal * 0.8);
+          const quoteTop = quoteBottom - ascent;
+          ctx.textBaseline = 'top';
+          ctx.fillText('“', canvasWidth / 2, quoteTop);
+        }
 
         ctx.textAlign = originalAlign;
         ctx.textBaseline = originalBaseline;
