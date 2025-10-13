@@ -1,6 +1,6 @@
 import { forwardRef, useState, useEffect } from 'react';
 import './ImageDrawer.css';
-import { FiCheck } from 'react-icons/fi';
+import { FiChevronLeft } from 'react-icons/fi';
 import { LiaExpandSolid, LiaCompressArrowsAltSolid, LiaExpandArrowsAltSolid } from 'react-icons/lia';
 import { PiResize } from 'react-icons/pi';
 import { RxOpacity } from 'react-icons/rx';
@@ -88,7 +88,7 @@ const ImageDrawer = forwardRef(function ImageDrawer({
             </div>
           )}
         </div>
-        <button className="drawer-confirm-button" onClick={onClose}><FiCheck /></button>
+        <button className="drawer-back-button" onClick={onClose}><FiChevronLeft /></button>
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -36,6 +35,7 @@ function App() {
   const [isColorDrawerOpen, setIsColorDrawerOpen] = useState(false);
   const [isSearchDrawerOpen, setIsSearchDrawerOpen] = useState(false);
   const [isSizeDrawerOpen, setIsSizeDrawerOpen] = useState(false);
+  const [showFooter, setShowFooter] = useState(true);
   const [isSaveDrawerOpen, setIsSaveDrawerOpen] = useState(false);
   const [editingLayer, setEditingLayer] = useState(null);
   const [textEditMode, setTextEditMode] = useState(null); // null | 'text1' | 'text2'
@@ -90,6 +90,7 @@ function App() {
   const handleSizeDrawerOpen = () => {
     setOriginalSlideState(activeSlide);
     setIsSizeDrawerOpen(true);
+    setShowFooter(false);
   };
 
   const handleSizeDrawerClose = (confirm) => {
@@ -98,6 +99,7 @@ function App() {
     }
     setOriginalSlideState(null);
     setIsSizeDrawerOpen(false);
+    setShowFooter(true);
   };
 
   const handleImageUploadClick = () => backgroundImageInputRef.current.click();
@@ -165,8 +167,10 @@ function App() {
           }
         });
       }
-    } catch {}
-  }, [activeSlide.text1QuoteStyle, activeSlide.text1QuoteSize, activeSlideIndex]);
+    } catch (error) {
+      // Ignore font loading errors
+    }
+  }, [activeSlide.text1QuoteStyle, activeSlide.text1QuoteSize, activeSlideIndex, activeSlide]);
 
   
   const handleDownload = async () => {
@@ -203,25 +207,54 @@ function App() {
     const newSavedProjects = [...savedProjects];
     newSavedProjects[slotIndex] = projectData;
     setSavedProjects(newSavedProjects);
-    alert(`Project saved to slot ${slotIndex + 1}.`);
-  }, [slides, activeSlideIndex, savedProjects, setSavedProjects]);
+    // Remove save pop-up
+  }, [slides, activeSlideIndex, savedProjects, setSavedProjects, setActiveSlideIndex]);
 
   const handleLoadProject = useCallback((slotIndex) => {
     const projectToLoad = savedProjects[slotIndex];
-    if (projectToLoad && window.confirm('Load this project? Any unsaved changes will be lost.')) {
+    if (projectToLoad) {
       // This is a simplified version. A full implementation would handle re-creating image objects.
-      setSlides(projectToLoad.slides);
+      resetSlides(projectToLoad.slides);
       setActiveSlideIndex(0);
-      alert(`Project loaded from slot ${slotIndex + 1}.`);
+      // Remove load pop-up
     }
-  }, [savedProjects]);
+  }, [savedProjects, resetSlides]);
 
   const handleDeleteProject = useCallback((slotIndex) => {
-    if (window.confirm(`Are you sure you want to delete project in slot ${slotIndex + 1}?`)) {
+    // Replace confirm with overlay button
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '1000';
+
+    const button = document.createElement('button');
+    button.textContent = 'Delete';
+    button.style.padding = '1rem 2rem';
+    button.style.fontSize = '1.2rem';
+    button.style.backgroundColor = '#555555';
+    button.style.color = '#fff';
+    button.style.border = 'none';
+    button.style.borderRadius = '8px';
+    button.style.cursor = 'pointer';
+
+    button.onclick = () => {
       const newSavedProjects = [...savedProjects];
       newSavedProjects[slotIndex] = null;
       setSavedProjects(newSavedProjects);
-    }
+      document.body.removeChild(overlay);
+    };
+
+    overlay.onclick = () => document.body.removeChild(overlay);
+
+    overlay.appendChild(button);
+    document.body.appendChild(overlay);
   }, [savedProjects, setSavedProjects]);
 
 
@@ -233,9 +266,38 @@ function App() {
   };
 
   const handleReset = useCallback(() => {
-    if (window.confirm('Are you sure you want to start over? This will delete all slides.')) {
+    // Replace confirm with overlay button
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '1000';
+
+    const button = document.createElement('button');
+    button.textContent = 'Start Again';
+    button.style.padding = '1rem 2rem';
+    button.style.fontSize = '1.2rem';
+    button.style.backgroundColor = '#555555';
+    button.style.color = '#fff';
+    button.style.border = 'none';
+    button.style.borderRadius = '8px';
+    button.style.cursor = 'pointer';
+
+    button.onclick = () => {
       resetSlides();
-    }
+      document.body.removeChild(overlay);
+    };
+
+    overlay.onclick = () => document.body.removeChild(overlay);
+
+    overlay.appendChild(button);
+    document.body.appendChild(overlay);
   }, [resetSlides]);
 
 
@@ -324,14 +386,16 @@ function App() {
   const handleDuplicateSlide = useCallback((index) => duplicateSlide(index), [duplicateSlide]);
   const handleDeleteSlide = useCallback((index) => deleteSlide(index), [deleteSlide]);
 
+  const handleReorderSlides = useCallback((oldIndex, newIndex) => reorderSlides(oldIndex, newIndex), [reorderSlides]);
+
   const handleDragEnd = useCallback((event) => {
     const { active, over } = event;
     if (active.id !== over.id) {
       const oldIndex = slides.findIndex(item => item.id === active.id);
       const newIndex = slides.findIndex(item => item.id === over.id);
-      reorderSlides(oldIndex, newIndex);
+      handleReorderSlides(oldIndex, newIndex);
     }
-  }, [slides, reorderSlides]);
+  }, [slides, handleReorderSlides]);
 
 
 
@@ -367,7 +431,7 @@ function App() {
     });
 
     return () => observer.disconnect();
-  }, [slides.length]);
+  }, [slides.length, activeSlideIndex, setActiveSlideIndex]);
 
   // Clear programmatic-scroll guard after scroll settles
   useEffect(() => {
@@ -433,7 +497,7 @@ function App() {
         </DndContext>
       </div>
 
-      <div className={`footer-menu ${isBackgroundDrawerOpen || isColorDrawerOpen || isSearchDrawerOpen || isSizeDrawerOpen || isSaveDrawerOpen || editingLayer || textEditMode ? 'hidden' : ''}`}>
+      <div className={`footer-menu ${!showFooter ? 'hidden' : ''}`}>
         <button className="footer-button" onClick={handleSizeDrawerOpen}><FiMaximize /></button>
         <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
         <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('menu'); }}>T1</button>

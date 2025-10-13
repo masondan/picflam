@@ -16,8 +16,6 @@ const Slide = forwardRef(function Slide({
   onAdd,
   onDuplicate,
   onDelete,
-  onUndo,
-  onRedo,
   drawSlide,
   editingLayer, // 'imageLayer', 'logoImage', or null
   onLayerUpdate,

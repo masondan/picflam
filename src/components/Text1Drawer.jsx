@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import './Text1Drawer.css';
 import {
-  FiX,
-  FiCheck,
+  FiChevronLeft,
   FiEdit2,
   FiMove,
   FiDroplet,
@@ -25,12 +24,9 @@ function Text1Drawer({ onClose, onConfirm, initialText }) {
       >
         <div className="drawer-header">
           <button className="drawer-header-button" onClick={() => onClose(false)}>
-            <FiX />
+            <FiChevronLeft />
           </button>
           <span className="drawer-title">Text 1</span>
-          <button className="drawer-header-button" onClick={handleConfirm}>
-            <FiCheck />
-          </button>
         </div>
         <div className="text1-drawer-body">
           <div className="style-icons">

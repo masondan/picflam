@@ -1,5 +1,5 @@
 import './BackgroundDrawer.css';
-import { FiUpload, FiSearch, FiCheck } from 'react-icons/fi';
+import { FiUpload, FiSearch, FiChevronLeft } from 'react-icons/fi';
 import { PiStar } from 'react-icons/pi';
 
 function BackgroundDrawer({
@@ -36,7 +36,7 @@ function BackgroundDrawer({
           <button className="background-option-button" onClick={onLogoClick} title="Logo">
             <PiStar />
           </button>
-          <button className="drawer-confirm-button" onClick={onClose}><FiCheck /></button>
+          <button className="drawer-back-button" onClick={onClose}><FiChevronLeft /></button>
         </div>
       </div>
     </div>

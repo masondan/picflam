@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import './ImageTransformControl.css';
 
-function ImageTransformControl({ bounds, onUpdate, onDelete, layer }) {
+function ImageTransformControl({ bounds, onUpdate, layer }) {
   const hasDragged = useRef(false);
 
   const handleDragStart = (e) => {

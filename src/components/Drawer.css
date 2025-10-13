@@ -4,20 +4,20 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: transparent;
+  background: linear-gradient(to bottom, transparent 0%, transparent calc(100% - 70px), rgba(0, 0, 0, 0.3) calc(100% - 70px), rgba(0, 0, 0, 0.3) 100%);
   display: flex;
   z-index: 20; /* Ensure it's above the footer menu (z-index: 10) */
   align-items: flex-end;
 }
 
 .drawer-content {
-  background-color: white;
+  background-color: #555555;
   width: 100%;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
   animation: slide-up 0.3s ease-out;
-  color: #333;
+  color: #fff;
 }
 
 @keyframes slide-up {

@@ -1,4 +1,4 @@
-import { FiCheck } from 'react-icons/fi';
+import { FiChevronLeft } from 'react-icons/fi';
 import { LuRectangleVertical, LuSquare, LuRectangleHorizontal } from 'react-icons/lu';
 import './SizeDrawer.css';
 
@@ -13,6 +13,9 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) {
     <div className="drawer-overlay" onClick={() => onClose(false)}>
       <div className="drawer-content size-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-body">
+          <button className="drawer-back-button" onClick={() => onClose(false)}>
+            <FiChevronLeft />
+          </button>
           <div className="size-options-wrapper">
             {sizes.map((size) => (
               <button
@@ -25,9 +28,6 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) {
               </button>
             ))}
           </div>
-          <button className="drawer-confirm-button" onClick={() => onClose(true)}>
-            <FiCheck />
-          </button>
         </div>
       </div>
     </div>

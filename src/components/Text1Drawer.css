@@ -14,7 +14,8 @@
 
 .style-icons {
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-end;
+  gap: 0;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #eeeeee;
   background-color: #f7f7f7;
@@ -22,14 +23,11 @@
 
 .style-icon-button {
   background: none;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: none;
   color: #555;
-  font-size: 20px;
+  font-size: 24px;
   padding: 0.5rem;
   cursor: pointer;
-  width: 44px;
-  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;

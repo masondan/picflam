@@ -8,15 +8,16 @@
   box-shadow: none;
   border-top: none;
   background-color: #555555;
+  animation: none; /* Remove slide-up animation */
 }
 
 .background-drawer .drawer-body {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   position: relative;
   height: 100%;
-  gap: 1.5rem; /* A bit more space between icons */
+  gap: 0; /* Same as footer menu */
   padding: 0 1rem;
 }
 
@@ -27,7 +28,7 @@
   align-items: center;
   cursor: pointer;
   color: #ffffff;
-  font-size: 28px; /* Larger icons */
+  font-size: 24px; /* Same as footer menu */
   padding: 0.5rem;
 }
 
