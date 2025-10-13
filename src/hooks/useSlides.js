@@ -7,7 +7,7 @@ const createDefaultSlide = () => ({
   imageLayer: null,
   logoImage: null,
   text1: '',
-  text1Size: 4.5,
+  text1Size: 5,
   text1YPosition: 5,
   text1Font: 'Inter',
   text1Color: '#FFFFFF',
@@ -21,7 +21,7 @@ const createDefaultSlide = () => ({
   text1QuoteStyle: 'none',
   text1QuoteSize: 5, // Centered default quote size
   text2: '',
-  text2Size: 1.5,
+  text2Size: 5,
   text2YPosition: 8.5,
   text2Font: 'Inter',
   text2Color: '#FFFFFF',

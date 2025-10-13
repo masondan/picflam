@@ -500,8 +500,8 @@ function App() {
       <div className={`footer-menu ${!showFooter ? 'hidden' : ''}`}>
         <button className="footer-button" onClick={handleSizeDrawerOpen}><FiMaximize /></button>
         <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
-        <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('menu'); }}>T1</button>
-        <button className="footer-button t-button" onClick={() => { setTextEditMode('text2'); setTextToolbarTab('menu'); }}>T2</button>
+        <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('edit'); }}>T1</button>
+        <button className="footer-button t-button" onClick={() => { setTextEditMode('text2'); setTextToolbarTab('edit'); }}>T2</button>
         <button className="footer-button" onClick={() => setIsSaveDrawerOpen(true)}><FiBookmark /></button>
         <button className="footer-button" onClick={handleDownload}><FiDownload /></button>
         <button className="footer-button" onClick={handleReset}><FiRotateCcw /></button>

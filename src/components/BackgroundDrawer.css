@@ -17,7 +17,7 @@
   align-items: center;
   position: relative;
   height: 100%;
-  gap: 0; /* Same as footer menu */
+  gap: 14px; /* Consistent with footer menu */
   padding: 0 1rem;
 }
 

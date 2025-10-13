@@ -131,6 +131,7 @@ export default function TextToolbar({
     recognitionRef.current.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       onChangeValue(value + transcript);
+      // Keep drawer open for editing
     };
     recognitionRef.current.onend = () => setIsRecording(false);
     recognitionRef.current.onerror = () => setIsRecording(false);
@@ -147,8 +148,8 @@ export default function TextToolbar({
   const renderEditRow = () => {
     return (
       <div className="toolbar-inner">
-        <button className="mic-btn" onClick={isRecording ? stopRecording : startRecording} title={isRecording ? "Stop Recording" : "Start Voice Input"}>
-          <FiMic style={{ color: isRecording ? 'red' : 'inherit' }} />
+        <button className={`mic-btn ${isRecording ? 'recording' : ''}`} onClick={isRecording ? stopRecording : startRecording} title={isRecording ? "Stop Recording" : "Start Voice Input"}>
+          <FiMic style={{ color: isRecording ? 'red' : 'inherit', opacity: isRecording ? 1 : 0.7 }} />
         </button>
         <div className="edit-container">
           <textarea
@@ -190,7 +191,7 @@ export default function TextToolbar({
       </div>
       <div className="slider-wrap">
         {posMode==='size' ? (
-          <input className="range" type="range" min="1" max="10" step="0.1" value={size} onChange={(e)=>{ const v=parseFloat(e.target.value); schedule(()=>onChangeSize(v)); }} />
+          <input className="range" type="range" min="0" max="10" step="0.1" value={size} onChange={(e)=>{ const v=parseFloat(e.target.value); schedule(()=>onChangeSize(Math.max(1, v))); }} />
         ) : (
           <input className="range" type="range" min="0" max="10" step="0.1" value={yPosition} onChange={(e)=>{ const v=parseFloat(e.target.value); schedule(()=>onChangeY(v)); }} />
         )}
