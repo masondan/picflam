@@ -70,11 +70,18 @@ function App() {
     if (activeSlideRef) {
       isNavScrolling.current = true;
       requestAnimationFrame(() => {
-        activeSlideRef.scrollIntoView({
-          behavior: 'smooth',
-          inline: 'center',
-          block: 'nearest'
-        });
+        // Use precise scroll positioning instead of scrollIntoView for better centering
+        const container = document.querySelector('.canvas-container');
+        const slideEl = activeSlideRef.getSlideWrapperRef()?.current;
+        if (container && slideEl) {
+          const containerRect = container.getBoundingClientRect();
+          const slideRect = slideEl.getBoundingClientRect();
+          const targetScrollLeft = container.scrollLeft + (slideRect.left - containerRect.left) - (containerRect.width / 2) + (slideRect.width / 2);
+          container.scrollTo({
+            left: targetScrollLeft,
+            behavior: 'smooth'
+          });
+        }
       });
     }
   }, [activeSlideIndex]);
@@ -100,6 +107,13 @@ function App() {
     setOriginalSlideState(null);
     setIsSizeDrawerOpen(false);
     setShowFooter(true);
+    // Force re-draw after size change to ensure aspect ratio persists
+    requestAnimationFrame(() => {
+      const canvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
+      if (canvas) {
+        drawSlide(canvas, activeSlide);
+      }
+    });
   };
 
   const handleImageUploadClick = () => backgroundImageInputRef.current.click();
@@ -408,13 +422,13 @@ function App() {
       (entries) => {
         entries.forEach((entry) => entriesMap.set(entry.target, entry.intersectionRatio));
         if (isNavScrolling.current) return;
-        // Pick the slide with the highest intersection ratio
+        // Pick the slide with the highest intersection ratio, but only if it's significantly more visible
         let bestIndex = activeSlideIndex;
         let bestRatio = -1;
         slideRefs.current.forEach((ref, i) => {
           const el = ref?.getSlideWrapperRef?.()?.current; // slide-wrapper
           const ratio = el ? (entriesMap.get(el) ?? 0) : 0;
-          if (ratio > bestRatio) {
+          if (ratio > bestRatio && ratio > 0.9) { // Require >90% visibility to change active slide
             bestRatio = ratio;
             bestIndex = i;
           }
@@ -477,7 +491,18 @@ function App() {
                     isNavScrolling.current = true;
                     setActiveSlideIndex(index - 1);
                     requestAnimationFrame(() => {
-                      slideRefs.current[index - 1]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                      const container = document.querySelector('.canvas-container');
+                      const slideEl = slideRefs.current[index - 1]?.getSlideWrapperRef()?.current;
+                      if (container && slideEl) {
+                        const containerRect = container.getBoundingClientRect();
+                        const slideRect = slideEl.getBoundingClientRect();
+                        const gap = window.innerWidth >= 768 ? 32 : 0; // Account for gap (2rem = 32px on desktop)
+                        const targetScrollLeft = container.scrollLeft + (slideRect.left - containerRect.left) - (containerRect.width / 2) + (slideRect.width / 2) - gap;
+                        container.scrollTo({
+                          left: targetScrollLeft,
+                          behavior: 'smooth'
+                        });
+                      }
                     });
                   }
                 }}
@@ -486,7 +511,18 @@ function App() {
                     isNavScrolling.current = true;
                     setActiveSlideIndex(index + 1);
                     requestAnimationFrame(() => {
-                      slideRefs.current[index + 1]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                      const container = document.querySelector('.canvas-container');
+                      const slideEl = slideRefs.current[index + 1]?.getSlideWrapperRef()?.current;
+                      if (container && slideEl) {
+                        const containerRect = container.getBoundingClientRect();
+                        const slideRect = slideEl.getBoundingClientRect();
+                        const gap = window.innerWidth >= 768 ? 32 : 0; // Account for gap (2rem = 32px on desktop)
+                        const targetScrollLeft = container.scrollLeft + (slideRect.left - containerRect.left) - (containerRect.width / 2) + (slideRect.width / 2) + gap;
+                        container.scrollTo({
+                          left: targetScrollLeft,
+                          behavior: 'smooth'
+                        });
+                      }
                     });
                   }
                 }}

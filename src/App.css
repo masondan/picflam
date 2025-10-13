@@ -7,6 +7,17 @@
   background-color: #eeeeee;
 }
 
+/* Desktop responsiveness */
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 1200px;
+    max-height: 90vh; /* Allow some space for browser UI */
+    height: 90vh; /* Full height on desktop */
+    margin: 5vh auto 0; /* Center vertically with top margin */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+}
+
 .canvas-container {
   /* This is our "centering box" */
   flex: 1; /* Grow to fill available space */
@@ -20,10 +31,17 @@
   overflow-y: hidden;
   min-height: 0; /* A flexbox-specific fix to allow shrinking */
   box-sizing: border-box;
-  gap: 0; /* No gap so neighboring slides do not peek */
+  gap: 0; /* No gap on mobile to prevent peeking */
 
   /* Snap scrolling to center slides */
   scroll-snap-type: x mandatory;
+}
+
+/* Add gaps on larger screens for better multi-slide visibility */
+@media (min-width: 768px) {
+  .canvas-container {
+    gap: 2rem; /* Increase gap for better separation */
+  }
 }
 
 .picflam-canvas {
