@@ -63,7 +63,7 @@ const Slide = forwardRef(function Slide({
     if (canvasRef.current) {
       drawSlide(canvasRef.current, slide);
     }
-  }, [slide, drawSlide]);
+  }, [slide, drawSlide, canvasMeasureTick]);
 
   useImperativeHandle(ref, () => ({
     scrollIntoView: (opts) => {

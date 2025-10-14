@@ -61,6 +61,11 @@
   max-height: 100%;
 }
 
+.footer-container {
+  height: 70px;
+  flex-shrink: 0;
+}
+
 .footer-menu {
   height: 70px;
   background-color: #555555;
@@ -69,8 +74,8 @@
   justify-content: space-around;
   align-items: center;
   padding: 0 1rem;
-  flex-shrink: 0; /* Prevents the footer from shrinking */
-  transition: opacity 0.2s ease, visibility 0.2s ease; /* Add transition for smooth appearance */
+  transition: opacity 0.25s ease; /* Smooth opacity transition */
+  will-change: opacity; /* Optimize for transitions */
 }
 
 .footer-button {
@@ -93,5 +98,5 @@
 }
 
 .footer-menu.hidden {
-  display: none;
+  opacity: 0;
 }

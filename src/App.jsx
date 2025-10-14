@@ -26,11 +26,13 @@ import SaveDrawer from './components/SaveDrawer';
 import ImageDrawer from './components/ImageDrawer';
 import Slide from './components/Slide';
 import TextToolbar from './components/TextToolbar';
+import SplashScreen from './components/SplashScreen';
 import { useSlides } from './hooks/useSlides';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { drawSlide, computeTextBounds } from './utils/canvasUtils';
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [isBackgroundDrawerOpen, setIsBackgroundDrawerOpen] = useState(false);
   const [isColorDrawerOpen, setIsColorDrawerOpen] = useState(false);
   const [isSearchDrawerOpen, setIsSearchDrawerOpen] = useState(false);
@@ -95,25 +97,25 @@ function App() {
   );
 
   const handleSizeDrawerOpen = () => {
-    setOriginalSlideState(activeSlide);
-    setIsSizeDrawerOpen(true);
+    setOriginalSlideState({ ...activeSlide }); // Store a copy to prevent reference issues
     setShowFooter(false);
-  };
-
-  const handleSizeDrawerClose = (confirm) => {
-    if (!confirm && originalSlideState) {
-      updateActiveSlide({ canvasSize: originalSlideState.canvasSize });
-    }
-    setOriginalSlideState(null);
-    setIsSizeDrawerOpen(false);
-    setShowFooter(true);
-    // Force re-draw after size change to ensure aspect ratio persists
-    requestAnimationFrame(() => {
+    setIsSizeDrawerOpen(true);
+    // Wait for footer to hide, then redraw canvas
+    setTimeout(() => {
       const canvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
       if (canvas) {
         drawSlide(canvas, activeSlide);
       }
-    });
+    }, 300); // Match the CSS transition duration
+  };
+
+  const handleSizeDrawerClose = (confirm) => {
+    setOriginalSlideState(null);
+    setShowFooter(true);
+    // Delay closing the drawer to match the slide-down animation (0.3s)
+    setTimeout(() => {
+      setIsSizeDrawerOpen(false);
+    }, 300);
   };
 
   const handleImageUploadClick = () => backgroundImageInputRef.current.click();
@@ -249,10 +251,10 @@ function App() {
     overlay.style.zIndex = '1000';
 
     const button = document.createElement('button');
-    button.textContent = 'Delete';
-    button.style.padding = '1rem 2rem';
-    button.style.fontSize = '1.2rem';
-    button.style.backgroundColor = '#555555';
+    button.textContent = 'Delete?';
+    button.style.padding = '0.75rem 1.5rem';
+    button.style.fontSize = '1rem';
+    button.style.backgroundColor = '#e50000';
     button.style.color = '#fff';
     button.style.border = 'none';
     button.style.borderRadius = '8px';
@@ -294,10 +296,10 @@ function App() {
     overlay.style.zIndex = '1000';
 
     const button = document.createElement('button');
-    button.textContent = 'Start Again';
-    button.style.padding = '1rem 2rem';
-    button.style.fontSize = '1.2rem';
-    button.style.backgroundColor = '#555555';
+    button.textContent = 'Start Again?';
+    button.style.padding = '0.75rem 1.5rem';
+    button.style.fontSize = '1rem';
+    button.style.backgroundColor = '#e50000';
     button.style.color = '#fff';
     button.style.border = 'none';
     button.style.borderRadius = '8px';
@@ -464,6 +466,10 @@ function App() {
     };
   }, []);
 
+  if (showSplash) {
+    return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
+  }
+
   return (
     <div className="app-container">
       <div className="canvas-container">
@@ -533,14 +539,16 @@ function App() {
         </DndContext>
       </div>
 
-      <div className={`footer-menu ${!showFooter ? 'hidden' : ''}`}>
-        <button className="footer-button" onClick={handleSizeDrawerOpen}><FiMaximize /></button>
-        <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
-        <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('edit'); }}>T1</button>
-        <button className="footer-button t-button" onClick={() => { setTextEditMode('text2'); setTextToolbarTab('edit'); }}>T2</button>
-        <button className="footer-button" onClick={() => setIsSaveDrawerOpen(true)}><FiBookmark /></button>
-        <button className="footer-button" onClick={handleDownload}><FiDownload /></button>
-        <button className="footer-button" onClick={handleReset}><FiRotateCcw /></button>
+      <div className="footer-container">
+        <div className={`footer-menu ${!showFooter ? 'hidden' : ''}`}>
+          <button className="footer-button" onClick={handleSizeDrawerOpen}><FiMaximize /></button>
+          <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
+          <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('edit'); }}>T1</button>
+          <button className="footer-button t-button" onClick={() => { setTextEditMode('text2'); setTextToolbarTab('edit'); }}>T2</button>
+          <button className="footer-button" onClick={() => setIsSaveDrawerOpen(true)}><FiBookmark /></button>
+          <button className="footer-button" onClick={handleDownload}><FiDownload /></button>
+          <button className="footer-button" onClick={handleReset}><FiRotateCcw /></button>
+        </div>
       </div>
 
       <input type="file" ref={backgroundImageInputRef} onChange={(e) => handleFileChange(e, 'imageLayer')} accept="image/*" style={{ display: 'none' }} />
@@ -579,7 +587,9 @@ function App() {
       )}
 
       {isSizeDrawerOpen && (
-        <SizeDrawer onClose={handleSizeDrawerClose} onCanvasSizeChange={(size) => updateActiveSlide({ canvasSize: size })} currentSize={activeSlide.canvasSize} />
+        <SizeDrawer onClose={handleSizeDrawerClose} onCanvasSizeChange={(size) => {
+          updateActiveSlide({ canvasSize: size });
+        }} currentSize={activeSlide.canvasSize} />
       )}
 
       {isSaveDrawerOpen && (
