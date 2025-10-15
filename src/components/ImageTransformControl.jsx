@@ -9,14 +9,16 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
     e.stopPropagation();
     hasDragged.current = false;
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    const startX = e.clientX || (e.touches && e.touches[0].clientX);
+    const startY = e.clientY || (e.touches && e.touches[0].clientY);
     const initialX = layer.x || 0;
     const initialY = layer.y || 0;
 
     const handleDragMove = (moveEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+      const clientX = moveEvent.clientX || (moveEvent.touches && moveEvent.touches[0].clientX);
+      const clientY = moveEvent.clientY || (moveEvent.touches && moveEvent.touches[0].clientY);
+      const dx = clientX - startX;
+      const dy = clientY - startY;
       if (Math.abs(dx) > 2 || Math.abs(dy) > 2) { // Threshold to detect a real drag
         hasDragged.current = true;
       }
@@ -24,8 +26,10 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
     };
 
     const handleDragEnd = (endEvent) => {
-      const finalDx = endEvent.clientX - startX;
-      const finalDy = endEvent.clientY - startY;
+      const finalClientX = endEvent.clientX || (endEvent.changedTouches && endEvent.changedTouches[0].clientX);
+      const finalClientY = endEvent.clientY || (endEvent.changedTouches && endEvent.changedTouches[0].clientY);
+      const finalDx = finalClientX - startX;
+      const finalDy = finalClientY - startY;
       if (hasDragged.current) {
         endEvent.stopPropagation();
       }
@@ -34,10 +38,14 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
 
       document.removeEventListener('mousemove', handleDragMove);
       document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener('touchmove', handleDragMove);
+      document.removeEventListener('touchend', handleDragEnd);
     };
 
     document.addEventListener('mousemove', handleDragMove);
     document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener('touchmove', handleDragMove, { passive: false });
+    document.addEventListener('touchend', handleDragEnd);
   };
 
   if (!bounds) return null;
@@ -47,6 +55,7 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
       className="image-transform-controls"
       style={{ ...bounds, cursor: 'move' }}
       onMouseDown={handleDragStart}
+      onTouchStart={handleDragStart}
       onClick={(e) => e.stopPropagation()}
     />
   );

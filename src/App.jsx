@@ -278,6 +278,7 @@ function App() {
   const handleImageDrawerClose = () => {
     // Always return to the background/image import drawer on confirm
     setIsBackgroundDrawerOpen(true);
+    setShowFooter(true);
     setEditingLayer(null);
   };
 
@@ -583,7 +584,8 @@ function App() {
           onClose={handleImageDrawerClose}
           imageLayer={activeSlide[editingLayer]}
           isLogo={editingLayer === 'logoImage'}
-          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } }) } />
+          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } }) }
+          onOpen={() => setShowFooter(false)} />
       )}
 
       {isSizeDrawerOpen && (

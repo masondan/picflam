@@ -10,31 +10,50 @@
   z-index: 21; /* Ensure it's above the overlay and other content during animation */
   /* The `bottom` property is removed, it will now default to the bottom of the viewport */
   animation: none; /* Remove slide-up animation */
+  transform: translateY(0); /* Ensure it's visible at the bottom */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 .image-drawer-controls {
-  display: grid;
-  grid-template-columns: auto 1fr auto; /* Back Button | Main Area | Toggles */
+  display: flex;
   align-items: center;
   padding: 0 1rem;
-  gap: 14px;
   height: 100%;
+  position: relative;
 }
 
 .drawer-back-button {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: #fff;
   font-size: 24px;
   cursor: pointer;
-  padding: 0.5rem;
+  z-index: 10;
 }
+
+.drawer-center-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 1rem;
+  margin-left: 3rem; /* Space for back button */
+  margin-right: 1rem;
+}
+
+
 
 .control-toggles {
   display: flex;
   gap: 0.75rem;
   flex-shrink: 0;
-  justify-content: flex-end;
 }
 
 .control-toggle-button,
@@ -62,7 +81,8 @@
 .active-control-area {
   display: flex;
   align-items: center;
-  min-width: 0; /* Important for flex-grow to work correctly */
+  flex: 1;
+  justify-content: center;
 }
 
 .fit-fill-button {
