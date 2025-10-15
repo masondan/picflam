@@ -14,9 +14,11 @@ function SearchDrawer({ onClose, onImageSelect }) {
   const fetchImages = async (searchQuery) => {
     setLoading(true);
     setError(null);
-    const url = searchQuery
+    const baseUrl = searchQuery
       ? `https://api.pexels.com/v1/search?query=${searchQuery}&per_page=15`
       : 'https://api.pexels.com/v1/curated?per_page=15';
+    const proxyUrl = import.meta.env.DEV ? 'https://cors-anywhere.herokuapp.com/' : '';
+    const url = proxyUrl + baseUrl;
 
     try {
       console.log('Fetching from Pexels:', url);
@@ -66,8 +68,10 @@ function SearchDrawer({ onClose, onImageSelect }) {
     setLoading(true);
     setError(null);
     try {
-      console.log('Loading more from:', nextPageUrl);
-      const response = await fetch(nextPageUrl, {
+      const proxyUrl = import.meta.env.DEV ? 'https://cors-anywhere.herokuapp.com/' : '';
+      const url = proxyUrl + nextPageUrl;
+      console.log('Loading more from:', url);
+      const response = await fetch(url, {
         headers: {
           Authorization: PEXELS_API_KEY,
           'Origin': window.location.origin,
