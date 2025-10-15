@@ -226,19 +226,67 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
     const maxWidth = canvasWidth * 0.8;
     const yPosition = canvasHeight * (yPos / 10);
     ctx.font = finalFont; ctx.textAlign = align; ctx.textBaseline = 'middle';
-    const paragraphs = text.split('\n'); const lines = []; let widestLine = 0;
+
+    // Process highlighting at paragraph level before line wrapping
+    const paragraphs = text.split('\n');
+    const processedLines = [];
+    let widestLine = 0;
+
     paragraphs.forEach(paragraph => {
-      const words = paragraph.split(' '); let line = '';
-      for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' '; const metrics = ctx.measureText(testLine); const testWidth = metrics.width;
-        if (testWidth > maxWidth && n > 0) {
-          lines.push(line); if (ctx.measureText(line).width > widestLine) { widestLine = ctx.measureText(line).width; }
-          line = words[n] + ' ';
-        } else { line = testLine; }
+      // Split paragraph into parts with highlighting info
+      const parts = paragraph.split(/(==[^=]*==)/g).filter(p => p);
+      const highlightedParts = parts.map(part => ({
+        text: part.startsWith('==') && part.endsWith('==') ? part.substring(2, part.length - 2) : part,
+        isHighlight: part.startsWith('==') && part.endsWith('==')
+      }));
+
+      // Now wrap lines while preserving highlight information
+      let currentLineParts = [];
+      let currentLineWidth = 0;
+
+      for (let i = 0; i < highlightedParts.length; i++) {
+        const part = highlightedParts[i];
+        const words = part.text.split(' ');
+        let wordIndex = 0;
+
+        while (wordIndex < words.length) {
+          const testWord = words[wordIndex];
+          const testWidth = ctx.measureText((currentLineParts.length > 0 ? currentLineParts[currentLineParts.length - 1].text + ' ' : '') + testWord).width;
+
+          if (currentLineWidth + testWidth > maxWidth && currentLineParts.length > 0) {
+            // Line is full, save current line
+            const lineText = currentLineParts.map(p => p.text).join('');
+            processedLines.push({ parts: currentLineParts, width: ctx.measureText(lineText).width });
+            if (ctx.measureText(lineText).width > widestLine) widestLine = ctx.measureText(lineText).width;
+
+            // Start new line with current word
+            currentLineParts = [{ text: testWord, isHighlight: part.isHighlight }];
+            currentLineWidth = ctx.measureText(testWord).width;
+          } else {
+            // Add word to current line
+            if (currentLineParts.length > 0 && currentLineParts[currentLineParts.length - 1].isHighlight === part.isHighlight) {
+              // Merge with previous part if same highlight status
+              currentLineParts[currentLineParts.length - 1].text += ' ' + testWord;
+            } else {
+              // Start new part
+              currentLineParts.push({ text: testWord, isHighlight: part.isHighlight });
+            }
+            currentLineWidth += ctx.measureText((wordIndex === 0 && currentLineParts.length === 1 ? '' : ' ') + testWord).width;
+          }
+          wordIndex++;
+        }
       }
-      lines.push(line); if (ctx.measureText(line).width > widestLine) { widestLine = ctx.measureText(line).width; }
+
+      // Add remaining line
+      if (currentLineParts.length > 0) {
+        const lineText = currentLineParts.map(p => p.text).join('');
+        processedLines.push({ parts: currentLineParts, width: ctx.measureText(lineText).width });
+        if (ctx.measureText(lineText).width > widestLine) widestLine = ctx.measureText(lineText).width;
+      }
     });
-    const totalTextHeight = lines.length * lineHeight; let currentY = yPosition - (totalTextHeight / 2) + (lineHeight / 2);
+
+    const totalTextHeight = processedLines.length * lineHeight;
+    let currentY = yPosition - (totalTextHeight / 2) + (lineHeight / 2);
     if (quoteStyle !== 'none') {
       const quoteSizeVal = baseFontSize * 4 * (quoteSize / 5);
       let quoteFont = '';
@@ -301,25 +349,11 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
       ctx.fill();
     }
 
-    for (let i = 0; i < lines.length; i++) {
-      const lineText = lines[i].trim();
-      const lineParts = lineText.split(/(==[^=]+==)/g).filter(p => p); // Filter out empty strings
+    for (let i = 0; i < processedLines.length; i++) {
+      const lineData = processedLines[i];
+      const totalLineWidth = lineData.parts.reduce((sum, part) => sum + ctx.measureText(part.text).width, 0);
 
-      if (lineParts.length === 0) {
-        currentY += lineHeight;
-        continue;
-      }
-
-      // 1. Prepare measured parts
-      const measuredParts = lineParts.map(part => {
-          const isHighlight = part.startsWith('==') && part.endsWith('==');
-          const text = isHighlight ? part.substring(2, part.length - 2) : part;
-          const width = ctx.measureText(text).width;
-          return { text, width, isHighlight };
-      });
-      const totalLineWidth = measuredParts.reduce((sum, part) => sum + part.width, 0);
-
-      // 2. Determine initial X coordinate
+      // Determine initial X coordinate
       let currentX;
       if (align === 'left') {
           currentX = (canvasWidth - maxWidth) / 2;
@@ -329,10 +363,10 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
           currentX = (canvasWidth / 2) - (totalLineWidth / 2);
       }
 
-      // 3. Draw the parts sequentially
+      // Draw the parts sequentially
       ctx.textAlign = 'left'; // We are manually positioning, so always draw from the left.
 
-      for (const part of measuredParts) {
+      for (const part of lineData.parts) {
           // Set styles for this part
           ctx.fillStyle = part.isHighlight ? slideData.text1HighlightColor : color;
           if (hasShadow) {
@@ -360,7 +394,7 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
           }
 
           // Advance the X position for the next part
-          currentX += part.width;
+          currentX += ctx.measureText(part.text).width;
       }
 
       // Reset shadow for next line
@@ -376,12 +410,12 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
   };
   const { text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, text2LabelColor, text2LabelTransparency } = slideData;
 
-  // Chain the drawing promises
+  // Chain the drawing promises - draw text after logo so text appears above logo
   drawImageOnCanvas(imageLayer)
+    .then(() => drawImageOnCanvas(logoImage))
     .then(() => {
       if (text1) { drawText(text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, false, 'transparent', 0); }
       if (text2) { drawText(text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, false, false, 'none', 5, text2LabelColor !== 'transparent', text2LabelColor, text2LabelTransparency); }
-      return drawImageOnCanvas(logoImage);
     })
     .then(() => {
       resolve(); // All drawing is complete

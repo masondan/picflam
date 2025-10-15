@@ -8,6 +8,8 @@
 - [x] Fix slider jumping back to fit/fill on tap
 - [x] Test all fixes on mobile devices
 - [x] Build and deploy updated version
+- [x] Fix text highlighting for multi-word phrases
+- [x] Fix text layer ordering (text above logo)
 
 ## Pending Tasks
-- [ ] Test new Pexels API key on mobile devices (with enhanced error logging)
+- [ ] Verify multi-line highlighting works correctly
