@@ -10,6 +10,11 @@
 - [x] Build and deploy updated version
 - [x] Fix text highlighting for multi-word phrases
 - [x] Fix text layer ordering (text above logo)
+- [x] Verify multi-line highlighting works correctly
 
-## Pending Tasks
-- [ ] Verify multi-line highlighting works correctly
+## New Tasks - Mobile Text Input UX
+- [x] Make text input toolbar independent of canvas movement (fixed positioning)
+- [x] Restrict canvas movement to vertical-only during text editing
+- [x] Position canvas bottom just above input toolbar initially
+- [x] Improve text input font weight for better readability
+- [ ] Test text input behavior on mobile devices

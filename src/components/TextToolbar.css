@@ -31,7 +31,7 @@
 .edit-textarea {
   flex: 1;
   min-height: 44px; max-height: 56px; resize: none; overflow: auto;
-  background: #fff; color: #222; border: none; outline: none; border-radius: 10px; padding: 8px 10px; font-size: 14px;
+  background: #fff; color: #222; border: none; outline: none; border-radius: 10px; padding: 8px 10px; font-size: 16px; font-weight: 500;
 }
 .edit-textarea::placeholder { color: #bbbbbb; }
 .mic-btn {

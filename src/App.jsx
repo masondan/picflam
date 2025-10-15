@@ -42,6 +42,7 @@ function App() {
   const [editingLayer, setEditingLayer] = useState(null);
   const [textEditMode, setTextEditMode] = useState(null); // null | 'text1' | 'text2'
   const [textToolbarTab, setTextToolbarTab] = useState('edit');
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const {
     slides,
@@ -66,6 +67,7 @@ function App() {
   const backgroundImageInputRef = useRef(null);
   const logoImageInputRef = useRef(null);
   const imageDrawerRef = useRef(null);
+  const canvasContainerRef = useRef(null);
 
   useEffect(() => {
     const activeSlideRef = slideRefs.current[activeSlideIndex];
@@ -73,7 +75,7 @@ function App() {
       isNavScrolling.current = true;
       requestAnimationFrame(() => {
         // Use precise scroll positioning instead of scrollIntoView for better centering
-        const container = document.querySelector('.canvas-container');
+        const container = canvasContainerRef.current || document.querySelector('.canvas-container');
         const slideEl = activeSlideRef.getSlideWrapperRef()?.current;
         if (container && slideEl) {
           const containerRect = container.getBoundingClientRect();
@@ -345,6 +347,7 @@ function App() {
       setEditingLayer(null);
       setTextEditMode('text2');
       setTextToolbarTab('menu');
+      setIsKeyboardActive(true);
       return;
     }
     const text1Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text1');
@@ -352,6 +355,7 @@ function App() {
       setEditingLayer(null);
       setTextEditMode('text1');
       setTextToolbarTab('menu');
+      setIsKeyboardActive(true);
       return;
     }
 
@@ -418,7 +422,7 @@ function App() {
 
   // Keep active slide in sync with scroll via IntersectionObserver
   useEffect(() => {
-    const container = document.querySelector('.canvas-container');
+    const container = canvasContainerRef.current || document.querySelector('.canvas-container');
     if (!container) return;
     const entriesMap = new Map();
     const observer = new IntersectionObserver(
@@ -452,7 +456,7 @@ function App() {
 
   // Clear programmatic-scroll guard after scroll settles
   useEffect(() => {
-    const container = document.querySelector('.canvas-container');
+    const container = canvasContainerRef.current || document.querySelector('.canvas-container');
     if (!container) return;
     let t;
     const onScroll = () => {
@@ -473,7 +477,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="canvas-container">
+      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'hidden', paddingBottom: '70px' } : {}}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} >
           <SortableContext items={slides.map(s => s.id)} strategy={horizontalListSortingStrategy}>
             {slides.map((slide, index) => (
@@ -498,7 +502,7 @@ function App() {
                     isNavScrolling.current = true;
                     setActiveSlideIndex(index - 1);
                     requestAnimationFrame(() => {
-                      const container = document.querySelector('.canvas-container');
+                      const container = canvasContainerRef.current || document.querySelector('.canvas-container');
                       const slideEl = slideRefs.current[index - 1]?.getSlideWrapperRef()?.current;
                       if (container && slideEl) {
                         const containerRect = container.getBoundingClientRect();
@@ -518,7 +522,7 @@ function App() {
                     isNavScrolling.current = true;
                     setActiveSlideIndex(index + 1);
                     requestAnimationFrame(() => {
-                      const container = document.querySelector('.canvas-container');
+                      const container = canvasContainerRef.current || document.querySelector('.canvas-container');
                       const slideEl = slideRefs.current[index + 1]?.getSlideWrapperRef()?.current;
                       if (container && slideEl) {
                         const containerRect = container.getBoundingClientRect();
@@ -544,8 +548,8 @@ function App() {
         <div className={`footer-menu ${!showFooter ? 'hidden' : ''}`}>
           <button className="footer-button" onClick={handleSizeDrawerOpen}><FiMaximize /></button>
           <button className="footer-button" onClick={() => setIsBackgroundDrawerOpen(true)}><FiImage /></button>
-          <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('edit'); }}>T1</button>
-          <button className="footer-button t-button" onClick={() => { setTextEditMode('text2'); setTextToolbarTab('edit'); }}>T2</button>
+          <button className="footer-button t-button" onClick={() => { setTextEditMode('text1'); setTextToolbarTab('edit'); setIsKeyboardActive(true); }}>T1</button>
+          <button className="footer-button t-button" onClick={() => { setTextEditMode('text2'); setTextToolbarTab('edit'); setIsKeyboardActive(true); }}>T2</button>
           <button className="footer-button" onClick={() => setIsSaveDrawerOpen(true)}><FiBookmark /></button>
           <button className="footer-button" onClick={handleDownload}><FiDownload /></button>
           <button className="footer-button" onClick={handleReset}><FiRotateCcw /></button>
@@ -666,7 +670,7 @@ function App() {
           onChangeQuoteStyle={(s) => updateActiveSlide({ text1QuoteStyle: s })}
           quoteSize={activeSlide.text1QuoteSize}
           onChangeQuoteSize={(v) => updateActiveSlide({ text1QuoteSize: v })}
-          onClose={() => setTextEditMode(null)}
+          onClose={() => { setTextEditMode(null); setIsKeyboardActive(false); }}
         />
       )}
     </div>

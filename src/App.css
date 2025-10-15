@@ -35,6 +35,9 @@
 
   /* Snap scrolling to center slides */
   scroll-snap-type: x mandatory;
+
+  /* Text editing mode adjustments */
+  transition: padding-bottom 0.3s ease;
 }
 
 /* Add gaps on larger screens for better multi-slide visibility */
