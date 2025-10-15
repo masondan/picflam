@@ -13,13 +13,15 @@ const ImageDrawer = forwardRef(function ImageDrawer({
   onOpen,
 }, ref) {
   // 'fit-fill', 'size', or 'opacity'
-  const [activeControl, setActiveControl] = useState(isLogo ? 'size' : 'fit-fill');
+  const [activeControl, setActiveControl] = useState(imageLayer.activeControl || (isLogo ? 'size' : 'fit-fill'));
 
-  // When the layer changes (e.g. user clicks a different image), reset the active control.
+  // When the layer changes (e.g. user clicks a different image), reset the active control if not already set.
   useEffect(() => {
-    setActiveControl(isLogo ? 'size' : 'fit-fill');
+    if (!imageLayer.activeControl) {
+      setActiveControl(isLogo ? 'size' : 'fit-fill');
+    }
     if (onOpen) onOpen();
-  }, [imageLayer.img.src, isLogo, onOpen]);
+  }, [imageLayer?.img?.src, isLogo, onOpen, imageLayer.activeControl]);
 
   if (!imageLayer) return null;
 
@@ -32,7 +34,10 @@ const ImageDrawer = forwardRef(function ImageDrawer({
             {!isLogo && (
               <button
                 className={`control-toggle-button ${activeControl === 'fit-fill' ? 'active' : ''}`}
-                onClick={() => setActiveControl('fit-fill')}
+                onClick={() => {
+                  setActiveControl('fit-fill');
+                  onUpdate({ activeControl: 'fit-fill' });
+                }}
                 title="Fit/Fill"
               >
                 <LiaExpandSolid />
@@ -40,14 +45,20 @@ const ImageDrawer = forwardRef(function ImageDrawer({
             )}
             <button
               className={`control-toggle-button ${activeControl === 'size' ? 'active' : ''}`}
-              onClick={() => setActiveControl('size')}
+              onClick={() => {
+                setActiveControl('size');
+                onUpdate({ activeControl: 'size' });
+              }}
               title="Size"
             >
               <PiResize />
             </button>
             <button
               className={`control-toggle-button ${activeControl === 'opacity' ? 'active' : ''}`}
-              onClick={() => setActiveControl('opacity')}
+              onClick={() => {
+                setActiveControl('opacity');
+                onUpdate({ activeControl: 'opacity' });
+              }}
               title="Opacity"
             >
               <RxOpacity />
