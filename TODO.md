@@ -10,4 +10,4 @@
 - [x] Build and deploy updated version
 
 ## Pending Tasks
-- [ ] Test new Pexels API key on mobile devices
+- [ ] Test new Pexels API key on mobile devices (with enhanced error logging)

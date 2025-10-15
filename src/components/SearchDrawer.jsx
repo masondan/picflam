@@ -19,24 +19,31 @@ function SearchDrawer({ onClose, onImageSelect }) {
       : 'https://api.pexels.com/v1/curated?per_page=15';
 
     try {
+      console.log('Fetching from Pexels:', url);
+      console.log('API Key present:', !!PEXELS_API_KEY);
       const response = await fetch(url, {
         headers: {
           Authorization: PEXELS_API_KEY,
         },
       });
-      if (!response.ok) {        // Let's create a more informative error message
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      if (!response.ok) {
+        // Let's create a more informative error message
         if (response.status === 401) {
           throw new Error('Pexels API key is invalid or missing. Please check your .env.local file and restart the server.');
         }
         const errorText = await response.text();
+        console.error('Error response body:', errorText);
         throw new Error(`Failed to fetch from Pexels: ${response.status} ${response.statusText} - ${errorText}`);
       }
       const data = await response.json();
+      console.log('Success! Received', data.photos?.length || 0, 'photos');
       setResults(searchQuery ? data.photos : [...results, ...data.photos]);
       setNextPageUrl(data.next_page || null);
     } catch (err) {
+      console.error('Fetch error:', err);
       setError(err.message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -47,18 +54,23 @@ function SearchDrawer({ onClose, onImageSelect }) {
     setLoading(true);
     setError(null);
     try {
+      console.log('Loading more from:', nextPageUrl);
       const response = await fetch(nextPageUrl, {
         headers: { Authorization: PEXELS_API_KEY },
       });
+      console.log('Load more response status:', response.status);
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Load more error response:', errorText);
         throw new Error(`Failed to fetch next page from Pexels: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
+      console.log('Load more success! Received', data.photos?.length || 0, 'additional photos');
       setResults(prevResults => [...prevResults, ...data.photos]);
       setNextPageUrl(data.next_page || null);
     } catch (err) {
+      console.error('Load more fetch error:', err);
       setError(err.message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
