@@ -26,18 +26,8 @@ function SearchDrawer({ onClose, onImageSelect }) {
       const response = await fetch(url, {
         headers: {
           Authorization: PEXELS_API_KEY,
-          'Origin': window.location.origin,
-          'Referer': window.location.href,
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'cross-site',
-          'Sec-Fetch-Dest': 'empty',
-          'Cache-Control': 'no-cache',
           'Accept': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Sec-Fetch-User': '?1',
-          'DNT': '1',
-          'Upgrade-Insecure-Requests': '1',
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
         },
       });
       console.log('Response status:', response.status);
@@ -74,18 +64,8 @@ function SearchDrawer({ onClose, onImageSelect }) {
       const response = await fetch(url, {
         headers: {
           Authorization: PEXELS_API_KEY,
-          'Origin': window.location.origin,
-          'Referer': window.location.href,
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'cross-site',
-          'Sec-Fetch-Dest': 'empty',
-          'Cache-Control': 'no-cache',
           'Accept': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Sec-Fetch-User': '?1',
-          'DNT': '1',
-          'Upgrade-Insecure-Requests': '1',
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
         },
       });
       console.log('Load more response status:', response.status);
