@@ -70,6 +70,18 @@ function App() {
   const canvasContainerRef = useRef(null);
 
   useEffect(() => {
+    if (textEditMode) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+  }, [textEditMode]);
+
+  useEffect(() => {
     const activeSlideRef = slideRefs.current[activeSlideIndex];
     if (activeSlideRef) {
       isNavScrolling.current = true;
@@ -477,7 +489,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'hidden', paddingBottom: '70px' } : {}}>
+      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'hidden', paddingBottom: '30px', maxHeight: 'calc(100% - 70px)' } : {}}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} >
           <SortableContext items={slides.map(s => s.id)} strategy={horizontalListSortingStrategy}>
             {slides.map((slide, index) => (

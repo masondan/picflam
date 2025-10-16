@@ -17,4 +17,6 @@
 - [x] Restrict canvas movement to vertical-only during text editing
 - [x] Position canvas bottom just above input toolbar initially
 - [x] Improve text input font weight for better readability
+- [x] Prevent body scroll during text editing on iOS/Android
+- [x] Use consistent 30px padding across aspect ratios
 - [ ] Test text input behavior on mobile devices
