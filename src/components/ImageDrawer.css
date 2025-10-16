@@ -20,22 +20,19 @@
 .image-drawer-controls {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 1rem;
   height: 100%;
   position: relative;
 }
 
 .drawer-back-button {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
   background: none;
   border: none;
   color: #fff;
   font-size: 24px;
   cursor: pointer;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
 .drawer-center-content {
@@ -44,8 +41,7 @@
   justify-content: center;
   flex: 1;
   gap: 1rem;
-  margin-left: 3rem; /* Space for back button */
-  margin-right: 1rem;
+  margin-left: 3rem; /* Add space between back button and controls */
 }
 
 

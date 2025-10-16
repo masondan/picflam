@@ -1,17 +1,6 @@
 import './App.css'
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  horizontalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import {
   FiMaximize,
   FiImage,
   FiBookmark,
@@ -46,22 +35,14 @@ function App() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const {
-    slides,
-    activeSlideIndex,
-    activeSlide,
-    setActiveSlideIndex,
-    updateActiveSlide,
-    addSlide,
-    duplicateSlide,
-    deleteSlide,
-    reorderSlides,
-    resetSlides,
+    slide,
+    updateSlide,
+    resetSlide,
   } = useSlides();
 
   const [savedProjects, setSavedProjects] = useLocalStorage('picflam_projects', [null, null, null]);
 
-  const slideRefs = useRef([]);
-  const isNavScrolling = useRef(false);
+  const slideRef = useRef(null);
 
   const [originalSlideState, setOriginalSlideState] = useState(null);
 
@@ -102,44 +83,15 @@ function App() {
     }
   }, [textEditMode]);
 
-  useEffect(() => {
-    const activeSlideRef = slideRefs.current[activeSlideIndex];
-    if (activeSlideRef) {
-      isNavScrolling.current = true;
-      requestAnimationFrame(() => {
-        // Use precise scroll positioning instead of scrollIntoView for better centering
-        const container = canvasContainerRef.current || document.querySelector('.canvas-container');
-        const slideEl = activeSlideRef.getSlideWrapperRef()?.current;
-        if (container && slideEl) {
-          const containerRect = container.getBoundingClientRect();
-          const slideRect = slideEl.getBoundingClientRect();
-          const targetScrollLeft = container.scrollLeft + (slideRect.left - containerRect.left) - (containerRect.width / 2) + (slideRect.width / 2);
-          container.scrollTo({
-            left: targetScrollLeft,
-            behavior: 'smooth'
-          });
-        }
-      });
-    }
-  }, [activeSlideIndex]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 10, // small movement required to start a drag; allows casual swipe to scroll
-      },
-    })
-  );
-
   const handleSizeDrawerOpen = () => {
-    setOriginalSlideState({ ...activeSlide }); // Store a copy to prevent reference issues
+    setOriginalSlideState({ ...slide }); // Store a copy to prevent reference issues
     setShowFooter(false);
     setIsSizeDrawerOpen(true);
     // Wait for footer to hide, then redraw canvas
     setTimeout(() => {
-      const canvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
+      const canvas = slideRef.current?.getCanvasRef()?.current;
       if (canvas) {
-        drawSlide(canvas, activeSlide);
+        drawSlide(canvas, slide);
       }
     }, 300); // Match the CSS transition duration
   };
@@ -171,7 +123,7 @@ function App() {
             y: 0,
             fitMode: 'fit',
           };
-          updateActiveSlide({ [layer]: newLayer });
+          updateSlide({ [layer]: newLayer });
           setEditingLayer(layer);
         };
         img.src = e.target.result;
@@ -185,7 +137,7 @@ function App() {
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.onload = () => {
-      updateActiveSlide({
+      updateSlide({
         imageLayer: { img: img, scale: 1, opacity: 1, x: 0, y: 0, fitMode: 'fit' }
       });
       setEditingLayer('imageLayer');
@@ -201,7 +153,7 @@ function App() {
   
   // Ensure quote fonts are loaded before drawing, so first tap uses the correct font
   useEffect(() => {
-    const style = activeSlide.text1QuoteStyle;
+    const style = slide.text1QuoteStyle;
     if (!style || style === 'none') return;
     const fontSpec = style === 'serif'
       ? `bold 100px "Playfair Display"`
@@ -211,34 +163,34 @@ function App() {
     try {
       if (document.fonts && document.fonts.load) {
         document.fonts.load(fontSpec, '“').then(() => {
-          const canvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
+          const canvas = slideRef.current?.getCanvasRef()?.current;
           if (canvas) {
             // Redraw with the loaded font
-            drawSlide(canvas, activeSlide).catch(() => {});
+            drawSlide(canvas, slide).catch(() => {});
           }
         });
       }
     } catch (error) {
       // Ignore font loading errors
     }
-  }, [activeSlide.text1QuoteStyle, activeSlide.text1QuoteSize, activeSlideIndex, activeSlide]);
+  }, [slide.text1QuoteStyle, slide.text1QuoteSize, slide]);
 
   
   const handleDownload = async () => {
-    const activeCanvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
-    if (!activeCanvas) {
+    const canvas = slideRef.current?.getCanvasRef()?.current;
+    if (!canvas) {
       alert('Could not find the canvas to download.');
       return;
     }
 
     try {
       // Force a re-draw at high resolution and wait for it to complete
-      await drawSlide(activeCanvas, activeSlide);
+      await drawSlide(canvas, slide);
 
       // Now that the promise is resolved, the canvas should be ready.
       const link = document.createElement('a');
       link.download = 'picflam-export.png';
-      link.href = activeCanvas.toDataURL('image/png');
+      link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (error) {
       console.error("Failed to draw slide for download:", error);
@@ -247,29 +199,28 @@ function App() {
   };
 
   const handleSaveProject = useCallback((slotIndex) => {
-    const activeCanvas = slideRefs.current[activeSlideIndex]?.getCanvasRef()?.current;
-    if (!activeCanvas) {
-      alert("Cannot save, active canvas not found.");
+    const canvas = slideRef.current?.getCanvasRef()?.current;
+    if (!canvas) {
+      alert("Cannot save, canvas not found.");
       return;
     }
-    const thumbnail = activeCanvas.toDataURL('image/jpeg', 0.5);
-    const projectData = { slides, thumbnail };
+    const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+    const projectData = { slide, thumbnail };
 
     const newSavedProjects = [...savedProjects];
     newSavedProjects[slotIndex] = projectData;
     setSavedProjects(newSavedProjects);
     // Remove save pop-up
-  }, [slides, activeSlideIndex, savedProjects, setSavedProjects, setActiveSlideIndex]);
+  }, [slide, savedProjects, setSavedProjects]);
 
   const handleLoadProject = useCallback((slotIndex) => {
     const projectToLoad = savedProjects[slotIndex];
     if (projectToLoad) {
       // This is a simplified version. A full implementation would handle re-creating image objects.
-      resetSlides(projectToLoad.slides);
-      setActiveSlideIndex(0);
+      resetSlide();
       // Remove load pop-up
     }
-  }, [savedProjects, resetSlides]);
+  }, [savedProjects, resetSlide]);
 
   const handleDeleteProject = useCallback((slotIndex) => {
     // Replace confirm with overlay button
@@ -342,7 +293,7 @@ function App() {
     button.style.cursor = 'pointer';
 
     button.onclick = () => {
-      resetSlides();
+      resetSlide();
       document.body.removeChild(overlay);
     };
 
@@ -350,21 +301,18 @@ function App() {
 
     overlay.appendChild(button);
     document.body.appendChild(overlay);
-  }, [resetSlides]);
+  }, [resetSlide]);
 
 
 
-  const handleCanvasClick = (index, event) => {
-    setActiveSlideIndex(index);
-
+  const handleCanvasClick = (event) => {
     // If the click is on an existing transform control, do nothing. This prevents
     // an active image from being deselected when trying to drag it.
     if (event.target.closest('.image-transform-controls')) {
       return;
     }
 
-    const slide = slides[index];
-    const canvasWrapper = slideRefs.current[index]?.getCanvasWrapperRef()?.current;
+    const canvasWrapper = slideRef.current?.getCanvasWrapperRef()?.current;
     if (!canvasWrapper) {
       setEditingLayer(null);
       return;
@@ -374,7 +322,7 @@ function App() {
     const clickY = event.clientY - rect.top;
 
     // Hit test text blocks first (Text2 on top of Text1 by typical visual order)
-    const canvasEl = slideRefs.current[index]?.getCanvasRef()?.current;
+    const canvasEl = slideRef.current?.getCanvasRef()?.current;
     const text2Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text2');
     if (text2Box && clickX >= text2Box.left && clickX <= text2Box.left + text2Box.width && clickY >= text2Box.top && clickY <= text2Box.top + text2Box.height) {
       setEditingLayer(null);
@@ -436,73 +384,11 @@ function App() {
   };
 
 
-  const handleAddSlide = useCallback((index) => addSlide(index), [addSlide]);
-  const handleDuplicateSlide = useCallback((index) => duplicateSlide(index), [duplicateSlide]);
-  const handleDeleteSlide = useCallback((index) => deleteSlide(index), [deleteSlide]);
-
-  const handleReorderSlides = useCallback((oldIndex, newIndex) => reorderSlides(oldIndex, newIndex), [reorderSlides]);
-
-  const handleDragEnd = useCallback((event) => {
-    const { active, over } = event;
-    if (active.id !== over.id) {
-      const oldIndex = slides.findIndex(item => item.id === active.id);
-      const newIndex = slides.findIndex(item => item.id === over.id);
-      handleReorderSlides(oldIndex, newIndex);
-    }
-  }, [slides, handleReorderSlides]);
+  // Removed slide management functions for single canvas
 
 
 
-  // Keep active slide in sync with scroll via IntersectionObserver
-  useEffect(() => {
-    const container = canvasContainerRef.current || document.querySelector('.canvas-container');
-    if (!container) return;
-    const entriesMap = new Map();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => entriesMap.set(entry.target, entry.intersectionRatio));
-        if (isNavScrolling.current) return;
-        // Pick the slide with the highest intersection ratio, but only if it's significantly more visible
-        let bestIndex = activeSlideIndex;
-        let bestRatio = -1;
-        slideRefs.current.forEach((ref, i) => {
-          const el = ref?.getSlideWrapperRef?.()?.current; // slide-wrapper
-          const ratio = el ? (entriesMap.get(el) ?? 0) : 0;
-          if (ratio > bestRatio && ratio > 0.9) { // Require >90% visibility to change active slide
-            bestRatio = ratio;
-            bestIndex = i;
-          }
-        });
-        if (bestIndex !== activeSlideIndex) setActiveSlideIndex(bestIndex);
-      },
-      { root: container, threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-
-    // Observe each slide wrapper
-    slideRefs.current.forEach((ref) => {
-      const wrapper = ref?.getSlideWrapperRef?.()?.current;
-      if (wrapper) observer.observe(wrapper);
-    });
-
-    return () => observer.disconnect();
-  }, [slides.length, activeSlideIndex, setActiveSlideIndex]);
-
-  // Clear programmatic-scroll guard after scroll settles
-  useEffect(() => {
-    const container = canvasContainerRef.current || document.querySelector('.canvas-container');
-    if (!container) return;
-    let t;
-    const onScroll = () => {
-      if (!isNavScrolling.current) return;
-      clearTimeout(t);
-      t = setTimeout(() => { isNavScrolling.current = false; }, 220);
-    };
-    container.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      container.removeEventListener('scroll', onScroll);
-      clearTimeout(t);
-    };
-  }, []);
+  // Removed carousel scrolling and navigation logic for single canvas
 
   if (showSplash) {
     return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
@@ -511,70 +397,22 @@ function App() {
   return (
     <div className="app-container">
       <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: 'calc(100dvh - 100px)', alignItems: 'flex-end', paddingBottom: '30px', justifyContent: 'flex-start' } : {}}>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} >
-          <SortableContext items={slides.map(s => s.id)} strategy={horizontalListSortingStrategy}>
-            {slides.map((slide, index) => (
-              <Slide
-                key={slide.id} id={slide.id} ref={el => slideRefs.current[index] = el}
-                slide={slide} isActive={index === activeSlideIndex} onClick={(e) => handleCanvasClick(index, e)}
-                onAdd={() => handleAddSlide(index)} onDuplicate={() => handleDuplicateSlide(index)}
-                onDelete={() => handleDeleteSlide(index)} drawSlide={drawSlide}
-                editingLayer={index === activeSlideIndex ? editingLayer : null}
-                onLayerUpdate={(layer, updates) => updateActiveSlide({ [layer]: { ...activeSlide[layer], ...updates } })}
-                onLayerDelete={(layer) => {
-                  updateActiveSlide({ [layer]: null });
-                  setEditingLayer(null);
-                  if (layer === 'imageLayer') {
-                    setIsBackgroundDrawerOpen(true);
-                  }
-                }}
-                hasPrev={index > 0}
-                hasNext={index < slides.length - 1}
-                onPrev={() => {
-                  if (index > 0) {
-                    isNavScrolling.current = true;
-                    setActiveSlideIndex(index - 1);
-                    requestAnimationFrame(() => {
-                      const container = canvasContainerRef.current || document.querySelector('.canvas-container');
-                      const slideEl = slideRefs.current[index - 1]?.getSlideWrapperRef()?.current;
-                      if (container && slideEl) {
-                        const containerRect = container.getBoundingClientRect();
-                        const slideRect = slideEl.getBoundingClientRect();
-                        const gap = window.innerWidth >= 768 ? 32 : 0; // Account for gap (2rem = 32px on desktop)
-                        const targetScrollLeft = container.scrollLeft + (slideRect.left - containerRect.left) - (containerRect.width / 2) + (slideRect.width / 2) - gap;
-                        container.scrollTo({
-                          left: targetScrollLeft,
-                          behavior: 'smooth'
-                        });
-                      }
-                    });
-                  }
-                }}
-                onNext={() => {
-                  if (index < slides.length - 1) {
-                    isNavScrolling.current = true;
-                    setActiveSlideIndex(index + 1);
-                    requestAnimationFrame(() => {
-                      const container = canvasContainerRef.current || document.querySelector('.canvas-container');
-                      const slideEl = slideRefs.current[index + 1]?.getSlideWrapperRef()?.current;
-                      if (container && slideEl) {
-                        const containerRect = container.getBoundingClientRect();
-                        const slideRect = slideEl.getBoundingClientRect();
-                        const gap = window.innerWidth >= 768 ? 32 : 0; // Account for gap (2rem = 32px on desktop)
-                        const targetScrollLeft = container.scrollLeft + (slideRect.left - containerRect.left) - (containerRect.width / 2) + (slideRect.width / 2) + gap;
-                        container.scrollTo({
-                          left: targetScrollLeft,
-                          behavior: 'smooth'
-                        });
-                      }
-                    });
-                  }
-                }}
-              />
-
-            ))}
-          </SortableContext>
-        </DndContext>
+        <Slide
+          ref={slideRef}
+          slide={slide}
+          isActive={true}
+          onClick={handleCanvasClick}
+          drawSlide={drawSlide}
+          editingLayer={editingLayer}
+          onLayerUpdate={(layer, updates) => updateSlide({ [layer]: { ...slide[layer], ...updates } })}
+          onLayerDelete={(layer) => {
+            updateSlide({ [layer]: null });
+            setEditingLayer(null);
+            if (layer === 'imageLayer') {
+              setIsBackgroundDrawerOpen(true);
+            }
+          }}
+        />
       </div>
 
       <div className="footer-container">
@@ -599,15 +437,15 @@ function App() {
           onImageUpload={handleImageUploadClick}
           onSearchClick={() => setIsSearchDrawerOpen(true)}
           onLogoClick={handleLogoUploadClick}
-          currentBackground={activeSlide.background}
+          currentBackground={slide.background}
         />
       )}
 
       {isColorDrawerOpen && (
         <ColorDrawer
           onClose={() => setIsColorDrawerOpen(false)} // This will now reveal the BackgroundDrawer
-          onBackgroundChange={(bg) => updateActiveSlide({ background: bg })}
-          currentBackground={activeSlide.background}
+          onBackgroundChange={(bg) => updateSlide({ background: bg })}
+          currentBackground={slide.background}
         />
       )}
 
@@ -615,20 +453,20 @@ function App() {
         <SearchDrawer onClose={() => setIsSearchDrawerOpen(false)} onImageSelect={handleRemoteImageSelect} />
       )}
 
-      {editingLayer && activeSlide[editingLayer] && (
+      {editingLayer && slide[editingLayer] && (
         <ImageDrawer
           ref={imageDrawerRef}
           onClose={handleImageDrawerClose}
-          imageLayer={activeSlide[editingLayer]}
+          imageLayer={slide[editingLayer]}
           isLogo={editingLayer === 'logoImage'}
-          onUpdate={(updates) => updateActiveSlide({ [editingLayer]: { ...activeSlide[editingLayer], ...updates } }) }
+          onUpdate={(updates) => updateSlide({ [editingLayer]: { ...slide[editingLayer], ...updates } }) }
           onOpen={() => setShowFooter(false)} />
       )}
 
       {isSizeDrawerOpen && (
         <SizeDrawer onClose={handleSizeDrawerClose} onCanvasSizeChange={(size) => {
-          updateActiveSlide({ canvasSize: size });
-        }} currentSize={activeSlide.canvasSize} />
+          updateSlide({ canvasSize: size });
+        }} currentSize={slide.canvasSize} />
       )}
 
       {isSaveDrawerOpen && (
@@ -646,63 +484,63 @@ function App() {
           mode={textEditMode}
           tab={textToolbarTab}
           setTab={setTextToolbarTab}
-          value={textEditMode==='text1' ? activeSlide.text1 : activeSlide.text2}
-          onChangeValue={(val) => updateActiveSlide({ [textEditMode]: val })}
-          font={textEditMode==='text1' ? activeSlide.text1Font : activeSlide.text2Font}
+          value={textEditMode==='text1' ? slide.text1 : slide.text2}
+          onChangeValue={(val) => updateSlide({ [textEditMode]: val })}
+          font={textEditMode==='text1' ? slide.text1Font : slide.text2Font}
           onChangeFont={(f) => {
             const key = textEditMode==='text1' ? 'text1Font' : 'text2Font';
             const boldKey = textEditMode==='text1' ? 'text1IsBold' : 'text2IsBold';
-            updateActiveSlide({ [key]: f, [boldKey]: (f==='Inter') });
+            updateSlide({ [key]: f, [boldKey]: (f==='Inter') });
           }}
-          size={textEditMode==='text1' ? activeSlide.text1Size : activeSlide.text2Size}
+          size={textEditMode==='text1' ? slide.text1Size : slide.text2Size}
           onChangeSize={(v) => {
             const key = textEditMode==='text1' ? 'text1Size' : 'text2Size';
-            updateActiveSlide({ [key]: v });
+            updateSlide({ [key]: v });
           }}
-          yPosition={textEditMode==='text1' ? activeSlide.text1YPosition : activeSlide.text2YPosition}
+          yPosition={textEditMode==='text1' ? slide.text1YPosition : slide.text2YPosition}
           onChangeY={(v) => {
             const key = textEditMode==='text1' ? 'text1YPosition' : 'text2YPosition';
-            updateActiveSlide({ [key]: v });
+            updateSlide({ [key]: v });
           }}
-          color={textEditMode==='text1' ? activeSlide.text1Color : activeSlide.text2Color}
+          color={textEditMode==='text1' ? slide.text1Color : slide.text2Color}
           onChangeColor={(c) => {
             const key = textEditMode==='text1' ? 'text1Color' : 'text2Color';
-            updateActiveSlide({ [key]: c });
+            updateSlide({ [key]: c });
           }}
-          highlightColor={activeSlide.text1HighlightColor}
-          onChangeHighlightColor={(c) => updateActiveSlide({ text1HighlightColor: c })}
-          labelColor={activeSlide.text2LabelColor}
-          onChangeLabelColor={(c) => updateActiveSlide({ text2LabelColor: c })}
-          labelEnabled={activeSlide.text2LabelColor !== 'transparent'}
-          onToggleLabel={(on) => updateActiveSlide({ text2LabelColor: on ? (activeSlide.text2LabelColor==='transparent' ? '#000000' : activeSlide.text2LabelColor) : 'transparent' })}
-          labelOpacity={activeSlide.text2LabelTransparency}
-          onChangeLabelOpacity={(v) => updateActiveSlide({ text2LabelTransparency: v })}
-          isBold={textEditMode==='text1' ? activeSlide.text1IsBold : activeSlide.text2IsBold}
+          highlightColor={slide.text1HighlightColor}
+          onChangeHighlightColor={(c) => updateSlide({ text1HighlightColor: c })}
+          labelColor={slide.text2LabelColor}
+          onChangeLabelColor={(c) => updateSlide({ text2LabelColor: c })}
+          labelEnabled={slide.text2LabelColor !== 'transparent'}
+          onToggleLabel={(on) => updateSlide({ text2LabelColor: on ? (slide.text2LabelColor==='transparent' ? '#000000' : slide.text2LabelColor) : 'transparent' })}
+          labelOpacity={slide.text2LabelTransparency}
+          onChangeLabelOpacity={(v) => updateSlide({ text2LabelTransparency: v })}
+          isBold={textEditMode==='text1' ? slide.text1IsBold : slide.text2IsBold}
           onToggleBold={() => {
             const key = textEditMode==='text1' ? 'text1IsBold' : 'text2IsBold';
-            updateActiveSlide({ [key]: !(textEditMode==='text1' ? activeSlide.text1IsBold : activeSlide.text2IsBold) });
+            updateSlide({ [key]: !(textEditMode==='text1' ? slide.text1IsBold : slide.text2IsBold) });
           }}
-          isItalic={textEditMode==='text1' ? activeSlide.text1IsItalic : activeSlide.text2IsItalic}
+          isItalic={textEditMode==='text1' ? slide.text1IsItalic : slide.text2IsItalic}
           onToggleItalic={() => {
             const key = textEditMode==='text1' ? 'text1IsItalic' : 'text2IsItalic';
-            updateActiveSlide({ [key]: !(textEditMode==='text1' ? activeSlide.text1IsItalic : activeSlide.text2IsItalic) });
+            updateSlide({ [key]: !(textEditMode==='text1' ? slide.text1IsItalic : slide.text2IsItalic) });
           }}
-          align={textEditMode==='text1' ? activeSlide.text1Align : activeSlide.text2Align}
+          align={textEditMode==='text1' ? slide.text1Align : slide.text2Align}
           onCycleAlign={() => {
-            const cur = textEditMode==='text1' ? activeSlide.text1Align : activeSlide.text2Align;
+            const cur = textEditMode==='text1' ? slide.text1Align : slide.text2Align;
             const next = cur==='left' ? 'center' : cur==='center' ? 'right' : 'left';
             const key = textEditMode==='text1' ? 'text1Align' : 'text2Align';
-            updateActiveSlide({ [key]: next });
+            updateSlide({ [key]: next });
           }}
-          lineSpacing={textEditMode==='text1' ? activeSlide.text1LineSpacing : activeSlide.text2LineSpacing}
+          lineSpacing={textEditMode==='text1' ? slide.text1LineSpacing : slide.text2LineSpacing}
           onChangeLineSpacing={(v) => {
             const key = textEditMode==='text1' ? 'text1LineSpacing' : 'text2LineSpacing';
-            updateActiveSlide({ [key]: v });
+            updateSlide({ [key]: v });
           }}
-          quoteStyle={activeSlide.text1QuoteStyle}
-          onChangeQuoteStyle={(s) => updateActiveSlide({ text1QuoteStyle: s })}
-          quoteSize={activeSlide.text1QuoteSize}
-          onChangeQuoteSize={(v) => updateActiveSlide({ text1QuoteSize: v })}
+          quoteStyle={slide.text1QuoteStyle}
+          onChangeQuoteStyle={(s) => updateSlide({ text1QuoteStyle: s })}
+          quoteSize={slide.text1QuoteSize}
+          onChangeQuoteSize={(v) => updateSlide({ text1QuoteSize: v })}
           keyboardHeight={keyboardHeight}
           onClose={() => { setTextEditMode(null); setIsKeyboardActive(false); }}
         />

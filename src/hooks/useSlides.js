@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 
 const createDefaultSlide = () => ({
-  id: Date.now() + Math.random(), // Unique ID for dnd-kit
   canvasSize: '9/16',
   background: { type: 'gradient', value: 'linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%)' },
   imageLayer: null,
@@ -21,7 +20,7 @@ const createDefaultSlide = () => ({
   text1QuoteStyle: 'none',
   text1QuoteSize: 5, // Centered default quote size
   text2: '',
-  text2Size: 5,
+  text2Size: 2.5,
   text2YPosition: 8.5,
   text2Font: 'Inter',
   text2Color: '#FFFFFF',
@@ -34,69 +33,19 @@ const createDefaultSlide = () => ({
 });
 
 export const useSlides = () => {
-  const [slides, setSlides] = useState([createDefaultSlide()]);
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [slide, setSlide] = useState(createDefaultSlide());
 
-  const updateActiveSlide = useCallback((updates) => {
-    setSlides(currentSlides =>
-      currentSlides.map((slide, index) =>
-        index === activeSlideIndex ? { ...slide, ...updates } : slide
-      )
-    );
-  }, [activeSlideIndex]);
-
-  const addSlide = useCallback((index) => {
-    const baseAspect = slides[0]?.canvasSize || '9/16';
-    const newSlide = { ...createDefaultSlide(), canvasSize: baseAspect };
-    setSlides(currentSlides => {
-      const newSlides = [...currentSlides];
-      newSlides.splice(index + 1, 0, newSlide);
-      return newSlides;
-    });
-    setActiveSlideIndex(index + 1);
-  }, [slides]);
-
-  const duplicateSlide = useCallback((index) => {
-    const slideToDuplicate = slides[index];
-    const newSlide = { ...slideToDuplicate, id: Date.now() + Math.random() };
-    setSlides(currentSlides => {
-      const newSlides = [...currentSlides];
-      newSlides.splice(index + 1, 0, newSlide);
-      return newSlides;
-    });
-    setActiveSlideIndex(index + 1);
-  }, [slides]);
-
-  const deleteSlide = useCallback((index) => {
-    if (slides.length <= 1) return;
-    setSlides(currentSlides => currentSlides.filter((_, i) => i !== index));
-    setActiveSlideIndex(Math.max(0, index - 1));
-  }, [slides.length]);
-
-  const reorderSlides = useCallback((oldIndex, newIndex) => {
-    setSlides(currentSlides => {
-      const newSlides = [...currentSlides];
-      const [removed] = newSlides.splice(oldIndex, 1);
-      newSlides.splice(newIndex, 0, removed);
-      return newSlides;
-    });
+  const updateSlide = useCallback((updates) => {
+    setSlide(currentSlide => ({ ...currentSlide, ...updates }));
   }, []);
 
-  const resetSlides = useCallback(() => {
-    setSlides([createDefaultSlide()]);
-    setActiveSlideIndex(0);
+  const resetSlide = useCallback(() => {
+    setSlide(createDefaultSlide());
   }, []);
 
   return {
-    slides,
-    activeSlideIndex,
-    activeSlide: slides[activeSlideIndex],
-    setActiveSlideIndex,
-    updateActiveSlide,
-    addSlide,
-    duplicateSlide,
-    deleteSlide,
-    reorderSlides,
-    resetSlides,
+    slide,
+    updateSlide,
+    resetSlide,
   };
 };

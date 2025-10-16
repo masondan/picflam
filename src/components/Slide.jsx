@@ -1,37 +1,18 @@
 import { forwardRef, useRef, useEffect, useImperativeHandle, useLayoutEffect, useState } from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { FiPlus, FiCopy, FiTrash2 } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa';
-import { RxDragHandleDots2 } from 'react-icons/rx';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ImageTransformControl from './ImageTransformControl';
 import './Slide.css';
 
 const Slide = forwardRef(function Slide({
-  id,
   slide,
   isActive,
   onClick,
-  onAdd,
-  onDuplicate,
-  onDelete,
   drawSlide,
   editingLayer, // 'imageLayer', 'logoImage', or null
   onLayerUpdate,
   onLayerDelete,
-  hasPrev,
-  hasNext,
-  onPrev,
-  onNext,
 }, ref) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
+  // Removed sortable functionality for single canvas
 
   const canvasRef = useRef(null);
   const canvasWrapperRef = useRef(null);
@@ -54,10 +35,7 @@ const Slide = forwardRef(function Slide({
     };
   }, []);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  // Removed transform style for single canvas
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -125,33 +103,7 @@ const Slide = forwardRef(function Slide({
   };
 
   return (
-    <div ref={(el) => { setNodeRef(el); slideWrapperRef.current = el; }} style={style} className="slide-wrapper" {...attributes}>
-      <div
-        className={`slide-actions-top visible`}
-        onClick={(e) => e.stopPropagation()}
-        style={{ opacity: isActive ? 1 : 0.8 }}
-      >
-        <button
-          className="nav-chevron left"
-          onClick={onPrev}
-          style={{ visibility: hasPrev ? 'visible' : 'hidden' }}
-          title="Previous Slide"
-        >
-          <FiChevronLeft />
-        </button>
-        <button onClick={onDelete} title="Delete Slide"><FiTrash2 /></button>
-        <button onClick={onAdd} title="Add Slide"><FiPlus /></button>
-        <button onClick={onDuplicate} title="Duplicate Slide"><FiCopy /></button>
-        <button {...listeners} title="Drag to Reorder" className="drag-handle"><RxDragHandleDots2 /></button>
-        <button
-          className="nav-chevron right"
-          onClick={onNext}
-          style={{ visibility: hasNext ? 'visible' : 'hidden' }}
-          title="Next Slide"
-        >
-          <FiChevronRight />
-        </button>
-      </div>
+    <div ref={slideWrapperRef} className="slide-wrapper">
       <div
         className={`canvas-wrapper ${isActive ? 'active' : ''}`}
         ref={canvasWrapperRef}
