@@ -43,6 +43,7 @@ function App() {
   const [textEditMode, setTextEditMode] = useState(null); // null | 'text1' | 'text2'
   const [textToolbarTab, setTextToolbarTab] = useState('edit');
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const {
     slides,
@@ -74,10 +75,30 @@ function App() {
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
+
+      // Detect keyboard height on mobile
+      const handleResize = () => {
+        const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const windowHeight = window.innerHeight;
+        const keyboardHeight = windowHeight - viewportHeight;
+        setKeyboardHeight(keyboardHeight);
+      };
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleResize);
+        handleResize(); // Initial call
+      }
+
+      return () => {
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', handleResize);
+        }
+      };
     } else {
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
+      setKeyboardHeight(0);
     }
   }, [textEditMode]);
 
@@ -489,7 +510,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: 'calc(100dvh - 100px)', alignItems: 'flex-end', paddingBottom: '30px', justifyContent: 'flex-start' } : {}}>
+      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: `calc(100dvh - ${100 + keyboardHeight}px)`, alignItems: 'flex-end', paddingBottom: '30px', justifyContent: 'flex-start' } : {}}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} >
           <SortableContext items={slides.map(s => s.id)} strategy={horizontalListSortingStrategy}>
             {slides.map((slide, index) => (
