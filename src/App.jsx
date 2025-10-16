@@ -489,7 +489,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'hidden', paddingBottom: '30px', maxHeight: 'calc(100% - 70px)' } : {}}>
+      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'hidden', paddingBottom: '100px', alignItems: 'flex-end', height: 'calc(100dvh - 100px)' } : {}}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} >
           <SortableContext items={slides.map(s => s.id)} strategy={horizontalListSortingStrategy}>
             {slides.map((slide, index) => (
