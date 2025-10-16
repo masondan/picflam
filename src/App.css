@@ -37,7 +37,7 @@
   scroll-snap-type: x mandatory;
 
   /* Text editing mode adjustments */
-  transition: padding-bottom 0.3s ease;
+  transition: padding-bottom 0.3s ease, height 0.3s ease, align-items 0.3s ease;
 }
 
 /* Add gaps on larger screens for better multi-slide visibility */
