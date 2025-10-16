@@ -87,7 +87,7 @@ function SearchDrawer({ onClose, onImageSelect }) {
   };
 
   useEffect(() => {
-    fetchImages('Digital');
+    fetchImages('digital background');
   }, []);
 
   const handleSearch = (e) => {
