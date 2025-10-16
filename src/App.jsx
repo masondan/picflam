@@ -703,6 +703,7 @@ function App() {
           onChangeQuoteStyle={(s) => updateActiveSlide({ text1QuoteStyle: s })}
           quoteSize={activeSlide.text1QuoteSize}
           onChangeQuoteSize={(v) => updateActiveSlide({ text1QuoteSize: v })}
+          keyboardHeight={keyboardHeight}
           onClose={() => { setTextEditMode(null); setIsKeyboardActive(false); }}
         />
       )}

@@ -39,6 +39,7 @@ export default function TextToolbar({
   lineSpacing, onChangeLineSpacing,
   quoteStyle, onChangeQuoteStyle,
   quoteSize, onChangeQuoteSize,
+  keyboardHeight,
   onClose,
 }) {
   // local state for position/size toggle and color target
@@ -276,7 +277,7 @@ export default function TextToolbar({
   );
 
   return (
-    <div className="text-toolbar" style={{ paddingBottom: 'env(safe-area-inset-bottom)', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 30, top: 'auto' }}>
+    <div className="text-toolbar" style={{ paddingBottom: 'env(safe-area-inset-bottom)', position: 'fixed', bottom: keyboardHeight || 0, left: 0, right: 0, zIndex: 30, top: 'auto' }}>
       {tab==='menu' && renderMenuRow()}
       {tab==='edit' && renderEditRow()}
       {tab==='font' && renderFontRow()}
