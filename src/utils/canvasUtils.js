@@ -61,7 +61,7 @@ export const computeTextBounds = (canvasEl, wrapperEl, slideData, which) => {
   const fontSize = baseFontSize * (size / 5);
   const finalLineSpacing = 0.8 + (lineSpacing / 10) * (1.4 - 0.8);
   const lineHeight = fontSize * finalLineSpacing;
-  const maxWidth = canvasCssWidth * 0.9;
+  const maxWidth = canvasCssWidth * 0.8;
   const yPosition = canvasCssHeight * (yPos / 10);
 
   // Measure wrapped lines using the same algorithm
@@ -252,7 +252,7 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
     const fontWeight = isBold ? 'bold' : 'normal';
     const fontStyle = isItalic ? 'italic' : 'normal';
     const finalFont = `${fontStyle} ${fontWeight} ${fontSize}px "${font}", sans-serif`;
-    const maxWidth = canvasWidth * 0.9;
+    const maxWidth = canvasWidth * 0.8;
     const yPosition = canvasHeight * (yPos / 10);
     ctx.font = finalFont; ctx.textAlign = align; ctx.textBaseline = 'middle';
 
