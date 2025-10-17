@@ -16,6 +16,7 @@ import ImageDrawer from './components/ImageDrawer';
 import Slide from './components/Slide';
 import TextToolbar from './components/TextToolbar';
 import SplashScreen from './components/SplashScreen';
+import Tooltip from './components/Tooltip';
 import { useSlides } from './hooks/useSlides';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { drawSlide, computeTextBounds, compressImage } from './utils/canvasUtils';
@@ -41,6 +42,8 @@ function App() {
   } = useSlides();
 
   const [savedProjects, setSavedProjects] = useLocalStorage('picflam_projects', [null, null, null]);
+  const [showTooltip, setShowTooltip] = useLocalStorage('picflam_tooltip_shown', false); // false = show tooltip, true = hide
+  const [showBackgroundTooltip, setShowBackgroundTooltip] = useLocalStorage('picflam_background_tooltip_shown', false); // false = show tooltip, true = hide
 
   const slideRef = useRef(null);
 
@@ -460,6 +463,14 @@ function App() {
     return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
   }
 
+  const handleTooltipClose = () => {
+    setShowTooltip(true);
+  };
+
+  const handleBackgroundTooltipClose = () => {
+    setShowBackgroundTooltip(true);
+  };
+
   return (
     <div className="app-container">
       <div className="canvas-container" ref={canvasContainerRef} style={{ touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: textEditMode ? 'calc(100dvh - 100px)' : '100dvh', alignItems: textEditMode ? 'flex-end' : 'center', paddingBottom: textEditMode ? '30px' : '0', justifyContent: textEditMode ? 'flex-start' : 'center' }}>
@@ -497,14 +508,22 @@ function App() {
       <input type="file" ref={logoImageInputRef} onChange={(e) => handleFileChange(e, 'logoImage')} accept="image/*" style={{ display: 'none' }} />
 
       {isBackgroundDrawerOpen && (
-        <BackgroundDrawer
-          onClose={() => setIsBackgroundDrawerOpen(false)}
-          onColorClick={() => setIsColorDrawerOpen(true)}
-          onImageUpload={handleImageUploadClick}
-          onSearchClick={() => setIsSearchDrawerOpen(true)}
-          onLogoClick={handleLogoUploadClick}
-          currentBackground={slide.background}
-        />
+        <>
+          <BackgroundDrawer
+            onClose={() => setIsBackgroundDrawerOpen(false)}
+            onColorClick={() => setIsColorDrawerOpen(true)}
+            onImageUpload={handleImageUploadClick}
+            onSearchClick={() => setIsSearchDrawerOpen(true)}
+            onLogoClick={handleLogoUploadClick}
+            currentBackground={slide.background}
+          />
+          {showBackgroundTooltip === false && (
+            <Tooltip
+              message="Now choose your background, upload or search for an image, and add a logo"
+              onClose={handleBackgroundTooltipClose}
+            />
+          )}
+        </>
       )}
 
       {isColorDrawerOpen && (
@@ -609,6 +628,13 @@ function App() {
           onChangeQuoteSize={(v) => updateSlide({ text1QuoteSize: v })}
           keyboardHeight={keyboardHeight}
           onClose={() => { setTextEditMode(null); setIsKeyboardActive(false); }}
+        />
+      )}
+
+      {showTooltip === false && (
+        <Tooltip
+          message="Welcome! Choose your canvas size then add images and text"
+          onClose={handleTooltipClose}
         />
       )}
     </div>
