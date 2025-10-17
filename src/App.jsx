@@ -42,8 +42,9 @@ function App() {
   } = useSlides();
 
   const [savedProjects, setSavedProjects] = useLocalStorage('picflam_projects', [null, null, null]);
-  const [showTooltip, setShowTooltip] = useLocalStorage('picflam_tooltip_shown', false); // false = show tooltip, true = hide
-  const [showBackgroundTooltip, setShowBackgroundTooltip] = useLocalStorage('picflam_background_tooltip_shown', false); // false = show tooltip, true = hide
+  const [showTooltip, setShowTooltip] = useLocalStorage('picflam_tooltip_shown', true); // true = hide tooltip (shown once), false = show
+  const [showBackgroundTooltip, setShowBackgroundTooltip] = useLocalStorage('picflam_background_tooltip_shown', true); // true = hide tooltip (shown once), false = show
+  const [hasSelectedSize, setHasSelectedSize] = useState(false); // Track if user has selected canvas size
 
   const slideRef = useRef(null);
 
@@ -102,6 +103,9 @@ function App() {
   const handleSizeDrawerClose = (confirm) => {
     setOriginalSlideState(null);
     setShowFooter(true);
+    if (confirm) {
+      setHasSelectedSize(true); // Mark that user has selected a size
+    }
     // Delay closing the drawer to match the slide-down animation (0.3s)
     setTimeout(() => {
       setIsSizeDrawerOpen(false);
@@ -510,14 +514,14 @@ function App() {
       {isBackgroundDrawerOpen && (
         <>
           <BackgroundDrawer
-            onClose={() => setIsBackgroundDrawerOpen(false)}
-            onColorClick={() => setIsColorDrawerOpen(true)}
-            onImageUpload={handleImageUploadClick}
-            onSearchClick={() => setIsSearchDrawerOpen(true)}
-            onLogoClick={handleLogoUploadClick}
+            onClose={() => { setIsBackgroundDrawerOpen(false); setShowBackgroundTooltip(true); }}
+            onColorClick={() => { setIsColorDrawerOpen(true); setShowBackgroundTooltip(true); }}
+            onImageUpload={() => { handleImageUploadClick(); setShowBackgroundTooltip(true); }}
+            onSearchClick={() => { setIsSearchDrawerOpen(true); setShowBackgroundTooltip(true); }}
+            onLogoClick={() => { handleLogoUploadClick(); setShowBackgroundTooltip(true); }}
             currentBackground={slide.background}
           />
-          {showBackgroundTooltip === false && (
+          {showBackgroundTooltip === false && hasSelectedSize && (
             <Tooltip
               message="Now choose your background, upload or search for an image, and add a logo"
               onClose={handleBackgroundTooltipClose}
@@ -634,7 +638,7 @@ function App() {
       {showTooltip === false && (
         <Tooltip
           message="Welcome! Choose your canvas size then add images and text"
-          onClose={handleTooltipClose}
+          onClose={() => { handleTooltipClose(); setShowBackgroundTooltip(false); }}
         />
       )}
     </div>

@@ -61,7 +61,7 @@ export const computeTextBounds = (canvasEl, wrapperEl, slideData, which) => {
   const fontSize = baseFontSize * (size / 5);
   const finalLineSpacing = 0.8 + (lineSpacing / 10) * (1.4 - 0.8);
   const lineHeight = fontSize * finalLineSpacing;
-  const maxWidth = canvasCssWidth * 0.8;
+  const maxWidth = canvasCssWidth * 0.9;
   const yPosition = canvasCssHeight * (yPos / 10);
 
   // Measure wrapped lines using the same algorithm
@@ -252,7 +252,7 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
     const fontWeight = isBold ? 'bold' : 'normal';
     const fontStyle = isItalic ? 'italic' : 'normal';
     const finalFont = `${fontStyle} ${fontWeight} ${fontSize}px "${font}", sans-serif`;
-    const maxWidth = canvasWidth * 0.8;
+    const maxWidth = canvasWidth * 0.9;
     const yPosition = canvasHeight * (yPos / 10);
     ctx.font = finalFont; ctx.textAlign = align; ctx.textBaseline = 'middle';
 
@@ -333,20 +333,32 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
 
       const originalAlign = ctx.textAlign;
       const originalBaseline = ctx.textBaseline;
-      ctx.textAlign = 'center';
+
+      // Set quote alignment to follow text alignment
+      let quoteX;
+      if (align === 'left') {
+        ctx.textAlign = 'left';
+        quoteX = (canvasWidth - maxWidth) / 2;
+      } else if (align === 'right') {
+        ctx.textAlign = 'right';
+        quoteX = canvasWidth - ((canvasWidth - maxWidth) / 2);
+      } else {
+        ctx.textAlign = 'center';
+        quoteX = canvasWidth / 2;
+      }
 
       if (quoteStyle === 'slab') {
         // For slab, anchor bottom exactly using full glyph height from top baseline
         const height = ((m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0)) || quoteSizeVal;
         const quoteTop = quoteBottom - height;
         ctx.textBaseline = 'top';
-        ctx.fillText('“', canvasWidth / 2, quoteTop);
+        ctx.fillText('“', quoteX, quoteTop);
       } else {
         // Serif/fancy: current behavior (works well for serif); anchor by top using ascent
         const ascent = (m.actualBoundingBoxAscent || 0) || (quoteSizeVal * 0.8);
         const quoteTop = quoteBottom - ascent;
         ctx.textBaseline = 'top';
-        ctx.fillText('“', canvasWidth / 2, quoteTop);
+        ctx.fillText('“', quoteX, quoteTop);
       }
 
       ctx.textAlign = originalAlign;
