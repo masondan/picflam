@@ -1,15 +1,57 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiPlus, FiArrowUp, FiArrowDown, FiArrowLeft, FiArrowRight, FiCheck } from 'react-icons/fi';
+import { HexColorPicker } from 'react-colorful';
 import './ColorDrawer.css';
 
-const SOLID_COLORS = ['#FFFFFF', '#000000', '#007c1f', '#00679d', '#b20715'];
+function ColorPickerButton({ color, onChange, isActive, showRainbow = true }) {
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+        setShowPicker(false);
+      }
+    };
+
+    if (showPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPicker]);
+
+  const buttonClass = showRainbow && !color ? 'rainbow-button' : 'color-button';
+  const displayColor = color || '#8A2BE2';
+
+  return (
+    <div className="color-picker-wrapper" ref={pickerRef}>
+      <div 
+        className={`${buttonClass} ${isActive ? 'active' : ''}`}
+        onClick={() => setShowPicker(!showPicker)}
+        style={{ backgroundColor: displayColor }}
+      >
+        {!showPicker && <FiPlus className="plus-icon" />}
+      </div>
+      {showPicker && (
+        <div className="color-picker-popover">
+          <HexColorPicker color={displayColor} onChange={onChange} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+const SOLID_COLORS = ['#FFFFFF', '#000000', '#007C1F', '#00679D', '#B20715'];
 const GRADIENTS = [
   'linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%)',
-  'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-  'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
-  'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
-  'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
-  'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+  'linear-gradient(135deg, #15509B 0%, #20244F 100%)',
+  'linear-gradient(135deg, #A8076B 0%, #62045F 100%)',
+  'linear-gradient(135deg, #EA5C56 0%, #3C0C40 100%)',
+  'linear-gradient(135deg, #0A8F9D 0%, #202B54 100%)',
+  'linear-gradient(135deg, #D17A29 0%, #41363C 100%)',
 ];
 
 // Helper to parse a gradient string. Returns null if it doesn't match.
@@ -26,8 +68,8 @@ const parseGradient = (gradientString) => {
 
 function ColorDrawer({ onClose, onBackgroundChange, currentBackground }) {
   const [customGradient, setCustomGradient] = useState({
-    start: '#FF6B6B',
-    end: '#FFD700',
+    start: '#8A2BE2',
+    end: '#4B0082',
     direction: 135,
   });
 
@@ -92,13 +134,12 @@ function ColorDrawer({ onClose, onBackgroundChange, currentBackground }) {
                   onClick={() => onBackgroundChange({ type: 'solid', value: color })}
                 />
               ))}
-              <div className="rainbow-button">
-                <input
-                  type="color"
-                  className="color-picker-input"
-                  onChange={(e) => onBackgroundChange({ type: 'solid', value: e.target.value })}
-                />
-              </div>
+              <ColorPickerButton
+                onChange={(color) => onBackgroundChange({ type: 'solid', value: color })}
+                isActive={currentBackground.type === 'solid' && !SOLID_COLORS.includes(currentBackground.value.toUpperCase())}
+                color={currentBackground.type === 'solid' && !SOLID_COLORS.includes(currentBackground.value.toUpperCase()) ? currentBackground.value : null}
+                key={currentBackground.type === 'solid' ? currentBackground.value : 'rainbow'}
+              />
             </div>
 
             {/* Gradient Colors */}
@@ -106,28 +147,27 @@ function ColorDrawer({ onClose, onBackgroundChange, currentBackground }) {
               {GRADIENTS.map(gradient => (
                 <div
                   key={gradient}
-                  className={`color-swatch ${currentBackground.type === 'gradient' && currentBackground.value === gradient ? 'active' : ''}`}
-                  style={{ backgroundImage: gradient }}
+                  className={`color-swatch gradient-swatch ${currentBackground.type === 'gradient' && currentBackground.value === gradient ? 'active' : ''}`}
                   onClick={() => onBackgroundChange({ type: 'gradient', value: gradient })}
-                />
+                >
+                  <div className="gradient-inner" style={{ backgroundImage: gradient }} />
+                </div>
               ))}
             </div>
 
             {/* Custom Gradient Slider */}
             <div className="custom-gradient-row">
-              <div className="custom-color-picker">
-                <div className="custom-color-swatch" style={{ backgroundColor: customGradient.start }}>
-                  <FiPlus />
-                  <input type="color" className="color-picker-input" value={customGradient.start} onChange={(e) => handleCustomColorChange('start', e.target.value)} />
-                </div>
-              </div>
+              <ColorPickerButton 
+                color={customGradient.start}
+                onChange={(color) => handleCustomColorChange('start', color)}
+                showRainbow={false}
+              />
               <div className="custom-gradient-bar" style={{ backgroundImage: `linear-gradient(90deg, ${customGradient.start}, ${customGradient.end})` }} />
-              <div className="custom-color-picker">
-                <div className="custom-color-swatch" style={{ backgroundColor: customGradient.end }}>
-                  <FiPlus />
-                  <input type="color" className="color-picker-input" value={customGradient.end} onChange={(e) => handleCustomColorChange('end', e.target.value)} />
-                </div>
-              </div>
+              <ColorPickerButton 
+                color={customGradient.end}
+                onChange={(color) => handleCustomColorChange('end', color)}
+                showRainbow={false}
+              />
             </div>
 
             {/* Gradient Direction */}

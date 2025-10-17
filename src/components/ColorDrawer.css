@@ -51,41 +51,86 @@
   height: 32px;
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid transparent;
+  border: 2px solid #cccccc;
   transition: border-color 0.2s ease;
   box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
 }
 
 .color-swatch.active {
   border-color: #ffffff;
 }
 
-.rainbow-button {
+.gradient-swatch {
+  background: transparent;
+}
+
+.gradient-inner {
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  transform-origin: center;
+}
+
+.color-picker-wrapper {
   position: relative;
+}
+
+.rainbow-button,
+.color-button {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: conic-gradient(from 90deg, violet, indigo, blue, green, yellow, orange, red, violet);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   cursor: pointer;
+  border: 2px solid #cccccc;
+  position: relative;
+  overflow: hidden;
 }
 
-.color-picker-input {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  border: none;
+.rainbow-button::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: conic-gradient(from 90deg, violet, indigo, blue, green, yellow, orange, red, violet);
   border-radius: 50%;
-  background-color: transparent;
-  cursor: pointer;
-  opacity: 0;
+  z-index: 0;
+}
+
+.rainbow-button.active,
+.color-button.active {
+  border-color: #ffffff;
+}
+
+.rainbow-button .plus-icon,
+.color-button .plus-icon {
+  color: #ffffff;
+  font-size: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  z-index: 1;
+  position: relative;
+}
+
+.color-picker-popover {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 10px;
 }
 
 /* Custom Gradient Slider */
@@ -101,29 +146,9 @@
   height: 24px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 0 4px;
 }
 
-.custom-color-picker {
-  position: relative;
-}
-
-.custom-color-swatch {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 20px;
-}
-
-.custom-color-swatch .color-picker-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
 
 /* Gradient Direction */
 .gradient-direction-row {

@@ -7,6 +7,35 @@ export const hexToRgba = (hex, alpha = 1) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+// Compress an image to reduce file size for storage
+export const compressImage = (img, maxDimension = 800, quality = 0.8) => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Calculate new dimensions maintaining aspect ratio
+    const aspectRatio = img.naturalWidth / img.naturalHeight;
+    let newWidth, newHeight;
+
+    if (img.naturalWidth > img.naturalHeight) {
+      newWidth = Math.min(img.naturalWidth, maxDimension);
+      newHeight = newWidth / aspectRatio;
+    } else {
+      newHeight = Math.min(img.naturalHeight, maxDimension);
+      newWidth = newHeight * aspectRatio;
+    }
+
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+
+    // Draw and compress
+    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+    resolve(compressedDataUrl);
+  });
+};
+
 // Compute the CSS-pixel bounding box of a text block relative to the canvas, then convert to wrapper-relative coords
 export const computeTextBounds = (canvasEl, wrapperEl, slideData, which) => {
   if (!canvasEl || !wrapperEl) return null;

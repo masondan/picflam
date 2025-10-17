@@ -18,7 +18,7 @@ import TextToolbar from './components/TextToolbar';
 import SplashScreen from './components/SplashScreen';
 import { useSlides } from './hooks/useSlides';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { drawSlide, computeTextBounds } from './utils/canvasUtils';
+import { drawSlide, computeTextBounds, compressImage } from './utils/canvasUtils';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -198,14 +198,39 @@ function App() {
     }
   };
 
-  const handleSaveProject = useCallback((slotIndex) => {
+  const handleSaveProject = useCallback(async (slotIndex) => {
     const canvas = slideRef.current?.getCanvasRef()?.current;
     if (!canvas) {
       alert("Cannot save, canvas not found.");
       return;
     }
     const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-    const projectData = { slide, thumbnail };
+
+    // Compress images for storage
+    const slideWithCompressedImages = { ...slide };
+
+    const compressImageLayer = async (layerKey) => {
+      const layer = slide[layerKey];
+      if (layer && layer.img) {
+        try {
+          const compressedDataUrl = await compressImage(layer.img);
+          slideWithCompressedImages[layerKey] = {
+            ...layer,
+            compressedDataUrl
+          };
+        } catch (error) {
+          console.error(`Failed to compress ${layerKey}:`, error);
+          // Keep original if compression fails
+        }
+      }
+    };
+
+    await Promise.all([
+      compressImageLayer('imageLayer'),
+      compressImageLayer('logoImage')
+    ]);
+
+    const projectData = { slide: slideWithCompressedImages, thumbnail };
 
     const newSavedProjects = [...savedProjects];
     newSavedProjects[slotIndex] = projectData;
@@ -213,14 +238,48 @@ function App() {
     // Remove save pop-up
   }, [slide, savedProjects, setSavedProjects]);
 
-  const handleLoadProject = useCallback((slotIndex) => {
+  const handleLoadProject = useCallback(async (slotIndex) => {
     const projectToLoad = savedProjects[slotIndex];
     if (projectToLoad) {
-      // This is a simplified version. A full implementation would handle re-creating image objects.
+      const { slide: savedSlide } = projectToLoad;
+
+      // Recreate Image objects from compressed data URLs
+      const slideWithImages = { ...savedSlide };
+
+      const loadImageLayer = async (layerKey) => {
+        const layer = savedSlide[layerKey];
+        if (layer && layer.compressedDataUrl) {
+          try {
+            const img = new Image();
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = layer.compressedDataUrl;
+            });
+            slideWithImages[layerKey] = {
+              ...layer,
+              img
+            };
+          } catch (error) {
+            console.error(`Failed to load ${layerKey}:`, error);
+            // Remove the layer if image fails to load
+            delete slideWithImages[layerKey];
+          }
+        }
+      };
+
+      await Promise.all([
+        loadImageLayer('imageLayer'),
+        loadImageLayer('logoImage')
+      ]);
+
+      // Update slide with loaded images
       resetSlide();
+      updateSlide(slideWithImages);
+
       // Remove load pop-up
     }
-  }, [savedProjects, resetSlide]);
+  }, [savedProjects, resetSlide, updateSlide]);
 
   const handleDeleteProject = useCallback((slotIndex) => {
     // Replace confirm with overlay button
@@ -368,6 +427,8 @@ function App() {
       const box = getControlBox(canvasWrapper, slide.logoImage);
       if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
         setEditingLayer('logoImage');
+        setTextEditMode(null);
+        setIsKeyboardActive(false);
         return;
       }
     }
@@ -375,12 +436,17 @@ function App() {
       const box = getControlBox(canvasWrapper, slide.imageLayer);
       if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
         setEditingLayer('imageLayer');
+        setTextEditMode(null);
+        setIsKeyboardActive(false);
         return;
       }
     }
 
-    // If we get here, the click was on the canvas background, not on any image layer. Deselect.
+    // If we get here, the click was on the canvas background, not on any image layer. Open background drawer.
     setEditingLayer(null);
+    setTextEditMode(null);
+    setIsKeyboardActive(false);
+    setIsBackgroundDrawerOpen(true);
   };
 
 
@@ -396,7 +462,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="canvas-container" ref={canvasContainerRef} style={textEditMode ? { touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: 'calc(100dvh - 100px)', alignItems: 'flex-end', paddingBottom: '30px', justifyContent: 'flex-start' } : {}}>
+      <div className="canvas-container" ref={canvasContainerRef} style={{ touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: textEditMode ? 'calc(100dvh - 100px)' : '100dvh', alignItems: textEditMode ? 'flex-end' : 'center', paddingBottom: textEditMode ? '30px' : '0', justifyContent: textEditMode ? 'flex-start' : 'center' }}>
         <Slide
           ref={slideRef}
           slide={slide}

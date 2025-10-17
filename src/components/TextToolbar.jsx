@@ -1,5 +1,41 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { HexColorPicker } from 'react-colorful';
 import './TextToolbar.css';
+
+function ColorPickerButton({ color, onChange }) {
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+        setShowPicker(false);
+      }
+    };
+
+    if (showPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPicker]);
+
+  return (
+    <div className="color-picker-wrapper" ref={pickerRef}>
+      <div 
+        className="swatch rainbow" 
+        onClick={() => setShowPicker(!showPicker)}
+      />
+      {showPicker && (
+        <div className="color-picker-popover">
+          <HexColorPicker color={color} onChange={onChange} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Menu icons
 import { FiEdit3, FiCheck, FiMic, FiChevronLeft } from 'react-icons/fi';
@@ -74,9 +110,6 @@ export default function TextToolbar({
     mode === 'text1' ? ['#000000', '#FFFFFF', '#FFD700', '#5EAFE5'] : ['#000000', '#FFFFFF', '#FFD700']
   ), [mode]);
 
-  // Color picker hidden input
-  const colorInputRef = useRef(null);
-  const openPicker = () => colorInputRef.current && colorInputRef.current.click();
   const applyColor = (c) => {
     if (colorTarget === 'text') return onChangeColor(c);
     if (colorTarget === 'highlight' && mode === 'text1') return onChangeHighlightColor(c);
@@ -221,8 +254,7 @@ export default function TextToolbar({
           {swatches.map(c => (
             <button key={c} className={`swatch ${currentColor === c ? 'active' : ''}`} style={{ background: c }} onClick={()=>applyColor(c)} />
           ))}
-          <button className="swatch rainbow" onClick={openPicker} />
-          <input ref={colorInputRef} type="color" className="hidden-color-input" onChange={(e)=>applyColor(e.target.value)} />
+          <ColorPickerButton color={currentColor} onChange={applyColor} />
         </div>
       </div>
     );

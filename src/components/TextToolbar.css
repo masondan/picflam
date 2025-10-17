@@ -91,8 +91,23 @@
   background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
   border-radius: 50%;
 }
-.swatch.rainbow { background: transparent; }
-.hidden-color-input { position: absolute; opacity: 0; pointer-events: none; }
+.swatch.rainbow { background: transparent; overflow: hidden; cursor: pointer; }
+
+.color-picker-wrapper {
+  position: relative;
+}
+
+.color-picker-popover {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+}
 
 /* Style */
 .style-group { display: inline-flex; gap: 6px; align-items: center; padding-right: 8px; }

@@ -8,7 +8,7 @@ function SplashScreen({ onGetStarted }) {
       <div className="splash-content">
         <div className="splash-main-content">
           <img src="/picflam-logo.png" alt="PicFlam Logo" className="splash-logo" />
-          <p className="splash-tagline">Create quotes, carousels and add text to images</p>
+          <p className="splash-tagline">Add text to images for Stories and carousels. Create quotes. Free.</p>
           <button className="splash-button" onClick={onGetStarted}>
             Get Started
           </button>
