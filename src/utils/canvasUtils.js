@@ -100,11 +100,11 @@ export const computeTextBounds = (canvasEl, wrapperEl, slideData, which) => {
   const textTop = yPosition - (totalTextHeight / 2);
   let left;
   if (align === 'left') {
-    left = (canvasCssWidth - maxWidth) / 2;
+    left = canvasCssWidth * 0.1;
   } else if (align === 'right') {
-    left = canvasCssWidth - ((canvasCssWidth - maxWidth) / 2) - widestLine;
+    left = canvasCssWidth * 0.9 - widestLine;
   } else {
-    left = (canvasCssWidth / 2) - (widestLine / 2);
+    left = Math.max(canvasCssWidth * 0.1, Math.min(canvasCssWidth * 0.9 - widestLine, (canvasCssWidth / 2) - (widestLine / 2)));
   }
   let top = textTop;
   let width = widestLine;
@@ -262,55 +262,43 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
     let widestLine = 0;
 
     paragraphs.forEach(paragraph => {
-      // Split paragraph into parts with highlighting info
-      const parts = paragraph.split(/(==[^=]*==)/g).filter(p => p);
-      const highlightedParts = parts.map(part => ({
-        text: part.startsWith('==') && part.endsWith('==') ? part.substring(2, part.length - 2) : part,
-        isHighlight: part.startsWith('==') && part.endsWith('==')
-      }));
+      const words = paragraph.split(' ');
+      let currentLine = '';
 
-      // Now wrap lines while preserving highlight information
-      let currentLineParts = [];
-      let currentLineWidth = 0;
+      for (let n = 0; n < words.length; n++) {
+        const word = words[n];
+        // If the word itself is wider than the max width, it needs to be on its own line.
+        const wordWidth = ctx.measureText(word).width;
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = ctx.measureText(testLine).width;
 
-      for (let i = 0; i < highlightedParts.length; i++) {
-        const part = highlightedParts[i];
-        const words = part.text.split(' ');
-        let wordIndex = 0;
+        if (testWidth > maxWidth && currentLine) {
+          // The current line is full, process it for highlighting
+          const lineParts = currentLine.split(/(==[^=]*==)/g).filter(p => p).map(part => ({
+            text: part.startsWith('==') && part.endsWith('==') ? part.substring(2, part.length - 2) : part,
+            isHighlight: part.startsWith('==') && part.endsWith('==')
+          }));
+          const lineWidth = ctx.measureText(currentLine).width;
+          processedLines.push({ parts: lineParts, width: lineWidth });
+          if (lineWidth > widestLine) widestLine = lineWidth;
 
-        while (wordIndex < words.length) {
-          const testWord = words[wordIndex];
-          const testWidth = ctx.measureText((currentLineParts.length > 0 ? currentLineParts[currentLineParts.length - 1].text + ' ' : '') + testWord).width;
-
-          if (currentLineWidth + testWidth > maxWidth && currentLineParts.length > 0) {
-            // Line is full, save current line
-            const lineText = currentLineParts.map(p => p.text).join('');
-            processedLines.push({ parts: currentLineParts, width: ctx.measureText(lineText).width });
-            if (ctx.measureText(lineText).width > widestLine) widestLine = ctx.measureText(lineText).width;
-
-            // Start new line with current word
-            currentLineParts = [{ text: testWord, isHighlight: part.isHighlight }];
-            currentLineWidth = ctx.measureText(testWord).width;
-          } else {
-            // Add word to current line
-            if (currentLineParts.length > 0 && currentLineParts[currentLineParts.length - 1].isHighlight === part.isHighlight) {
-              // Merge with previous part if same highlight status
-              currentLineParts[currentLineParts.length - 1].text += ' ' + testWord;
-            } else {
-              // Start new part
-              currentLineParts.push({ text: testWord, isHighlight: part.isHighlight });
-            }
-            currentLineWidth += ctx.measureText((wordIndex === 0 && currentLineParts.length === 1 ? '' : ' ') + testWord).width;
-          }
-          wordIndex++;
+          // Start a new line with the current word
+          currentLine = word;
+        } else {
+          // Add the word to the current line
+          currentLine = testLine;
         }
       }
 
-      // Add remaining line
-      if (currentLineParts.length > 0) {
-        const lineText = currentLineParts.map(p => p.text).join('');
-        processedLines.push({ parts: currentLineParts, width: ctx.measureText(lineText).width });
-        if (ctx.measureText(lineText).width > widestLine) widestLine = ctx.measureText(lineText).width;
+      // Add the last line of the paragraph
+      if (currentLine) {
+        const lineParts = currentLine.split(/(==[^=]*==)/g).filter(p => p).map(part => ({
+          text: part.startsWith('==') && part.endsWith('==') ? part.substring(2, part.length - 2) : part,
+          isHighlight: part.startsWith('==') && part.endsWith('==')
+        }));
+        const lineWidth = ctx.measureText(currentLine).width;
+        processedLines.push({ parts: lineParts, width: lineWidth });
+        if (lineWidth > widestLine) widestLine = lineWidth;
       }
     });
 
@@ -397,11 +385,11 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
       // Determine initial X coordinate
       let currentX;
       if (align === 'left') {
-          currentX = (canvasWidth - maxWidth) / 2;
+          currentX = canvasWidth * 0.1;
       } else if (align === 'right') {
-          currentX = canvasWidth - ((canvasWidth - maxWidth) / 2) - totalLineWidth;
+          currentX = canvasWidth * 0.9 - totalLineWidth;
       } else { // center
-          currentX = (canvasWidth / 2) - (totalLineWidth / 2);
+          currentX = Math.max(canvasWidth * 0.1, Math.min(canvasWidth * 0.9 - totalLineWidth, (canvasWidth / 2) - (totalLineWidth / 2)));
       }
 
       // Draw the parts sequentially
