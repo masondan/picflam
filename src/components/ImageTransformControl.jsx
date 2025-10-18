@@ -9,19 +9,12 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
     e.stopPropagation();
     hasDragged.current = false;
 
-    // Prevent default touch behaviors that might cause page refresh
-    if (e.touches) {
-      e.preventDefault();
-    }
-
     const startX = e.clientX || (e.touches && e.touches[0].clientX);
     const startY = e.clientY || (e.touches && e.touches[0].clientY);
     const initialX = layer.x || 0;
     const initialY = layer.y || 0;
 
     const handleDragMove = (moveEvent) => {
-      moveEvent.preventDefault(); // Prevent scrolling or other default behaviors
-      moveEvent.stopPropagation(); // Prevent event bubbling that might trigger page refresh
       const clientX = moveEvent.clientX || (moveEvent.touches && moveEvent.touches[0].clientX);
       const clientY = moveEvent.clientY || (moveEvent.touches && moveEvent.touches[0].clientY);
       const dx = clientX - startX;
@@ -29,10 +22,7 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
       if (Math.abs(dx) > 2 || Math.abs(dy) > 2) { // Threshold to detect a real drag
         hasDragged.current = true;
       }
-      // Throttle updates to reduce artifact trails
-      requestAnimationFrame(() => {
-        onUpdate({ x: initialX + dx, y: initialY + dy });
-      });
+      onUpdate({ x: initialX + dx, y: initialY + dy });
     };
 
     const handleDragEnd = (endEvent) => {
@@ -65,13 +55,7 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
   return (
     <div
       className="image-transform-controls"
-      style={{
-        width: bounds.width,
-        height: bounds.height,
-        transform: `translate(${bounds.left}px, ${bounds.top}px)`,
-        cursor: 'move',
-        touchAction: 'none' // Prevent default touch behaviors like scrolling
-      }}
+      style={{ ...bounds, cursor: 'move' }}
       onMouseDown={handleDragStart}
       onTouchStart={handleDragStart}
       onClick={(e) => e.stopPropagation()}
