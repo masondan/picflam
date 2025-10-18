@@ -18,17 +18,22 @@ function BackgroundDrawer({
       return { backgroundImage: currentBackground.value };
     }
     // Default to transparent if no background is set to avoid showing the square
-    return { backgroundColor: 'transparent' };
+    return { backgroundColor: 'transparent', backgroundImage: 'none' };
   };
 
   return (
-    <div className="drawer-overlay">
+    <div className="drawer-overlay" onClick={onClose}>
       <div className="drawer-content background-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-body">
           <button className="background-option-button" onClick={onColorClick} title="Color">
             <div
               className="color-swatch-preview"
-              style={getBackgroundStyle()}
+              style={{
+                ...getBackgroundStyle(),
+                // Force hardware acceleration to prevent flashing
+                transform: 'translateZ(0)',
+                willChange: 'background',
+              }}
             />
           </button>
           <button className="background-option-button" onClick={onImageUpload} title="Upload Image">
