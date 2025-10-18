@@ -47,15 +47,11 @@
   border-radius: 0;
   transition: aspect-ratio 0.3s ease-in-out;
 
-  /* 
-    This is the key combination:
-    1. Try to be as wide as the container.
-    2. Let aspect-ratio calculate the height.
-    3. But never be taller than the container.
-       If this rule is triggered, the browser will shrink the width to fit.
+  /*
+    Allow the canvas to be full width, with height determined by aspect-ratio.
+    If the calculated height exceeds the container, it will be clipped.
   */
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
 }
 
 .footer-container {

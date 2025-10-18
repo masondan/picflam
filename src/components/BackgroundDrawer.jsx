@@ -15,12 +15,10 @@ function BackgroundDrawer({
       return { backgroundColor: currentBackground.value };
     }
     if (currentBackground && currentBackground.type === 'gradient') {
-      // Set a transparent background to prevent the default from flashing
-      // before the gradient is rendered.
-      return { backgroundImage: currentBackground.value, backgroundColor: 'transparent' };
+      return { backgroundImage: currentBackground.value };
     }
     // Default to transparent if no background is set to avoid showing the square
-    return { backgroundColor: 'transparent', backgroundImage: 'none' };
+    return { backgroundColor: 'transparent' };
   };
 
   return (
@@ -30,12 +28,7 @@ function BackgroundDrawer({
           <button className="background-option-button" onClick={onColorClick} title="Color">
             <div
               className="color-swatch-preview"
-              style={{
-                ...getBackgroundStyle(),
-                // Force hardware acceleration to prevent flashing
-                transform: 'translateZ(0)',
-                willChange: 'background',
-              }}
+              style={getBackgroundStyle()}
             />
           </button>
           <button className="background-option-button" onClick={onImageUpload} title="Upload Image">
