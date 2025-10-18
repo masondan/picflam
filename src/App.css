@@ -5,6 +5,7 @@
   flex-direction: column;
   height: 100dvh;
   background-color: #eeeeee;
+  overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
 }
 
 /* Desktop responsiveness */

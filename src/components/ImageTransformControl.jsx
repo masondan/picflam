@@ -9,6 +9,11 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
     e.stopPropagation();
     hasDragged.current = false;
 
+    // Prevent default touch behaviors that might cause page refresh
+    if (e.touches) {
+      e.preventDefault();
+    }
+
     const startX = e.clientX || (e.touches && e.touches[0].clientX);
     const startY = e.clientY || (e.touches && e.touches[0].clientY);
     const initialX = layer.x || 0;
@@ -16,6 +21,7 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
 
     const handleDragMove = (moveEvent) => {
       moveEvent.preventDefault(); // Prevent scrolling or other default behaviors
+      moveEvent.stopPropagation(); // Prevent event bubbling that might trigger page refresh
       const clientX = moveEvent.clientX || (moveEvent.touches && moveEvent.touches[0].clientX);
       const clientY = moveEvent.clientY || (moveEvent.touches && moveEvent.touches[0].clientY);
       const dx = clientX - startX;
@@ -63,7 +69,8 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
         width: bounds.width,
         height: bounds.height,
         transform: `translate(${bounds.left}px, ${bounds.top}px)`,
-        cursor: 'move'
+        cursor: 'move',
+        touchAction: 'none' // Prevent default touch behaviors like scrolling
       }}
       onMouseDown={handleDragStart}
       onTouchStart={handleDragStart}
