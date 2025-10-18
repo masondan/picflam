@@ -23,7 +23,10 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
       if (Math.abs(dx) > 2 || Math.abs(dy) > 2) { // Threshold to detect a real drag
         hasDragged.current = true;
       }
-      onUpdate({ x: initialX + dx, y: initialY + dy });
+      // Throttle updates to reduce artifact trails
+      requestAnimationFrame(() => {
+        onUpdate({ x: initialX + dx, y: initialY + dy });
+      });
     };
 
     const handleDragEnd = (endEvent) => {
@@ -56,7 +59,12 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
   return (
     <div
       className="image-transform-controls"
-      style={{ ...bounds, cursor: 'move' }}
+      style={{
+        width: bounds.width,
+        height: bounds.height,
+        transform: `translate(${bounds.left}px, ${bounds.top}px)`,
+        cursor: 'move'
+      }}
       onMouseDown={handleDragStart}
       onTouchStart={handleDragStart}
       onClick={(e) => e.stopPropagation()}
