@@ -9,6 +9,9 @@
   border-top: none;
   background-color: #555555;
   animation: none; /* No animation for background drawer */
+  /* Ensure no background color flash */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .background-drawer .drawer-body {
@@ -30,6 +33,7 @@
   color: #ffffff;
   font-size: 24px; /* Same as footer menu */
   padding: 0.5rem;
+  transition: none; /* Remove any transition that might cause color flash */
 }
 
 .background-drawer .drawer-confirm-button {
