@@ -8,7 +8,7 @@
   box-shadow: none;
   border-top: none;
   background-color: #555555;
-  animation: none; /* Remove slide-up animation */
+  animation: none; /* No animation for background drawer */
 }
 
 .background-drawer .drawer-body {
