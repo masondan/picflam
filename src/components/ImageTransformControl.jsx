@@ -15,6 +15,7 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
     const initialY = layer.y || 0;
 
     const handleDragMove = (moveEvent) => {
+      moveEvent.preventDefault(); // Prevent scrolling or other default behaviors
       const clientX = moveEvent.clientX || (moveEvent.touches && moveEvent.touches[0].clientX);
       const clientY = moveEvent.clientY || (moveEvent.touches && moveEvent.touches[0].clientY);
       const dx = clientX - startX;
@@ -40,11 +41,13 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
       document.removeEventListener('mouseup', handleDragEnd);
       document.removeEventListener('touchmove', handleDragMove);
       document.removeEventListener('touchend', handleDragEnd);
+      document.removeEventListener('touchcancel', handleDragEnd);
     };
 
     document.addEventListener('mousemove', handleDragMove);
     document.addEventListener('mouseup', handleDragEnd);
     document.addEventListener('touchmove', handleDragMove, { passive: false });
+    document.addEventListener('touchcancel', handleDragEnd);
     document.addEventListener('touchend', handleDragEnd);
   };
 
