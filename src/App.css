@@ -67,8 +67,6 @@
   justify-content: space-around;
   align-items: center;
   padding: 0 1rem;
-  transition: opacity 0.25s ease; /* Smooth opacity transition */
-  will-change: opacity; /* Optimize for transitions */
 }
 
 .footer-button {
@@ -92,5 +90,5 @@
 }
 
 .footer-menu.hidden {
-  opacity: 0;
+  display: none;
 }

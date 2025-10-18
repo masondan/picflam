@@ -514,7 +514,7 @@ function App() {
       {isBackgroundDrawerOpen && (
         <>
           <BackgroundDrawer
-            onClose={() => { setIsBackgroundDrawerOpen(false); setShowBackgroundTooltip(true); }}
+            onClose={() => { setIsBackgroundDrawerOpen(false); setShowFooter(true); setShowBackgroundTooltip(true); }}
             onColorClick={() => { setIsColorDrawerOpen(true); setShowBackgroundTooltip(true); }}
             onImageUpload={() => { handleImageUploadClick(); setShowBackgroundTooltip(true); }}
             onSearchClick={() => { setIsSearchDrawerOpen(true); setShowFooter(false); setShowBackgroundTooltip(true); }}

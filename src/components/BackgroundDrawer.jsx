@@ -22,7 +22,7 @@ function BackgroundDrawer({
   };
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
+    <div className="drawer-overlay">
       <div className="drawer-content background-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-body">
           <button className="background-option-button" onClick={onColorClick} title="Color">

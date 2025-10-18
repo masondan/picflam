@@ -8,6 +8,16 @@
   display: flex;
   z-index: 20; /* Ensure it's above the footer menu (z-index: 10) */
   align-items: flex-end;
+  pointer-events: none;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15; /* Below drawer overlay but above canvas */
 }
 
 /* Desktop: position relative to app container */
@@ -24,6 +34,7 @@
   border-top-right-radius: 16px;
   box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
   color: #fff;
+  pointer-events: auto;
 }
 
 @keyframes slide-up {
