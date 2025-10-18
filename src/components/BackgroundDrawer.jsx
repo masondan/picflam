@@ -18,7 +18,7 @@ function BackgroundDrawer({
       return { backgroundImage: currentBackground.value };
     }
     // Default to transparent if no background is set to avoid showing the square
-    return { backgroundColor: 'transparent' };
+    return { backgroundColor: 'transparent', backgroundImage: 'none' };
   };
 
   return (
