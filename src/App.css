@@ -81,6 +81,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Arapey font on T1/T2 buttons only */
