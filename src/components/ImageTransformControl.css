@@ -6,8 +6,6 @@
   /* Draw an inside edge highlight that visually matches a border without adding size */
   box-shadow: inset 0 0 0 2px #e0e0e0;
   box-sizing: border-box;
-  /* This will make the transform smoother by hinting to the browser */
-  will-change: transform;
 }
 
 .image-delete-button {

@@ -1,10 +1,12 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import './ImageTransformControl.css';
 
 function ImageTransformControl({ bounds, onUpdate, layer }) {
   const hasDragged = useRef(false);
+  const [dragState, setDragState] = useState({ dx: 0, dy: 0, isDragging: false });
 
   const handleDragStart = (e) => {
+    e.preventDefault(); // Prevent default touch actions like scrolling
     // Prevent the main canvas click handler from firing and deselecting the layer
     e.stopPropagation();
     hasDragged.current = false;
@@ -14,7 +16,10 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
     const initialX = layer.x || 0;
     const initialY = layer.y || 0;
 
+    setDragState({ dx: 0, dy: 0, isDragging: true });
+
     const handleDragMove = (moveEvent) => {
+      moveEvent.preventDefault(); // Ensure continued prevention during move
       const clientX = moveEvent.clientX || (moveEvent.touches && moveEvent.touches[0].clientX);
       const clientY = moveEvent.clientY || (moveEvent.touches && moveEvent.touches[0].clientY);
       const dx = clientX - startX;
@@ -22,7 +27,8 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
       if (Math.abs(dx) > 2 || Math.abs(dy) > 2) { // Threshold to detect a real drag
         hasDragged.current = true;
       }
-      onUpdate({ x: initialX + dx, y: initialY + dy });
+      // Update local drag state for smooth transform, not React state
+      setDragState({ dx, dy, isDragging: true });
     };
 
     const handleDragEnd = (endEvent) => {
@@ -30,10 +36,11 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
       const finalClientY = endEvent.clientY || (endEvent.changedTouches && endEvent.changedTouches[0].clientY);
       const finalDx = finalClientX - startX;
       const finalDy = finalClientY - startY;
+
       if (hasDragged.current) {
         endEvent.stopPropagation();
       }
-      // Final update to lock in the position
+      // Final update to commit the position to React state
       onUpdate({ x: initialX + finalDx, y: initialY + finalDy });
 
       document.removeEventListener('mousemove', handleDragMove);
@@ -41,21 +48,27 @@ function ImageTransformControl({ bounds, onUpdate, layer }) {
       document.removeEventListener('touchmove', handleDragMove);
       document.removeEventListener('touchend', handleDragEnd);
       document.removeEventListener('touchcancel', handleDragEnd);
+
+      setDragState({ dx: 0, dy: 0, isDragging: false });
     };
 
     document.addEventListener('mousemove', handleDragMove);
     document.addEventListener('mouseup', handleDragEnd);
-    document.addEventListener('touchmove', handleDragMove, { passive: false });
+    document.addEventListener('touchmove', handleDragMove, { passive: false }); // passive: false is required for preventDefault()
     document.addEventListener('touchcancel', handleDragEnd);
     document.addEventListener('touchend', handleDragEnd);
   };
 
   if (!bounds) return null;
 
+  const transformStyle = dragState.isDragging
+    ? { transform: `translate(${dragState.dx}px, ${dragState.dy}px)` }
+    : {};
+
   return (
     <div
       className="image-transform-controls"
-      style={{ ...bounds, cursor: 'move' }}
+      style={{ ...bounds, cursor: 'move', ...transformStyle, touchAction: 'none' }}
       onMouseDown={handleDragStart}
       onTouchStart={handleDragStart}
       onClick={(e) => e.stopPropagation()}
