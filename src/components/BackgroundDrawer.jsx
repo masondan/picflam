@@ -17,8 +17,8 @@ function BackgroundDrawer({
     if (currentBackground && currentBackground.type === 'gradient') {
       return { backgroundImage: currentBackground.value };
     }
-    // Default to the app's default gradient if no background is set
-    return { backgroundImage: 'linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%)' };
+    // Default to transparent if no background is set to avoid showing the square
+    return { backgroundColor: 'transparent' };
   };
 
   return (
