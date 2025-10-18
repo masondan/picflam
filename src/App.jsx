@@ -151,7 +151,7 @@ function App() {
     };
     img.src = imageUrl;
     setIsSearchDrawerOpen(false);
-    setIsBackgroundDrawerOpen(false);
+    setIsBackgroundDrawerOpen(true);
   };
 
   
@@ -489,7 +489,7 @@ function App() {
           onLayerDelete={(layer) => {
             updateSlide({ [layer]: null });
             setEditingLayer(null);
-            if (layer === 'imageLayer') {
+            if (layer === 'imageLayer' || layer === 'logoImage') {
               setIsBackgroundDrawerOpen(true);
             }
           }}
@@ -517,7 +517,7 @@ function App() {
             onClose={() => { setIsBackgroundDrawerOpen(false); setShowBackgroundTooltip(true); }}
             onColorClick={() => { setIsColorDrawerOpen(true); setShowBackgroundTooltip(true); }}
             onImageUpload={() => { handleImageUploadClick(); setShowBackgroundTooltip(true); }}
-            onSearchClick={() => { setIsSearchDrawerOpen(true); setShowBackgroundTooltip(true); }}
+            onSearchClick={() => { setIsSearchDrawerOpen(true); setShowFooter(false); setShowBackgroundTooltip(true); }}
             onLogoClick={() => { handleLogoUploadClick(); setShowBackgroundTooltip(true); }}
             currentBackground={slide.background}
           />
@@ -539,7 +539,7 @@ function App() {
       )}
 
       {isSearchDrawerOpen && (
-        <SearchDrawer onClose={() => setIsSearchDrawerOpen(false)} onImageSelect={handleRemoteImageSelect} />
+        <SearchDrawer onClose={() => { setIsSearchDrawerOpen(false); setIsBackgroundDrawerOpen(true); }} onImageSelect={handleRemoteImageSelect} />
       )}
 
       {editingLayer && slide[editingLayer] && (
