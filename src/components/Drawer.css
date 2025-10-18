@@ -10,6 +10,13 @@
   align-items: flex-end;
 }
 
+/* Desktop: position relative to app container */
+@media (min-width: 768px) {
+  .drawer-overlay {
+    position: absolute;
+  }
+}
+
 .drawer-content {
   background-color: #555555;
   width: 100%;

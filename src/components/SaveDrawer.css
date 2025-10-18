@@ -5,6 +5,13 @@
   color: #ffffff;
 }
 
+/* Desktop: position relative to app container */
+@media (min-width: 768px) {
+  .drawer-overlay {
+    position: absolute;
+  }
+}
+
 .save-drawer .drawer-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }

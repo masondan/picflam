@@ -133,6 +133,17 @@
   padding: 10px;
 }
 
+/* Desktop: position relative to app container */
+@media (min-width: 768px) {
+  .color-picker-popover {
+    position: absolute;
+    top: auto;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 /* Custom Gradient Slider */
 .custom-gradient-row {
   display: flex;

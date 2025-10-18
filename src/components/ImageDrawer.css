@@ -17,6 +17,13 @@
   right: 0;
 }
 
+/* Desktop: position relative to app container */
+@media (min-width: 768px) {
+  .drawer-content.image-drawer.single-row {
+    position: absolute;
+  }
+}
+
 .image-drawer-controls {
   display: flex;
   align-items: center;

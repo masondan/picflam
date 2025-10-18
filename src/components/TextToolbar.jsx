@@ -309,7 +309,7 @@ export default function TextToolbar({
   );
 
   return (
-    <div className="text-toolbar" style={{ paddingBottom: 'env(safe-area-inset-bottom)', position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 30, top: 'auto' }}>
+    <div className="text-toolbar" style={{ paddingBottom: 'env(safe-area-inset-bottom)', bottom: 0, left: 0, right: 0, zIndex: 30, top: 'auto' }}>
       {tab==='menu' && renderMenuRow()}
       {tab==='edit' && renderEditRow()}
       {tab==='font' && renderFontRow()}

@@ -12,6 +12,13 @@
   animation: fade-in 0.3s ease-out;
 }
 
+/* Desktop: position relative to app container */
+@media (min-width: 768px) {
+  .search-modal-overlay {
+    position: absolute;
+  }
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

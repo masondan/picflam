@@ -6,6 +6,13 @@
   height: auto;
 }
 
+/* Desktop: position relative to app container */
+@media (min-width: 768px) {
+  .drawer-overlay {
+    position: absolute;
+  }
+}
+
 .text1-drawer-body {
   display: flex;
   flex-direction: column;

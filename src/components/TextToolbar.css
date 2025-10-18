@@ -10,6 +10,13 @@
   box-sizing: border-box;
   padding: 0 20px;
 }
+
+/* Desktop: position relative to app container */
+@media (min-width: 768px) {
+  .text-toolbar {
+    position: absolute !important;
+  }
+}
 .toolbar-inner {
   width: 100%; display: flex; align-items: center; gap: 2px; justify-content: space-between;
 }
