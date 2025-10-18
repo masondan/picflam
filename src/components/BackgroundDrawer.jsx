@@ -11,13 +11,14 @@ function BackgroundDrawer({
   currentBackground,
 }) {
   const getBackgroundStyle = () => {
-    if (currentBackground.type === 'solid') {
+    if (currentBackground && currentBackground.type === 'solid') {
       return { backgroundColor: currentBackground.value };
     }
-    if (currentBackground.type === 'gradient') {
+    if (currentBackground && currentBackground.type === 'gradient') {
       return { backgroundImage: currentBackground.value };
     }
-    return { backgroundColor: '#ccc' }; // Fallback
+    // Default to the app's default gradient if no background is set
+    return { backgroundImage: 'linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%)' };
   };
 
   return (
