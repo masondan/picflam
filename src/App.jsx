@@ -485,6 +485,7 @@ function App() {
           isActive={true}
           onClick={handleCanvasClick}
           drawSlide={drawSlide}
+          drawLayer={drawLayer}
           editingLayer={editingLayer}
           onLayerUpdate={(layer, updates) => updateSlide({ [layer]: { ...slide[layer], ...updates } })}
           onLayerDelete={(layer) => {
