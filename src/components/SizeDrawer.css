@@ -1,15 +1,14 @@
 @import url('./Drawer.css');
 
 .drawer-content.size-drawer {
-  /* Match footer height and remove rounded corners */
   height: 70px;
   max-height: 70px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  box-shadow: none; /* Remove shadow to align perfectly with footer */
-  border-top: none; /* Remove the top border to match footer height exactly */
+  box-shadow: none;
+  border-top: none;
   background-color: #555555;
-  animation: none; /* Remove slide-up animation */
+  animation: none;
 }
 
 .size-drawer .drawer-body {
@@ -30,6 +29,18 @@
   border: none;
   color: #fff;
   font-size: 24px;
+  cursor: pointer;
+}
+
+.info-button {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px; /* Match back button */
   cursor: pointer;
 }
 

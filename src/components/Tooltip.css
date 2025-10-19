@@ -1,96 +1,110 @@
 .tooltip {
-  position: fixed;
-  top: calc(50vh - 60px); /* Center in canvas area above footer */
-  left: 40%;
+  position: fixed; /* Changed from relative to fixed */
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 2000;
-  width: 60vw; /* 60% of viewport width */
-  margin-left: 16px; /* Adjust to center properly accounting for close button */
+  background-color: rgba(230, 226, 255, 0.95); /* Using rgba for transparency */
+  color: #000000;
+  padding: 1.5rem;
+  border-radius: 12px; /* Slightly larger radius */
+  max-width: 320px;
+  width: 60%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /* Added blurrier shadow */
+  border: 1px solid #cccccc;
+  animation: fadeIn 0.3s ease-out;
+  z-index: 1100;
 }
 
-.tooltip-content {
-  background: #dfc2f9;
-  color: #333333;
-  padding: 20px 24px;
-  border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.4;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.tooltip-text-area h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+  color: #333;
   text-align: center;
-  position: relative;
+}
+
+.tooltip-text-area p {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #333;
+  text-align: center;
 }
 
 .tooltip-close {
   position: absolute;
-  top: -16px; /* Position above the tooltip */
-  right: -16px; /* Position to the right outside */
-  background: #53068E;
+  top: -10px;
+  right: -10px;
+  background-color: #555; /* Solid background color */
+  color: #fff; /* White 'X' icon */
   border: none;
-  color: #FFFFFF;
+  border-radius: 50%; /* Make it circular */
+  width: 32px; /* Explicit size */
+  height: 32px; /* Explicit size */
+  font-size: 22px; /* Size of the 'X' icon */
   cursor: pointer;
-  padding: 4px;
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
   transition: background-color 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .tooltip-close:hover {
-  background-color: #3d0466;
+  background-color: #000;
 }
 
-.tooltip-close svg {
-  width: 20px;
-  height: 20px;
+.tooltip-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
 }
 
-.tooltip-arrow {
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 12px solid #dfc2f9;
+.tooltip-progress-dots {
+  display: flex;
+  gap: 6px;
+  flex-grow: 1;
+  justify-content: center;
 }
 
-.tooltip.bottom .tooltip-arrow {
-  bottom: -12px;
-  border-top: 12px solid #dfc2f9;
-  border-bottom: none;
+.tooltip-progress-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #888888;
+  transition: background-color 0.3s;
 }
 
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  .tooltip {
-    max-width: 80vw;
-    margin: 0 10vw;
-  }
+.tooltip-progress-dots .dot.active {
+  background-color: #333;
+}
 
-  .tooltip-content {
-    font-size: 14px;
-    padding: 16px 20px;
-  }
+.tooltip-arrow-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-size: 32px; /* Larger icons */
+  line-height: 1;
+  color: #555555; /* Active color */
+  transition: color 0.2s ease-in-out;
+}
 
-  .tooltip.bottom {
-    margin-bottom: 100px;
-  }
-
-  .tooltip-close {
-    width: 32px;
-    height: 32px;
-  }
-
-  .tooltip-close svg {
-    width: 26px;
-    height: 26px;
-  }
+.tooltip-arrow-btn.inactive {
+  color: #999999; /* Inactive color */
+  cursor: default;
 }

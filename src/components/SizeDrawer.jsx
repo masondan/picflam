@@ -1,8 +1,9 @@
 import { FiChevronLeft } from 'react-icons/fi';
 import { LuRectangleVertical, LuSquare, LuRectangleHorizontal } from 'react-icons/lu';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
 import './SizeDrawer.css';
 
-function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) {
+function SizeDrawer({ onClose, onCanvasSizeChange, currentSize, onShowGuide }) {
   const sizes = [
     { id: '9/16', icon: <LuRectangleVertical />, label: 'Portrait' },
     { id: '1/1', icon: <LuSquare />, label: 'Square' },
@@ -28,6 +29,9 @@ function SizeDrawer({ onClose, onCanvasSizeChange, currentSize }) {
               </button>
             ))}
           </div>
+          <button className="info-button" onClick={onShowGuide}>
+            <AiOutlineInfoCircle />
+          </button>
         </div>
       </div>
     </div>

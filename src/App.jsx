@@ -17,6 +17,7 @@ import Slide from './components/Slide';
 import TextToolbar from './components/TextToolbar';
 import SplashScreen from './components/SplashScreen';
 import Tooltip from './components/Tooltip';
+import { tooltipContent } from './tooltipContent';
 import { useSlides } from './hooks/useSlides';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { drawSlide, computeTextBounds, compressImage } from './utils/canvasUtils';
@@ -42,9 +43,8 @@ function App() {
   } = useSlides();
 
   const [savedProjects, setSavedProjects] = useLocalStorage('picflam_projects', [null, null, null]);
-  const [showTooltip, setShowTooltip] = useLocalStorage('picflam_tooltip_shown', true); // true = hide tooltip (shown once), false = show
-  const [showBackgroundTooltip, setShowBackgroundTooltip] = useLocalStorage('picflam_background_tooltip_shown', true); // true = hide tooltip (shown once), false = show
-  const [hasSelectedSize, setHasSelectedSize] = useState(false); // Track if user has selected canvas size
+  const [hasSeenGuide, setHasSeenGuide] = useLocalStorage('picflam_guide_seen', false);
+  const [forceShowGuide, setForceShowGuide] = useState(false);
 
   const slideRef = useRef(null);
 
@@ -467,16 +467,17 @@ function App() {
     return <SplashScreen onGetStarted={() => setShowSplash(false)} />;
   }
 
-  const handleTooltipClose = () => {
-    setShowTooltip(true);
-  };
-
-  const handleBackgroundTooltipClose = () => {
-    setShowBackgroundTooltip(true);
-  };
-
   return (
     <div className="app-container">
+      <Tooltip
+        content={tooltipContent}
+        show={!hasSeenGuide || forceShowGuide}
+        onClose={() => {
+          setHasSeenGuide(true);
+          setForceShowGuide(false);
+        }}
+      />
+
       <div className="canvas-container" ref={canvasContainerRef} style={{ touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: textEditMode ? 'calc(100dvh - 100px)' : '100dvh', alignItems: textEditMode ? 'flex-end' : 'center', paddingBottom: textEditMode ? '30px' : '0', justifyContent: textEditMode ? 'flex-start' : 'center' }}>
         <Slide
           ref={slideRef}
@@ -514,19 +515,13 @@ function App() {
       {isBackgroundDrawerOpen && (
         <>
           <BackgroundDrawer
-            onClose={() => { setIsBackgroundDrawerOpen(false); setShowFooter(true); setShowBackgroundTooltip(true); }}
-            onColorClick={() => { setIsColorDrawerOpen(true); setShowBackgroundTooltip(true); }}
-            onImageUpload={() => { handleImageUploadClick(); setShowBackgroundTooltip(true); }}
-            onSearchClick={() => { setIsSearchDrawerOpen(true); setShowFooter(false); setShowBackgroundTooltip(true); }}
-            onLogoClick={() => { handleLogoUploadClick(); setShowBackgroundTooltip(true); }}
+            onClose={() => { setIsBackgroundDrawerOpen(false); setShowFooter(true); }}
+            onColorClick={() => { setIsColorDrawerOpen(true); }}
+            onImageUpload={() => { handleImageUploadClick(); }}
+            onSearchClick={() => { setIsSearchDrawerOpen(true); setShowFooter(false); }}
+            onLogoClick={() => { handleLogoUploadClick(); }}
             currentBackground={slide.background}
           />
-          {showBackgroundTooltip === false && hasSelectedSize && (
-            <Tooltip
-              message="Now choose your background, upload or search for an image, and add a logo"
-              onClose={handleBackgroundTooltipClose}
-            />
-          )}
         </>
       )}
 
@@ -553,9 +548,14 @@ function App() {
       )}
 
       {isSizeDrawerOpen && (
-        <SizeDrawer onClose={handleSizeDrawerClose} onCanvasSizeChange={(size) => {
-          updateSlide({ canvasSize: size });
-        }} currentSize={slide.canvasSize} />
+        <SizeDrawer
+          onClose={handleSizeDrawerClose}
+          onCanvasSizeChange={(size) => {
+            updateSlide({ canvasSize: size });
+          }}
+          currentSize={slide.canvasSize}
+          onShowGuide={() => setForceShowGuide(true)}
+        />
       )}
 
       {isSaveDrawerOpen && (
@@ -632,13 +632,6 @@ function App() {
           onChangeQuoteSize={(v) => updateSlide({ text1QuoteSize: v })}
           keyboardHeight={keyboardHeight}
           onClose={() => { setTextEditMode(null); setIsKeyboardActive(false); }}
-        />
-      )}
-
-      {showTooltip === false && (
-        <Tooltip
-          message="Welcome! Choose your canvas size then add images and text"
-          onClose={() => { handleTooltipClose(); setShowBackgroundTooltip(false); }}
         />
       )}
     </div>
