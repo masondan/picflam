@@ -26,6 +26,6 @@ export const tooltipContent = [
   },
   {
     title: 'Job done!',
-    text: 'Download your masterpiece then tap the last button to start a fresh project. Tip: Change the canvas shape after saving to repurpose your PicFlam project.',
+    text: 'Download your masterpiece then tap the last button to start a fresh project. PS. What’s a flam? Two drum strokes played very close together. Great for grabbing attention!',
   },
 ];
