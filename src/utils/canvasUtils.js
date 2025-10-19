@@ -170,7 +170,50 @@ export const computeTextBounds = (canvasEl, wrapperEl, slideData, which) => {
   };
 };
 
-export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) => {
+export const drawLayer = (canvas, layer) => new Promise((resolveDraw) => {
+  if (!layer || !layer.img) return resolveDraw();
+  const ctx = canvas.getContext('2d');
+  const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer;
+
+  const doDrawing = () => {
+    try {
+      ctx.globalAlpha = opacity;
+      const displayedCanvasWidth = canvas.offsetWidth;
+      const displayedCanvasHeight = canvas.offsetHeight;
+      if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) return resolveDraw();
+      const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+      const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
+      let renderWidth, renderHeight;
+      if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
+        renderHeight = displayedCanvasHeight; renderWidth = renderHeight * imgAspectRatio;
+      } else {
+        renderWidth = displayedCanvasWidth; renderHeight = renderWidth / imgAspectRatio;
+      }
+      renderWidth *= scale; renderHeight *= scale;
+      const scaleToHighRes = displayedCanvasWidth > 0 ? canvas.width / displayedCanvasWidth : 0;
+      const renderWidthHighRes = renderWidth * scaleToHighRes; const renderHeightHighRes = renderHeight * scaleToHighRes;
+      const xHighRes = x * scaleToHighRes; const yHighRes = y * scaleToHighRes;
+      ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
+      ctx.globalAlpha = 1.0;
+      resolveDraw();
+    } catch (e) {
+      console.error("Error drawing image:", e);
+      resolveDraw(); // Resolve anyway to not block the process
+    }
+  };
+
+  if (img.complete && img.naturalWidth) {
+    doDrawing();
+  } else {
+    img.onload = doDrawing;
+    img.onerror = () => {
+      console.error(`Failed to load image for drawing: ${img.src.slice(0, 100)}...`);
+      resolveDraw(); // Resolve anyway
+    };
+  }
+});
+
+export const drawSlide = (canvas, slideData, layerToSkip = null) => new Promise((resolve, reject) => {
   if (!canvas) return reject(new Error('Canvas not found'));
   const ctx = canvas.getContext('2d');
   const { canvasSize, background, imageLayer, logoImage } = slideData;
@@ -202,47 +245,12 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
     ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  const drawImageOnCanvas = (layer) => new Promise((resolveDraw) => {
-    if (!layer || !layer.img) return resolveDraw();
-    const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer;
-
-    const doDrawing = () => {
-      try {
-        ctx.globalAlpha = opacity;
-        const displayedCanvasWidth = canvas.offsetWidth;
-        const displayedCanvasHeight = canvas.offsetHeight;
-        if (displayedCanvasWidth === 0 || displayedCanvasHeight === 0) return resolveDraw();
-        const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-        const canvasAspectRatio = displayedCanvasWidth / displayedCanvasHeight;
-        let renderWidth, renderHeight;
-        if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
-          renderHeight = displayedCanvasHeight; renderWidth = renderHeight * imgAspectRatio;
-        } else {
-          renderWidth = displayedCanvasWidth; renderHeight = renderWidth / imgAspectRatio;
-        }
-        renderWidth *= scale; renderHeight *= scale;
-        const scaleToHighRes = displayedCanvasWidth > 0 ? canvas.width / displayedCanvasWidth : 0;
-        const renderWidthHighRes = renderWidth * scaleToHighRes; const renderHeightHighRes = renderHeight * scaleToHighRes;
-        const xHighRes = x * scaleToHighRes; const yHighRes = y * scaleToHighRes;
-        ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
-        ctx.globalAlpha = 1.0;
-        resolveDraw();
-      } catch (e) {
-        console.error("Error drawing image:", e);
-        resolveDraw(); // Resolve anyway to not block the process
-      }
-    };
-
-    if (img.complete && img.naturalWidth) {
-      doDrawing();
-    } else {
-      img.onload = doDrawing;
-      img.onerror = () => {
-        console.error(`Failed to load image for drawing: ${img.src.slice(0, 100)}...`);
-        resolveDraw(); // Resolve anyway
-      };
+  const drawImageOnCanvas = (layer, layerName) => {
+    if (layerName === layerToSkip) {
+      return Promise.resolve();
     }
-  });
+    return drawLayer(canvas, layer);
+  };
 
   const drawText = (text, size, yPos, font, color, isBold, isItalic, align, lineSpacing, hasShadow, hasOutline, quoteStyle, quoteSize, hasLabel, labelColor, labelTransparency) => {
     const baseFontSize = Math.min(canvasWidth, canvasHeight) * 0.1;
@@ -440,8 +448,8 @@ export const drawSlide = (canvas, slideData) => new Promise((resolve, reject) =>
   const { text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, text2LabelColor, text2LabelTransparency } = slideData;
 
   // Chain the drawing promises - draw text after logo so text appears above logo
-  drawImageOnCanvas(imageLayer)
-    .then(() => drawImageOnCanvas(logoImage))
+  drawImageOnCanvas(imageLayer, 'imageLayer')
+    .then(() => drawImageOnCanvas(logoImage, 'logoImage'))
     .then(() => {
       if (text1) { drawText(text1, text1Size, text1YPosition, text1Font, text1Color, text1IsBold, text1IsItalic, text1Align, text1LineSpacing, text1HasShadow, text1HasOutline, text1QuoteStyle, text1QuoteSize, false, 'transparent', 0); }
       if (text2) { drawText(text2, text2Size, text2YPosition, text2Font, text2Color, text2IsBold, text2IsItalic, text2Align, text2LineSpacing, false, false, 'none', 5, text2LabelColor !== 'transparent', text2LabelColor, text2LabelTransparency); }

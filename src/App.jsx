@@ -20,7 +20,7 @@ import Tooltip from './components/Tooltip';
 import { tooltipContent } from './tooltipContent';
 import { useSlides } from './hooks/useSlides';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { drawSlide, computeTextBounds, compressImage } from './utils/canvasUtils';
+import { drawSlide, drawLayer, computeTextBounds, compressImage } from './utils/canvasUtils';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);

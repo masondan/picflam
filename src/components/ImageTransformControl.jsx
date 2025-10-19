@@ -1,74 +1,75 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import './ImageTransformControl.css';
 
-function ImageTransformControl({ bounds, onUpdate, layer }) {
+function ImageTransformControl({ bounds, onUpdate, onDragStart, onDragEnd, layer }) {
   const hasDragged = useRef(false);
-  const [dragState, setDragState] = useState({ dx: 0, dy: 0, isDragging: false });
 
   const handleDragStart = (e) => {
-    e.preventDefault(); // Prevent default touch actions like scrolling
-    // Prevent the main canvas click handler from firing and deselecting the layer
+    e.preventDefault();
     e.stopPropagation();
     hasDragged.current = false;
+
+    if (onDragStart) {
+      onDragStart();
+    }
 
     const startX = e.clientX || (e.touches && e.touches[0].clientX);
     const startY = e.clientY || (e.touches && e.touches[0].clientY);
     const initialX = layer.x || 0;
     const initialY = layer.y || 0;
 
-    setDragState({ dx: 0, dy: 0, isDragging: true });
-
     const handleDragMove = (moveEvent) => {
-      moveEvent.preventDefault(); // Ensure continued prevention during move
+      moveEvent.preventDefault();
       const clientX = moveEvent.clientX || (moveEvent.touches && moveEvent.touches[0].clientX);
       const clientY = moveEvent.clientY || (moveEvent.touches && moveEvent.touches[0].clientY);
       const dx = clientX - startX;
       const dy = clientY - startY;
-      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) { // Threshold to detect a real drag
+
+      if (!hasDragged.current && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
         hasDragged.current = true;
       }
-      // Update local drag state for smooth transform, not React state
-      setDragState({ dx, dy, isDragging: true });
+
+      // Continuously update the parent component during the drag
+      if (hasDragged.current) {
+        onUpdate({ x: initialX + dx, y: initialY + dy });
+      }
     };
 
     const handleDragEnd = (endEvent) => {
-      const finalClientX = endEvent.clientX || (endEvent.changedTouches && endEvent.changedTouches[0].clientX);
-      const finalClientY = endEvent.clientY || (endEvent.changedTouches && endEvent.changedTouches[0].clientY);
-      const finalDx = finalClientX - startX;
-      const finalDy = finalClientY - startY;
-
       if (hasDragged.current) {
         endEvent.stopPropagation();
+        // Ensure the final position is set correctly
+        const finalClientX = endEvent.clientX || (endEvent.changedTouches && endEvent.changedTouches[0].clientX);
+        const finalClientY = endEvent.clientY || (endEvent.changedTouches && endEvent.changedTouches[0].clientY);
+        const finalDx = finalClientX - startX;
+        const finalDy = finalClientY - startY;
+        onUpdate({ x: initialX + finalDx, y: initialY + finalDy });
       }
-      // Final update to commit the position to React state
-      onUpdate({ x: initialX + finalDx, y: initialY + finalDy });
+
+      if (onDragEnd) {
+        onDragEnd();
+      }
 
       document.removeEventListener('mousemove', handleDragMove);
       document.removeEventListener('mouseup', handleDragEnd);
       document.removeEventListener('touchmove', handleDragMove);
       document.removeEventListener('touchend', handleDragEnd);
       document.removeEventListener('touchcancel', handleDragEnd);
-
-      setDragState({ dx: 0, dy: 0, isDragging: false });
     };
 
     document.addEventListener('mousemove', handleDragMove);
     document.addEventListener('mouseup', handleDragEnd);
-    document.addEventListener('touchmove', handleDragMove, { passive: false }); // passive: false is required for preventDefault()
+    document.addEventListener('touchmove', handleDragMove, { passive: false });
     document.addEventListener('touchcancel', handleDragEnd);
     document.addEventListener('touchend', handleDragEnd);
   };
 
   if (!bounds) return null;
 
-  const transformStyle = dragState.isDragging
-    ? { transform: `translate(${dragState.dx}px, ${dragState.dy}px)` }
-    : {};
-
   return (
     <div
       className="image-transform-controls"
-      style={{ ...bounds, cursor: 'move', ...transformStyle, touchAction: 'none' }}
+      style={{ ...bounds, cursor: 'move', touchAction: 'none' }}
       onMouseDown={handleDragStart}
       onTouchStart={handleDragStart}
       onClick={(e) => e.stopPropagation()}
