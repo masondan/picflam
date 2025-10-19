@@ -11,23 +11,26 @@ function Tooltip({ content, show, onClose }) {
   useEffect(() => {
     if (show && content && content.length > 0 && tooltipRef.current) {
       // On show, calculate the max height required by any step
-      let maxHeight = 0;
+      const textContainer = tooltipRef.current.querySelector('.tooltip-text-area');
+      if (!textContainer) return;
+
       const measurementNode = document.createElement('div');
-      // Apply key styles that affect height
-      measurementNode.style.width = tooltipRef.current.offsetWidth + 'px';
-      measurementNode.style.padding = '0 1.5rem'; // Match tooltip content padding
+      document.body.appendChild(measurementNode);
+
+      const style = window.getComputedStyle(textContainer);
+      const h3Style = window.getComputedStyle(textContainer.querySelector('h3'));
+      const pStyle = window.getComputedStyle(textContainer.querySelector('p'));
+
+      measurementNode.style.width = style.width;
       measurementNode.style.visibility = 'hidden';
       measurementNode.style.position = 'absolute';
       measurementNode.style.top = '-9999px';
-      document.body.appendChild(measurementNode);
 
+      let maxHeight = 0;
       content.forEach(item => {
-        // Render the content into the measurement node
         measurementNode.innerHTML = `
-          <div class="tooltip-content">
-            <h3>${item.title}</h3>
-            <p>${item.text}</p>
-          </div>
+          <h3 style="font-family: ${h3Style.fontFamily}; font-size:${h3Style.fontSize}; font-weight:${h3Style.fontWeight}; margin-top:${h3Style.marginTop}; margin-bottom:${h3Style.marginBottom}; text-align:center;">${item.title}</h3>
+          <p style="font-family: ${pStyle.fontFamily}; font-size:${pStyle.fontSize}; font-weight:${pStyle.fontWeight}; line-height:${pStyle.lineHeight}; text-align:center;">${item.text}</p>
         `;
         if (measurementNode.scrollHeight > maxHeight) {
           maxHeight = measurementNode.scrollHeight;
@@ -40,7 +43,6 @@ function Tooltip({ content, show, onClose }) {
         setContentHeight(`${maxHeight}px`);
       }
 
-      // Reset to the first step whenever the tooltip is re-opened
       setCurrentStep(0);
     }
   }, [show, content]);
