@@ -217,7 +217,7 @@ export const drawSlide = (canvas, slideData, layerToSkip = null) => new Promise(
   if (!canvas) return reject(new Error('Canvas not found'));
   const ctx = canvas.getContext('2d');
   const { canvasSize, background, imageLayer, logoImage } = slideData;
-  const baseResolution = 2048;
+  const baseResolution = 1024;
   const [aspectX, aspectY] = canvasSize.split('/').map(Number);
   const canvasWidth = aspectX > aspectY ? baseResolution : baseResolution * (aspectX / aspectY);
   const canvasHeight = aspectY > aspectX ? baseResolution : baseResolution * (aspectY / aspectX);
