@@ -122,29 +122,16 @@ function App() {
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          // --- Image Laundering --- //
-          // 1. Draw the potentially tainted image to a temporary canvas.
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = img.naturalWidth;
-          tempCanvas.height = img.naturalHeight;
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCtx.drawImage(img, 0, 0);
-
-          // 2. Create a new, clean image from the temporary canvas.
-          const cleanImg = new Image();
-          cleanImg.onload = () => {
-            const newLayer = {
-              img: cleanImg,
-              scale: layer === 'logoImage' ? 0.5 : 1.0,
-              opacity: 1,
-              x: 0,
-              y: 0,
-              fitMode: 'fit',
-            };
-            updateSlide({ [layer]: newLayer });
-            setEditingLayer(layer);
+          const newLayer = {
+            img: img,
+            scale: layer === 'logoImage' ? 0.5 : 1.0,
+            opacity: 1,
+            x: 0,
+            y: 0,
+            fitMode: 'fit',
           };
-          cleanImg.src = tempCanvas.toDataURL();
+          updateSlide({ [layer]: newLayer });
+          setEditingLayer(layer);
         };
         img.src = e.target.result;
       };
