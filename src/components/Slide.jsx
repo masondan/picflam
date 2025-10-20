@@ -8,7 +8,6 @@ const Slide = forwardRef(function Slide({
   isActive,
   onClick,
   drawSlide,
-  drawLayer, // New prop
   editingLayer, // 'imageLayer', 'logoImage', or null
   onLayerUpdate,
   onLayerDelete,
@@ -19,10 +18,6 @@ const Slide = forwardRef(function Slide({
 
   // Re-measure canvas on layout changes to avoid initial overlay offset
   const [canvasMeasureTick, setCanvasMeasureTick] = useState(0);
-
-  // State for the dragging logic
-  const [draggingLayer, setDraggingLayer] = useState(null);
-  const canvasSnapshot = useRef(null);
 
   useLayoutEffect(() => {
     const canvasEl = canvasRef.current;
@@ -39,47 +34,16 @@ const Slide = forwardRef(function Slide({
     };
   }, []);
 
-  // Main drawing effect
+  // Main drawing effect - SIMPLIFIED
+  // This is now the ONLY place where drawing happens.
+  // It runs whenever the slide data changes, ensuring the canvas is always in sync with the state.
   useEffect(() => {
-    // Do not run the full drawSlide if we are in the middle of a drag.
-    if (draggingLayer) return;
-    
     const canvas = canvasRef.current;
     if (canvas) {
-      drawSlide(canvas, slide);
+      // We pass a 'null' for the layerToSkip, so it always draws the full scene.
+      drawSlide(canvas, slide, null);
     }
-  }, [slide, drawSlide, canvasMeasureTick, draggingLayer]);
-
-  // Effect for handling the optimized drag drawing
-  useEffect(() => {
-    // Only run this effect if we are dragging a layer and the snapshot is ready.
-    if (!draggingLayer || !canvasSnapshot.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const imageToDraw = slide[draggingLayer];
-
-    // This is an animation frame, so we request the browser to run this code
-    // right before the next repaint. This is good practice for smooth animations.
-    const animationFrameId = requestAnimationFrame(() => {
-      // FIX for artifacts: Explicitly clear the canvas before drawing anything.
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // 1. Restore the snapshot (background, text, other images).
-      ctx.putImageData(canvasSnapshot.current, 0, 0);
-
-      // 2. Draw the currently dragged layer on top.
-      if (imageToDraw) {
-        drawLayer(canvas, imageToDraw);
-      }
-    });
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-    // This effect should run every time the slide data changes (i.e., the image position)
-    // while we are in dragging mode.
-  }, [slide, draggingLayer, drawLayer]);
+  }, [slide, drawSlide, canvasMeasureTick]);
 
 
   useImperativeHandle(ref, () => ({
@@ -141,34 +105,8 @@ const Slide = forwardRef(function Slide({
     };
   };
 
-  // Drag handlers
-  const handleDragStart = (layerName) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Create an offscreen canvas for snapshotting
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = canvas.width;
-    offscreenCanvas.height = canvas.height;
-    
-    // We need to trick drawSlide into using the correct dimensions
-    // by temporarily giving the offscreen canvas the same offset dimensions.
-    Object.defineProperty(offscreenCanvas, 'offsetWidth', { configurable: true, value: canvas.offsetWidth });
-    Object.defineProperty(offscreenCanvas, 'offsetHeight', { configurable: true, value: canvas.offsetHeight });
-
-    // Draw the slide without the layer we're about to drag
-    drawSlide(offscreenCanvas, slide, layerName).then(() => {
-      const offscreenCtx = offscreenCanvas.getContext('2d');
-      canvasSnapshot.current = offscreenCtx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-      setDraggingLayer(layerName); // Set dragging state only after snapshot is ready
-    });
-  };
-
-  const handleDragEnd = () => {
-    setDraggingLayer(null);
-    canvasSnapshot.current = null;
-    // A full redraw will be triggered by the main useEffect when draggingLayer becomes null.
-  };
+  // The drag handlers are now removed. The ImageTransformControl's onUpdate will
+  // be used directly to update the state, triggering the main useEffect to redraw.
 
   return (
     <div ref={slideWrapperRef} className="slide-wrapper">
@@ -196,8 +134,7 @@ const Slide = forwardRef(function Slide({
             layer={slide.imageLayer}
             bounds={getControlBox(slide.imageLayer)}
             onUpdate={(updates) => onLayerUpdate('imageLayer', updates)}
-            onDragStart={() => handleDragStart('imageLayer')}
-            onDragEnd={handleDragEnd}
+            // onDragStart and onDragEnd are no longer needed
             onDelete={() => onLayerDelete('imageLayer')}
           />
         )}
@@ -206,8 +143,7 @@ const Slide = forwardRef(function Slide({
             layer={slide.logoImage}
             bounds={getControlBox(slide.logoImage)}
             onUpdate={(updates) => onLayerUpdate('logoImage', updates)}
-            onDragStart={() => handleDragStart('logoImage')}
-            onDragEnd={handleDragEnd}
+            // onDragStart and onDragEnd are no longer needed
             onDelete={() => onLayerDelete('logoImage')}
           />
         )}
