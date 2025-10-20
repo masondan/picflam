@@ -1,61 +1,43 @@
 import { forwardRef, useRef, useEffect, useImperativeHandle, useLayoutEffect, useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import ImageTransformControl from './ImageTransformControl';
+import { computeTextBounds } from '../utils/canvasUtils';
 import './Slide.css';
 
 const Slide = forwardRef(function Slide({
   slide,
   isActive,
-  onClick,
+  onSetActiveElement,
   drawSlide,
-  editingLayer, // 'imageLayer', 'logoImage', or null
+  editingLayer,
   onLayerUpdate,
   onLayerDelete,
 }, ref) {
   const canvasRef = useRef(null);
   const canvasWrapperRef = useRef(null);
   const slideWrapperRef = useRef(null);
-
-  // Re-measure canvas on layout changes to avoid initial overlay offset
   const [canvasMeasureTick, setCanvasMeasureTick] = useState(0);
 
   useLayoutEffect(() => {
     const canvasEl = canvasRef.current;
     if (!canvasEl) return;
-
-    const handleWindowResize = () => setCanvasMeasureTick((t) => t + 1);
     const ro = new ResizeObserver(() => setCanvasMeasureTick((t) => t + 1));
     ro.observe(canvasEl);
-    window.addEventListener('resize', handleWindowResize);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', handleWindowResize);
-    };
+    return () => ro.disconnect();
   }, []);
 
-  // Main drawing effect - SIMPLIFIED
-  // This is now the ONLY place where drawing happens.
-  // It runs whenever the slide data changes, ensuring the canvas is always in sync with the state.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
-      // We pass a 'null' for the layerToSkip, so it always draws the full scene.
-      drawSlide(canvas, slide, null);
+      // Pass editingLayer to the main draw function. It will handle borders.
+      drawSlide(canvas, slide, null, editingLayer);
     }
-  }, [slide, drawSlide, canvasMeasureTick]);
-
+  }, [slide, drawSlide, canvasMeasureTick, editingLayer]);
 
   useImperativeHandle(ref, () => ({
-    scrollIntoView: (opts) => {
-      slideWrapperRef.current?.scrollIntoView(opts);
-    },
-    getCanvasWrapperRef: () => canvasWrapperRef,
     getCanvasRef: () => canvasRef,
-    getSlideWrapperRef: () => slideWrapperRef,
   }));
 
-  // After image layers change, schedule a re-measure on the next frame
   useLayoutEffect(() => {
     const raf = requestAnimationFrame(() => setCanvasMeasureTick((t) => t + 1));
     return () => cancelAnimationFrame(raf);
@@ -67,13 +49,10 @@ const Slide = forwardRef(function Slide({
     if (!imageLayer || !imageLayer.img || !wrapper || !canvasEl) return null;
 
     const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
-
-    // Use the actual CSS size and on-screen position of the canvas to compute the overlay
     const wrapperRect = wrapper.getBoundingClientRect();
     const canvasRect = canvasEl.getBoundingClientRect();
     const canvasCssWidth = canvasRect.width;
     const canvasCssHeight = canvasRect.height;
-
     const imgAspectRatio = img.naturalWidth / img.naturalHeight;
     const canvasAspectRatio = canvasCssWidth / canvasCssHeight;
 
@@ -89,11 +68,8 @@ const Slide = forwardRef(function Slide({
     renderWidth *= scale;
     renderHeight *= scale;
 
-    // Position within the canvas (centered image area) plus user translation x/y
     const leftWithinCanvas = (canvasCssWidth - renderWidth) / 2 + x;
     const topWithinCanvas = (canvasCssHeight - renderHeight) / 2 + y;
-
-    // Convert to wrapper-relative coordinates for absolutely positioned overlay
     const left = (canvasRect.left - wrapperRect.left) + leftWithinCanvas;
     const top = (canvasRect.top - wrapperRect.top) + topWithinCanvas;
 
@@ -105,15 +81,15 @@ const Slide = forwardRef(function Slide({
     };
   };
 
-  // The drag handlers are now removed. The ImageTransformControl's onUpdate will
-  // be used directly to update the state, triggering the main useEffect to redraw.
+  const getTextBounds = (which) => {
+    return computeTextBounds(canvasRef.current, canvasWrapperRef.current, slide, which);
+  };
 
   return (
     <div ref={slideWrapperRef} className="slide-wrapper">
       <div
         className={`canvas-wrapper ${isActive ? 'active' : ''}`}
         ref={canvasWrapperRef}
-        onClick={onClick}
         data-canvas-measure={canvasMeasureTick}
       >
         <canvas ref={canvasRef} className="picflam-canvas" />
@@ -121,7 +97,7 @@ const Slide = forwardRef(function Slide({
           <button
             className="delete-layer-button"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent the canvas click from firing
+              e.stopPropagation();
               onLayerDelete(editingLayer);
             }}
             title="Delete Image"
@@ -129,24 +105,13 @@ const Slide = forwardRef(function Slide({
             <FaTrash />
           </button>
         )}
-        {editingLayer === 'imageLayer' && slide.imageLayer && (
-          <ImageTransformControl
-            layer={slide.imageLayer}
-            bounds={getControlBox(slide.imageLayer)}
-            onUpdate={(updates) => onLayerUpdate('imageLayer', updates)}
-            // onDragStart and onDragEnd are no longer needed
-            onDelete={() => onLayerDelete('imageLayer')}
-          />
-        )}
-        {editingLayer === 'logoImage' && slide.logoImage && (
-          <ImageTransformControl
-            layer={slide.logoImage}
-            bounds={getControlBox(slide.logoImage)}
-            onUpdate={(updates) => onLayerUpdate('logoImage', updates)}
-            // onDragStart and onDragEnd are no longer needed
-            onDelete={() => onLayerDelete('logoImage')}
-          />
-        )}
+        <ImageTransformControl
+          slide={slide}
+          getControlBox={getControlBox}
+          getTextBounds={getTextBounds}
+          onSetActiveElement={onSetActiveElement}
+          onLayerUpdate={onLayerUpdate}
+        />
       </div>
     </div>
   );

@@ -371,89 +371,23 @@ function App() {
 
 
 
-  const handleCanvasClick = (event) => {
-    // If the click is on an existing transform control, do nothing. This prevents
-    // an active image from being deselected when trying to drag it.
-    if (event.target.closest('.image-transform-controls')) {
-      return;
-    }
-
-    const canvasWrapper = slideRef.current?.getCanvasWrapperRef()?.current;
-    if (!canvasWrapper) {
+  const setActiveElement = (elementId) => {
+    if (elementId === 'text1' || elementId === 'text2') {
       setEditingLayer(null);
-      return;
-    }
-    const rect = canvasWrapper.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
-
-    // Hit test text blocks first (Text2 on top of Text1 by typical visual order)
-    const canvasEl = slideRef.current?.getCanvasRef()?.current;
-    const text2Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text2');
-    if (text2Box && clickX >= text2Box.left && clickX <= text2Box.left + text2Box.width && clickY >= text2Box.top && clickY <= text2Box.top + text2Box.height) {
-      setEditingLayer(null);
-      setTextEditMode('text2');
+      setTextEditMode(elementId);
       setTextToolbarTab('menu');
       setIsKeyboardActive(true);
-      return;
-    }
-    const text1Box = computeTextBounds(canvasEl, canvasWrapper, slide, 'text1');
-    if (text1Box && clickX >= text1Box.left && clickX <= text1Box.left + text1Box.width && clickY >= text1Box.top && clickY <= text1Box.top + text1Box.height) {
+    } else if (elementId === 'imageLayer' || elementId === 'logoImage') {
+      setEditingLayer(elementId);
+      setTextEditMode(null);
+      setIsKeyboardActive(false);
+    } else {
+      // Click was on the background
       setEditingLayer(null);
-      setTextEditMode('text1');
-      setTextToolbarTab('menu');
-      setIsKeyboardActive(true);
-      return;
+      setTextEditMode(null);
+      setIsKeyboardActive(false);
+      setIsBackgroundDrawerOpen(true);
     }
-
-    const getControlBox = (canvas, imageLayer) => {
-      if (!imageLayer || !imageLayer.img) return null;
-      const { img, scale, fitMode, x = 0, y = 0 } = imageLayer;
-      const canvasWidth = canvas.offsetWidth;
-      const canvasHeight = canvas.offsetHeight;
-      const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-      const canvasAspectRatio = canvasWidth / canvasHeight;
-      let renderWidth, renderHeight;
-      if (fitMode === 'fill' ? (imgAspectRatio > canvasAspectRatio) : (imgAspectRatio < canvasAspectRatio)) {
-        renderHeight = canvasHeight;
-        renderWidth = renderHeight * imgAspectRatio;
-      } else {
-        renderWidth = canvasWidth;
-        renderHeight = renderWidth / imgAspectRatio;
-      }
-      renderWidth *= scale; renderHeight *= scale;
-      return {
-        left: (canvasWidth - renderWidth) / 2 + x,
-        top: (canvasHeight - renderHeight) / 2 + y,
-        width: renderWidth,
-        height: renderHeight
-      };
-    };
-
-    if (slide.logoImage) {
-      const box = getControlBox(canvasWrapper, slide.logoImage);
-      if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
-        setEditingLayer('logoImage');
-        setTextEditMode(null);
-        setIsKeyboardActive(false);
-        return;
-      }
-    }
-    if (slide.imageLayer) {
-      const box = getControlBox(canvasWrapper, slide.imageLayer);
-      if (box && clickX >= box.left && clickX <= box.left + box.width && clickY >= box.top && clickY <= box.top + box.height) {
-        setEditingLayer('imageLayer');
-        setTextEditMode(null);
-        setIsKeyboardActive(false);
-        return;
-      }
-    }
-
-    // If we get here, the click was on the canvas background, not on any image layer. Open background drawer.
-    setEditingLayer(null);
-    setTextEditMode(null);
-    setIsKeyboardActive(false);
-    setIsBackgroundDrawerOpen(true);
   };
 
 
@@ -483,7 +417,7 @@ function App() {
           ref={slideRef}
           slide={slide}
           isActive={true}
-          onClick={handleCanvasClick}
+          onSetActiveElement={setActiveElement}
           drawSlide={drawSlide}
           drawLayer={drawLayer}
           editingLayer={editingLayer}

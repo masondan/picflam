@@ -1,24 +1,57 @@
 import { useRef } from 'react';
 import './ImageTransformControl.css';
 
-function ImageTransformControl({ bounds, onUpdate, onDragStart, onDragEnd, layer }) {
+function ImageTransformControl({
+  slide,
+  getControlBox,
+  getTextBounds,
+  onSetActiveElement,
+  onLayerUpdate,
+}) {
   const hasDragged = useRef(false);
+  const activeDragTarget = useRef(null);
 
-  const handleDragStart = (e) => {
+  const handleMouseDown = (e) => {
     e.preventDefault();
     e.stopPropagation();
     hasDragged.current = false;
 
-    if (onDragStart) {
-      onDragStart();
+    const wrapper = e.currentTarget; // The control div itself
+    const rect = wrapper.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+    // --- HIT DETECTION ---
+    // The order is important: check for text, then logo, then image.
+    const text1Bounds = slide.text1 ? getTextBounds('text1') : null;
+    const text2Bounds = slide.text2 ? getTextBounds('text2') : null;
+    const logoBounds = slide.logoImage ? getControlBox(slide.logoImage) : null;
+    const imageBounds = slide.imageLayer ? getControlBox(slide.imageLayer) : null;
+
+    let clickedElement = 'background'; // Default
+
+    if (text1Bounds && x >= text1Bounds.left && x <= text1Bounds.left + text1Bounds.width && y >= text1Bounds.top && y <= text1Bounds.top + text1Bounds.height) {
+      clickedElement = 'text1';
+    } else if (text2Bounds && x >= text2Bounds.left && x <= text2Bounds.left + text2Bounds.width && y >= text2Bounds.top && y <= text2Bounds.top + text2Bounds.height) {
+      clickedElement = 'text2';
+    } else if (logoBounds && x >= logoBounds.left && x <= logoBounds.left + logoBounds.width && y >= logoBounds.top && y <= logoBounds.top + logoBounds.height) {
+      clickedElement = 'logoImage';
+    } else if (imageBounds && x >= imageBounds.left && x <= imageBounds.left + imageBounds.width && y >= imageBounds.top && y <= imageBounds.top + imageBounds.height) {
+      clickedElement = 'imageLayer';
     }
+
+    onSetActiveElement(clickedElement);
+    activeDragTarget.current = (clickedElement === 'imageLayer' || clickedElement === 'logoImage') ? clickedElement : null;
+
+    // --- DRAG LOGIC (only if an image was clicked) ---
+    if (!activeDragTarget.current) return;
 
     const startX = e.clientX || (e.touches && e.touches[0].clientX);
     const startY = e.clientY || (e.touches && e.touches[0].clientY);
-    const initialX = layer.x || 0;
-    const initialY = layer.y || 0;
+    const initialX = slide[activeDragTarget.current].x || 0;
+    const initialY = slide[activeDragTarget.current].y || 0;
 
-    const handleDragMove = (moveEvent) => {
+    const handleMouseMove = (moveEvent) => {
       moveEvent.preventDefault();
       const clientX = moveEvent.clientX || (moveEvent.touches && moveEvent.touches[0].clientX);
       const clientY = moveEvent.clientY || (moveEvent.touches && moveEvent.touches[0].clientY);
@@ -29,50 +62,31 @@ function ImageTransformControl({ bounds, onUpdate, onDragStart, onDragEnd, layer
         hasDragged.current = true;
       }
 
-      // Continuously update the parent component during the drag
       if (hasDragged.current) {
-        onUpdate({ x: initialX + dx, y: initialY + dy });
+        onLayerUpdate(activeDragTarget.current, { x: initialX + dx, y: initialY + dy });
       }
     };
 
-    const handleDragEnd = (endEvent) => {
-      if (hasDragged.current) {
-        endEvent.stopPropagation();
-        // Ensure the final position is set correctly
-        const finalClientX = endEvent.clientX || (endEvent.changedTouches && endEvent.changedTouches[0].clientX);
-        const finalClientY = endEvent.clientY || (endEvent.changedTouches && endEvent.changedTouches[0].clientY);
-        const finalDx = finalClientX - startX;
-        const finalDy = finalClientY - startY;
-        onUpdate({ x: initialX + finalDx, y: initialY + finalDy });
-      }
-
-      if (onDragEnd) {
-        onDragEnd();
-      }
-
-      document.removeEventListener('mousemove', handleDragMove);
-      document.removeEventListener('mouseup', handleDragEnd);
-      document.removeEventListener('touchmove', handleDragMove);
-      document.removeEventListener('touchend', handleDragEnd);
-      document.removeEventListener('touchcancel', handleDragEnd);
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleMouseMove);
+      document.removeEventListener('touchend', handleMouseUp);
+      activeDragTarget.current = null;
     };
 
-    document.addEventListener('mousemove', handleDragMove);
-    document.addEventListener('mouseup', handleDragEnd);
-    document.addEventListener('touchmove', handleDragMove, { passive: false });
-    document.addEventListener('touchcancel', handleDragEnd);
-    document.addEventListener('touchend', handleDragEnd);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchmove', handleMouseMove, { passive: false });
+    document.addEventListener('touchend', handleMouseUp);
   };
 
-  if (!bounds) return null;
-
+  // This component is now a full-overlay div that captures all canvas mouse events
   return (
     <div
-      className="image-transform-controls"
-      style={{ ...bounds, cursor: 'move', touchAction: 'none' }}
-      onMouseDown={handleDragStart}
-      onTouchStart={handleDragStart}
-      onClick={(e) => e.stopPropagation()}
+      className="image-transform-controls-overlay"
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleMouseDown}
     />
   );
 }

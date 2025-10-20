@@ -1,27 +1,9 @@
-.image-transform-controls {
+.image-transform-controls-overlay {
   position: absolute;
-  pointer-events: all; /* Make the entire control area interactive */
-  /* Remove border to prevent any visual gap caused by box sizing and sub-pixels */
-  border: none;
-  /* Draw an inside edge highlight that visually matches a border without adding size */
-  box-shadow: inset 0 0 0 2px #e0e0e0;
-  box-sizing: border-box;
-}
-
-.image-delete-button {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5; /* Above the canvas but below UI elements like the delete button */
+  cursor: default;
 }

@@ -170,7 +170,7 @@ export const computeTextBounds = (canvasEl, wrapperEl, slideData, which) => {
   };
 };
 
-export const drawLayer = (canvas, layer) => new Promise((resolveDraw) => {
+export const drawLayer = (canvas, layer, drawBorder = false) => new Promise((resolveDraw) => {
   if (!layer || !layer.img) return resolveDraw();
   const ctx = canvas.getContext('2d');
   const { img, scale = 1, opacity = 1, fitMode = 'fit', x = 0, y = 0 } = layer;
@@ -193,7 +193,21 @@ export const drawLayer = (canvas, layer) => new Promise((resolveDraw) => {
       const scaleToHighRes = displayedCanvasWidth > 0 ? canvas.width / displayedCanvasWidth : 0;
       const renderWidthHighRes = renderWidth * scaleToHighRes; const renderHeightHighRes = renderHeight * scaleToHighRes;
       const xHighRes = x * scaleToHighRes; const yHighRes = y * scaleToHighRes;
-      ctx.drawImage(img, (canvas.width - renderWidthHighRes) / 2 + xHighRes, (canvas.height - renderHeightHighRes) / 2 + yHighRes, renderWidthHighRes, renderHeightHighRes);
+      
+      const finalX = (canvas.width - renderWidthHighRes) / 2 + xHighRes;
+      const finalY = (canvas.height - renderHeightHighRes) / 2 + yHighRes;
+
+      ctx.drawImage(img, finalX, finalY, renderWidthHighRes, renderHeightHighRes);
+      
+      if (drawBorder) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 2 * scaleToHighRes;
+        ctx.setLineDash([4 * scaleToHighRes, 3 * scaleToHighRes]);
+        ctx.strokeRect(finalX, finalY, renderWidthHighRes, renderHeightHighRes);
+        ctx.restore();
+      }
+
       ctx.globalAlpha = 1.0;
       resolveDraw();
     } catch (e) {
@@ -213,7 +227,7 @@ export const drawLayer = (canvas, layer) => new Promise((resolveDraw) => {
   }
 });
 
-export const drawSlide = (canvas, slideData, layerToSkip = null) => new Promise((resolve, reject) => {
+export const drawSlide = (canvas, slideData, layerToSkip = null, editingLayerName = null) => new Promise((resolve, reject) => {
   if (!canvas) return reject(new Error('Canvas not found'));
   const ctx = canvas.getContext('2d');
   const { canvasSize, background, imageLayer, logoImage } = slideData;
@@ -249,7 +263,8 @@ export const drawSlide = (canvas, slideData, layerToSkip = null) => new Promise(
     if (layerName === layerToSkip) {
       return Promise.resolve();
     }
-    return drawLayer(canvas, layer);
+    const shouldDrawBorder = layerName === editingLayerName;
+    return drawLayer(canvas, layer, shouldDrawBorder);
   };
 
   const drawText = (text, size, yPos, font, color, isBold, isItalic, align, lineSpacing, hasShadow, hasOutline, quoteStyle, quoteSize, hasLabel, labelColor, labelTransparency) => {
@@ -401,7 +416,7 @@ export const drawSlide = (canvas, slideData, layerToSkip = null) => new Promise(
       }
 
       // Draw the parts sequentially
-      ctx.textAlign = 'left'; // We are manually positioning, so always draw from the left.
+      ctx.textAlign = 'left'; // We are manually positioning, so always draw from the left. 
 
       for (const part of lineData.parts) {
           // Set styles for this part
