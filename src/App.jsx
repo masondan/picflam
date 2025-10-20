@@ -124,7 +124,7 @@ function App() {
         img.onload = () => {
           const newLayer = {
             img: img,
-            scale: layer === 'logoImage' ? 0.5 : 1,
+            scale: layer === 'logoImage' ? 0.5 : 1.0,
             opacity: 1,
             x: 0,
             y: 0,
