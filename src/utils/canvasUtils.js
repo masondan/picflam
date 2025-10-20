@@ -203,7 +203,7 @@ export const drawLayer = (canvas, layer, drawBorder = false) => new Promise((res
         ctx.save();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.lineWidth = 2 * scaleToHighRes;
-        ctx.setLineDash([4 * scaleToHighRes, 3 * scaleToHighRes]);
+        ctx.setLineDash([]);
         ctx.strokeRect(finalX, finalY, renderWidthHighRes, renderHeightHighRes);
         ctx.restore();
       }
