@@ -10,6 +10,7 @@ function ImageTransformControl({
 }) {
   const hasDragged = useRef(false);
   const activeDragTarget = useRef(null);
+  const rafRef = useRef(null); // ARTIFACT FIX: For requestAnimationFrame
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -63,11 +64,40 @@ function ImageTransformControl({
       }
 
       if (hasDragged.current) {
-        onLayerUpdate(activeDragTarget.current, { x: initialX + dx, y: initialY + dy });
+        // ARTIFACT FIX: Cancel previous frame if still pending
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+        }
+
+        // ARTIFACT FIX: Use requestAnimationFrame to sync with browser repaint
+        rafRef.current = requestAnimationFrame(() => {
+          const newX = initialX + dx;
+          const newY = initialY + dy;
+          
+          // Debug logging for Android testing
+          if (typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)) {
+            console.log('[Android Debug] Updating position:', { 
+              layer: activeDragTarget.current,
+              x: newX.toFixed(2), 
+              y: newY.toFixed(2),
+              dx: dx.toFixed(2),
+              dy: dy.toFixed(2)
+            });
+          }
+          
+          onLayerUpdate(activeDragTarget.current, { x: newX, y: newY });
+          rafRef.current = null;
+        });
       }
     };
 
     const handleMouseUp = () => {
+      // ARTIFACT FIX: Cancel any pending animation frame
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('touchmove', handleMouseMove);

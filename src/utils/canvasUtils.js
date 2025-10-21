@@ -194,8 +194,20 @@ export const drawLayer = (canvas, layer, drawBorder = false) => new Promise((res
       const renderWidthHighRes = renderWidth * scaleToHighRes; const renderHeightHighRes = renderHeight * scaleToHighRes;
       const xHighRes = x * scaleToHighRes; const yHighRes = y * scaleToHighRes;
       
-      const finalX = (canvas.width - renderWidthHighRes) / 2 + xHighRes;
-      const finalY = (canvas.height - renderHeightHighRes) / 2 + yHighRes;
+      // ARTIFACT FIX: Round to integer pixels to prevent sub-pixel rendering issues on Android
+      const finalX = Math.round((canvas.width - renderWidthHighRes) / 2 + xHighRes);
+      const finalY = Math.round((canvas.height - renderHeightHighRes) / 2 + yHighRes);
+
+      // Debug logging for Android testing
+      if (typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)) {
+        console.log('[Android Debug] Drawing image at:', { 
+          finalX, 
+          finalY, 
+          width: Math.round(renderWidthHighRes), 
+          height: Math.round(renderHeightHighRes),
+          scale: scale.toFixed(3)
+        });
+      }
 
       ctx.drawImage(img, finalX, finalY, renderWidthHighRes, renderHeightHighRes);
       
