@@ -412,7 +412,7 @@ function App() {
         }}
       />
 
-      <div className="canvas-container" ref={canvasContainerRef} style={{ touchAction: 'pan-y', overflowX: 'auto', overflowY: 'hidden', height: textEditMode ? 'calc(100dvh - 100px)' : '100dvh', alignItems: textEditMode ? 'flex-end' : 'center', paddingBottom: textEditMode ? '30px' : '0', justifyContent: textEditMode ? 'flex-start' : 'center' }}>
+      <div className="canvas-container" ref={canvasContainerRef} style={{ touchAction: 'none', overflowX: 'auto', overflowY: 'hidden', height: textEditMode ? 'calc(100dvh - 100px)' : '100dvh', alignItems: textEditMode ? 'flex-end' : 'center', paddingBottom: textEditMode ? '30px' : '0', justifyContent: textEditMode ? 'flex-start' : 'center' }}>
         <Slide
           ref={slideRef}
           slide={slide}
