@@ -453,7 +453,7 @@ function App() {
             onClose={() => { setIsBackgroundDrawerOpen(false); setShowFooter(true); }}
             onColorClick={() => { setIsColorDrawerOpen(true); }}
             onImageUpload={() => { handleImageUploadClick(); }}
-            onSearchClick={() => { setIsSearchDrawerOpen(true); setShowFooter(false); }}
+            onSearchClick={() => { setIsSearchDrawerOpen(true); setIsBackgroundDrawerOpen(false); setShowFooter(false); }}
             onLogoClick={() => { handleLogoUploadClick(); }}
             currentBackground={slide.background}
           />
