@@ -4,7 +4,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%);
+  background: #5422b0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -74,18 +74,6 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.splash-credit {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: auto;
-  margin-bottom: 3rem;
-}
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
@@ -106,9 +94,5 @@
   .splash-button {
     padding: 0.875rem 1.5rem;
     font-size: 1rem;
-  }
-
-  .splash-credit {
-    font-size: 0.8rem;
   }
 }
