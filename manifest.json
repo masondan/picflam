@@ -4,7 +4,7 @@
   "description": "A free mobile-first tool for adding text to images.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#dab2ff",
+  "background_color": "#5422b0",
   "theme_color": "#dab2ff",
   "icons": [
     {
