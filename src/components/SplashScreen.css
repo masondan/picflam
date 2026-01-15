@@ -14,6 +14,15 @@
   box-sizing: border-box;
 }
 
+/* Desktop splash screen constrained to app width */
+@media (min-width: 768px) {
+  .splash-screen {
+    width: 480px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 .splash-content {
   display: flex;
   flex-direction: column;

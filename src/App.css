@@ -4,17 +4,16 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  background-color: #eeeeee;
+  background-color: #ffffff;
 }
 
 /* Desktop responsiveness */
 @media (min-width: 768px) {
   .app-container {
     max-width: 480px; /* Constrain to mobile-like width on large screens */
-    max-height: 90vh; /* Allow some space for browser UI */
-    height: 90vh; /* Full height on desktop */
-    margin: 5vh auto 0; /* Center vertically with top margin */
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    height: 100vh; /* Fill full browser height */
+    margin: 0 auto; /* Center horizontally */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); /* Subtle shadow for contrast */
     position: relative; /* Enable absolute positioning relative to app container */
   }
 }
