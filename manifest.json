@@ -5,7 +5,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#5422b0",
-  "theme_color": "#dab2ff",
+  "theme_color": "#5422b0",
   "icons": [
     {
       "src": "/picflam-icon.png",
