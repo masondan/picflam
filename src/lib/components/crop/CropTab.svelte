@@ -8,7 +8,9 @@
 	import EditControls from './EditControls.svelte';
 	import FilterControls from './FilterControls.svelte';
 	import { cropState, activeSubMenu, hasImage, resetCropState, FILTER_DEFINITIONS } from '$lib/stores/cropStore.js';
-	import { copyImageToClipboard, downloadImage, getImageDimensions, applyCrop, flipImage, rotateImage } from '$lib/utils/imageUtils.js';
+	
+	const undoState = cropState.undoState;
+	import { copyImageToClipboard, downloadImage, getImageDimensions, applyCrop, flipImage, rotateImage, renderFinalImage } from '$lib/utils/imageUtils.js';
 	
 	const subMenuTabs = [
 		{ id: 'crop', label: 'Crop' },
@@ -67,29 +69,42 @@
 		activeSubMenu.set($activeSubMenu === tab ? 'none' : tab);
 	}
 	
+	async function getFinalImage() {
+		const finalImage = await renderFinalImage(
+			$cropState.currentImage,
+			editFilterCss,
+			$cropState.blurMask
+		);
+		return finalImage;
+	}
+	
 	async function handleCopy() {
 		if ($cropState.cropPending) {
 			pendingAction = async () => {
-				await copyImageToClipboard($cropState.currentImage);
+				const finalImage = await getFinalImage();
+				await copyImageToClipboard(finalImage);
 			};
 			modalType = 'save';
 			return;
 		}
 		if ($cropState.currentImage) {
-			await copyImageToClipboard($cropState.currentImage);
+			const finalImage = await getFinalImage();
+			await copyImageToClipboard(finalImage);
 		}
 	}
 	
-	function handleExport() {
+	async function handleExport() {
 		if ($cropState.cropPending) {
-			pendingAction = () => {
-				downloadImage($cropState.currentImage, 'picflam-crop.png');
+			pendingAction = async () => {
+				const finalImage = await getFinalImage();
+				downloadImage(finalImage, 'picflam-export.png');
 			};
 			modalType = 'save';
 			return;
 		}
 		if ($cropState.currentImage) {
-			downloadImage($cropState.currentImage, 'picflam-crop.png');
+			const finalImage = await getFinalImage();
+			downloadImage(finalImage, 'picflam-export.png');
 		}
 	}
 	
@@ -334,24 +349,106 @@
 		applyPendingCrop();
 	}
 	
+	let editStateBeforeChange = null;
+	
+	function captureEditState() {
+		if (editStateBeforeChange === null) {
+			editStateBeforeChange = { ...$cropState };
+		}
+	}
+	
+	function commitEditChange() {
+		if (editStateBeforeChange !== null) {
+			cropState.set($cropState);
+			editStateBeforeChange = null;
+		}
+	}
+	
 	function handleBrightnessChange(val) {
+		captureEditState();
 		cropState.silentUpdate(state => ({ ...state, brightness: val }));
 	}
 	
 	function handleShadowsChange(val) {
+		captureEditState();
 		cropState.silentUpdate(state => ({ ...state, shadows: val }));
 	}
 	
 	function handleContrastChange(val) {
+		captureEditState();
 		cropState.silentUpdate(state => ({ ...state, contrast: val }));
 	}
 	
 	function handleHdrChange(val) {
+		captureEditState();
 		cropState.silentUpdate(state => ({ ...state, hdr: val }));
 	}
 	
+	function handleBlurToggle(enabled) {
+		cropState.set({ ...$cropState, blurEnabled: enabled });
+	}
+	
 	function handleBlurBrushSizeChange(size) {
+		captureEditState();
 		cropState.silentUpdate(state => ({ ...state, blurBrushSize: size }));
+	}
+	
+	function handleBlurStrengthChange(val) {
+		captureEditState();
+		cropState.silentUpdate(state => ({ ...state, blurStrength: val }));
+	}
+	
+	function handleBlurSoftenChange(val) {
+		captureEditState();
+		cropState.silentUpdate(state => ({ ...state, blurSoften: val }));
+	}
+	
+	function handleBlurInvertChange(val) {
+		cropState.set({ ...$cropState, blurInvert: val });
+	}
+	
+	function handleBrushPreviewChange(visible) {
+		cropState.silentUpdate(state => ({ ...state, showBrushPreview: visible }));
+	}
+	
+	function handleEditEnd() {
+		commitEditChange();
+	}
+	
+	let blurStrokeTimeout = null;
+	let blurStrokePoints = [];
+	let blurMaskBeforeStroke = null;
+	
+	function handleBlurPaint(e) {
+		const point = e.detail.point;
+		
+		if (blurMaskBeforeStroke === null) {
+			blurMaskBeforeStroke = $cropState.blurMask ? [...$cropState.blurMask] : [];
+		}
+		
+		blurStrokePoints.push(point);
+		
+		cropState.silentUpdate(state => ({
+			...state,
+			blurMask: [...(state.blurMask || []), point]
+		}));
+		
+		if (blurStrokeTimeout) {
+			clearTimeout(blurStrokeTimeout);
+		}
+		
+		blurStrokeTimeout = setTimeout(() => {
+			if (blurStrokePoints.length > 0) {
+				const finalMask = [...blurMaskBeforeStroke, ...blurStrokePoints];
+				cropState.set({
+					...$cropState,
+					blurMask: finalMask
+				});
+				blurStrokePoints = [];
+				blurMaskBeforeStroke = null;
+			}
+			blurStrokeTimeout = null;
+		}, 300);
 	}
 	
 	function handleZoomChange(level) {
@@ -386,7 +483,12 @@
 	}
 	
 	function handleStrengthChange(value) {
+		captureEditState();
 		cropState.silentUpdate(state => ({ ...state, filterStrength: value }));
+	}
+	
+	function handleFilterReset() {
+		cropState.set({ ...$cropState, activeFilter: 'original', filterStrength: 50 });
 	}
 	
 	$: editFilterCss = (() => {
@@ -398,10 +500,23 @@
 		if ($cropState.contrast !== 0) {
 			filters.push(`contrast(${1 + $cropState.contrast / 100})`);
 		}
+		if ($cropState.shadows !== 0) {
+			const shadowAdjust = 1 + ($cropState.shadows / 200);
+			filters.push(`brightness(${shadowAdjust})`);
+		}
+		if ($cropState.hdr !== 0) {
+			const saturation = 1 + ($cropState.hdr / 100) * 0.3;
+			const contrast = 1 + ($cropState.hdr / 100) * 0.2;
+			filters.push(`saturate(${saturation}) contrast(${contrast})`);
+		}
 		if ($cropState.activeFilter !== 'original') {
 			const filterDef = FILTER_DEFINITIONS.find(f => f.id === $cropState.activeFilter);
 			if (filterDef && filterDef.css !== 'none') {
-				filters.push(filterDef.css);
+				const strength = $cropState.filterStrength / 100;
+				const adjustedCss = filterDef.css.replace(/(\d+)%/g, (match, p1) => {
+					return `${Math.round(parseInt(p1) * strength)}%`;
+				});
+				filters.push(adjustedCss);
 			}
 		}
 		
@@ -418,8 +533,8 @@
 		/>
 	{:else}
 		<ActionBar 
-			canUndo={cropState.canUndo()}
-			canRedo={cropState.canRedo()}
+			canUndo={$undoState.canUndo}
+			canRedo={$undoState.canRedo}
 			onUndo={handleUndo}
 			onRedo={handleRedo}
 			onStartAgain={handleStartAgain}
@@ -437,7 +552,15 @@
 			imageWidth={$cropState.imageWidth}
 			imageHeight={$cropState.imageHeight}
 			editFilters={editFilterCss}
+			blurEnabled={$cropState.blurEnabled}
+			blurBrushSize={$cropState.blurBrushSize}
+			blurStrength={$cropState.blurStrength}
+			blurSoften={$cropState.blurSoften}
+			blurInvert={$cropState.blurInvert}
+			blurMask={$cropState.blurMask || []}
+			showBrushPreview={$cropState.showBrushPreview}
 			on:cropChange={handleCropChange}
+			on:blurPaint={handleBlurPaint}
 		/>
 		
 		<SubMenuTabs 
@@ -469,16 +592,26 @@
 					shadows={$cropState.shadows}
 					contrast={$cropState.contrast}
 					hdr={$cropState.hdr}
+					blurEnabled={$cropState.blurEnabled}
 					blurBrushSize={$cropState.blurBrushSize}
+					blurStrength={$cropState.blurStrength}
+					blurSoften={$cropState.blurSoften}
+					blurInvert={$cropState.blurInvert}
 					zoomLevel={$cropState.zoomLevel}
 					onBrightnessChange={handleBrightnessChange}
 					onShadowsChange={handleShadowsChange}
 					onContrastChange={handleContrastChange}
 					onHdrChange={handleHdrChange}
+					onBlurToggle={handleBlurToggle}
 					onBlurBrushSizeChange={handleBlurBrushSizeChange}
+					onBlurStrengthChange={handleBlurStrengthChange}
+					onBlurSoftenChange={handleBlurSoftenChange}
+					onBlurInvertChange={handleBlurInvertChange}
 					onZoomChange={handleZoomChange}
 					onNudge={handleNudge}
 					onResetZoom={handleResetZoom}
+					onBrushPreviewChange={handleBrushPreviewChange}
+					onEditEnd={handleEditEnd}
 				/>
 			</div>
 		{:else if $activeSubMenu === 'filter'}
@@ -489,6 +622,7 @@
 					filterStrength={$cropState.filterStrength}
 					onFilterChange={handleFilterChange}
 					onStrengthChange={handleStrengthChange}
+					onReset={handleFilterReset}
 				/>
 			</div>
 		{/if}

@@ -6,10 +6,20 @@
 	export let step = 1;
 	export let showValue = false;
 	export let onChange = (val) => {};
+	export let onInteractionStart = () => {};
+	export let onInteractionEnd = () => {};
 	
 	function handleInput(e) {
-		value = Number(e.target.value);
-		onChange(value);
+		const newValue = Number(e.target.value);
+		onChange(newValue);
+	}
+	
+	function handleStart() {
+		onInteractionStart();
+	}
+	
+	function handleEnd() {
+		onInteractionEnd();
 	}
 </script>
 
@@ -30,6 +40,10 @@
 		{step}
 		{value}
 		on:input={handleInput}
+		on:mousedown={handleStart}
+		on:touchstart={handleStart}
+		on:mouseup={handleEnd}
+		on:touchend={handleEnd}
 	/>
 </div>
 

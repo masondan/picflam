@@ -1,4 +1,4 @@
-import { a as attr_class, b as bind_props, c as attr, e as ensure_array_like, d as attr_style, f as stringify, s as slot, g as store_get, u as unsubscribe_stores } from "../../chunks/index2.js";
+import { a as attr_class, b as bind_props, c as attr, e as ensure_array_like, d as attr_style, f as stringify, g as store_get, u as unsubscribe_stores } from "../../chunks/index2.js";
 import { a1 as fallback, a0 as escape_html } from "../../chunks/context.js";
 import { d as derived, w as writable } from "../../chunks/index.js";
 function Header($$renderer, $$props) {
@@ -79,6 +79,100 @@ async function flipImage(dataUrl, horizontal) {
   ctx.drawImage(img, 0, 0);
   return canvas.toDataURL("image/png");
 }
+async function renderFinalImage(dataUrl, editFilterCss, blurMask) {
+  const img = await loadImage(dataUrl);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  if (editFilterCss && editFilterCss !== "none") {
+    ctx.filter = editFilterCss;
+  }
+  ctx.drawImage(img, 0, 0);
+  ctx.filter = "none";
+  if (blurMask && Array.isArray(blurMask) && blurMask.length > 0) {
+    const hasInvert = blurMask.some((p) => p.invert);
+    if (hasInvert) {
+      const avgStrength = blurMask.reduce((sum, p) => sum + (p.strength || 50), 0) / blurMask.length;
+      const blurAmount = 0.5 + avgStrength / 100 * 9.5;
+      const blurCanvas = document.createElement("canvas");
+      blurCanvas.width = canvas.width;
+      blurCanvas.height = canvas.height;
+      const blurCtx = blurCanvas.getContext("2d");
+      blurCtx.filter = `blur(${blurAmount}px)`;
+      if (editFilterCss && editFilterCss !== "none") {
+        blurCtx.filter = `blur(${blurAmount}px) ${editFilterCss}`;
+      }
+      blurCtx.drawImage(img, 0, 0);
+      const maskCanvas = document.createElement("canvas");
+      maskCanvas.width = canvas.width;
+      maskCanvas.height = canvas.height;
+      const maskCtx = maskCanvas.getContext("2d");
+      maskCtx.fillStyle = "white";
+      maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+      for (const point of blurMask) {
+        if (!point.invert) continue;
+        const soften = (point.soften || 50) / 100;
+        const gradient = maskCtx.createRadialGradient(point.x, point.y, 0, point.x, point.y, point.radius);
+        gradient.addColorStop(0, "rgba(0,0,0,1)");
+        gradient.addColorStop(0.5 + soften * 0.3, "rgba(0,0,0,0.5)");
+        gradient.addColorStop(1, "rgba(0,0,0,0)");
+        maskCtx.fillStyle = gradient;
+        maskCtx.beginPath();
+        maskCtx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+        maskCtx.fill();
+      }
+      const originalData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const blurredData = blurCtx.getImageData(0, 0, canvas.width, canvas.height);
+      const maskData = maskCtx.getImageData(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < originalData.data.length; i += 4) {
+        const maskValue = maskData.data[i] / 255;
+        originalData.data[i] = originalData.data[i] * maskValue + blurredData.data[i] * (1 - maskValue);
+        originalData.data[i + 1] = originalData.data[i + 1] * maskValue + blurredData.data[i + 1] * (1 - maskValue);
+        originalData.data[i + 2] = originalData.data[i + 2] * maskValue + blurredData.data[i + 2] * (1 - maskValue);
+      }
+      ctx.putImageData(originalData, 0, 0);
+    } else {
+      for (const point of blurMask) {
+        const strength = point.strength || 50;
+        const soften = (point.soften || 50) / 100;
+        const blurAmount = 0.5 + strength / 100 * 9.5;
+        const blurCanvas = document.createElement("canvas");
+        blurCanvas.width = canvas.width;
+        blurCanvas.height = canvas.height;
+        const blurCtx = blurCanvas.getContext("2d");
+        blurCtx.filter = `blur(${blurAmount}px)`;
+        if (editFilterCss && editFilterCss !== "none") {
+          blurCtx.filter = `blur(${blurAmount}px) ${editFilterCss}`;
+        }
+        blurCtx.drawImage(img, 0, 0);
+        const maskCanvas = document.createElement("canvas");
+        maskCanvas.width = canvas.width;
+        maskCanvas.height = canvas.height;
+        const maskCtx = maskCanvas.getContext("2d");
+        const gradient = maskCtx.createRadialGradient(point.x, point.y, 0, point.x, point.y, point.radius);
+        gradient.addColorStop(0, "rgba(255,255,255,1)");
+        gradient.addColorStop(0.5 + soften * 0.3, "rgba(255,255,255,0.5)");
+        gradient.addColorStop(1, "rgba(255,255,255,0)");
+        maskCtx.fillStyle = gradient;
+        maskCtx.beginPath();
+        maskCtx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+        maskCtx.fill();
+        const currentData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const blurredData = blurCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const maskData = maskCtx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < currentData.data.length; i += 4) {
+          const maskValue = maskData.data[i] / 255;
+          currentData.data[i] = currentData.data[i] * (1 - maskValue) + blurredData.data[i] * maskValue;
+          currentData.data[i + 1] = currentData.data[i + 1] * (1 - maskValue) + blurredData.data[i + 1] * maskValue;
+          currentData.data[i + 2] = currentData.data[i + 2] * (1 - maskValue) + blurredData.data[i + 2] * maskValue;
+        }
+        ctx.putImageData(currentData, 0, 0);
+      }
+    }
+  }
+  return canvas.toDataURL("image/png");
+}
 function ImportArea($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let title = fallback($$props["title"], "Import an image");
@@ -145,7 +239,7 @@ function ConfirmModal($$renderer, $$props) {
 }
 function CropCanvas($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    let displayWidth, displayHeight, cropPixels;
+    let displayWidth, displayHeight, brushDisplaySize, cropPixels;
     let imageSrc = fallback($$props["imageSrc"], "");
     let cropBox = fallback($$props["cropBox"], () => ({ x: 10, y: 10, width: 80, height: 80 }), true);
     let isCropping = fallback($$props["isCropping"], false);
@@ -155,16 +249,44 @@ function CropCanvas($$renderer, $$props) {
     let imageWidth = fallback($$props["imageWidth"], 0);
     let imageHeight = fallback($$props["imageHeight"], 0);
     let editFilters = fallback($$props["editFilters"], "");
+    let blurEnabled = fallback($$props["blurEnabled"], false);
+    let blurBrushSize = fallback($$props["blurBrushSize"], 50);
+    let blurStrength = fallback($$props["blurStrength"], 50);
+    let blurSoften = fallback($$props["blurSoften"], 50);
+    let blurInvert = fallback($$props["blurInvert"], false);
+    let blurMask = fallback($$props["blurMask"], () => [], true);
+    let showBrushPreview = fallback($$props["showBrushPreview"], false);
+    let blurCanvasEl;
     let containerRect = { width: 0 };
     displayWidth = containerRect.width;
     displayHeight = imageHeight && imageWidth ? displayWidth * imageHeight / imageWidth : 0;
+    brushDisplaySize = blurBrushSize / 100 * Math.min(displayWidth, displayHeight) * 0.3;
+    if (blurMask && Array.isArray(blurMask) && blurMask.length > 0 && blurCanvasEl) ;
     cropPixels = {
       x: cropBox.x / 100 * displayWidth,
       y: cropBox.y / 100 * displayHeight,
       width: cropBox.width / 100 * displayWidth,
       height: cropBox.height / 100 * displayHeight
     };
-    $$renderer2.push(`<div class="crop-canvas svelte-pjowa5" role="application" aria-label="Image crop canvas"><div class="image-wrapper svelte-pjowa5"${attr_style(`transform: scale(${stringify(scale)}) translate(${stringify(offsetX)}px, ${stringify(offsetY)}px);`)}><img${attr("src", imageSrc)} alt="Crop preview" class="canvas-image svelte-pjowa5"${attr_style(`filter: ${stringify(editFilters)};`)} draggable="false"/></div> `);
+    $$renderer2.push(`<div class="crop-canvas svelte-pjowa5" role="application" aria-label="Image crop canvas"><div class="image-wrapper svelte-pjowa5"${attr_style(`transform: scale(${stringify(scale)}) translate(${stringify(offsetX)}px, ${stringify(offsetY)}px);`)}><img${attr("src", imageSrc)} alt="Crop preview" class="canvas-image svelte-pjowa5"${attr_style(`filter: ${stringify(editFilters)};`)} draggable="false"/> `);
+    if (blurEnabled && displayWidth > 0 && displayHeight > 0) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<canvas class="blur-canvas svelte-pjowa5"${attr("width", displayWidth)}${attr("height", displayHeight)}${attr_style(`filter: ${stringify(editFilters)};`)}></canvas>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></div> `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> `);
+    if (showBrushPreview && displayWidth > 0 && displayHeight > 0) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="blur-brush-preview svelte-pjowa5"${attr_style(` left: ${stringify(displayWidth / 2)}px; top: ${stringify(displayHeight / 2)}px; width: ${stringify(brushDisplaySize)}px; height: ${stringify(brushDisplaySize)}px; `)}></div>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> `);
     if (isCropping && displayHeight > 0) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<div class="crop-overlay svelte-pjowa5"><div class="overlay-top svelte-pjowa5"${attr_style(`height: ${stringify(cropPixels.y)}px;`)}></div> <div class="overlay-bottom svelte-pjowa5"${attr_style(`top: ${stringify(cropPixels.y + cropPixels.height)}px; height: ${stringify(displayHeight - cropPixels.y - cropPixels.height)}px;`)}></div> <div class="overlay-left svelte-pjowa5"${attr_style(`top: ${stringify(cropPixels.y)}px; height: ${stringify(cropPixels.height)}px; width: ${stringify(cropPixels.x)}px;`)}></div> <div class="overlay-right svelte-pjowa5"${attr_style(`top: ${stringify(cropPixels.y)}px; height: ${stringify(cropPixels.height)}px; left: ${stringify(cropPixels.x + cropPixels.width)}px; width: ${stringify(displayWidth - cropPixels.x - cropPixels.width)}px;`)}></div> <div class="crop-box svelte-pjowa5"${attr_style(`left: ${stringify(cropPixels.x)}px; top: ${stringify(cropPixels.y)}px; width: ${stringify(cropPixels.width)}px; height: ${stringify(cropPixels.height)}px;`)} role="button" aria-label="Drag to move crop area" tabindex="0"><div class="crop-border svelte-pjowa5"></div> <div class="corner-handle top-left svelte-pjowa5" role="button" aria-label="Resize top-left corner" tabindex="0"></div> <div class="corner-handle top-right svelte-pjowa5" role="button" aria-label="Resize top-right corner" tabindex="0"></div> <div class="corner-handle bottom-left svelte-pjowa5" role="button" aria-label="Resize bottom-left corner" tabindex="0"></div> <div class="corner-handle bottom-right svelte-pjowa5" role="button" aria-label="Resize bottom-right corner" tabindex="0"></div></div></div>`);
@@ -181,7 +303,14 @@ function CropCanvas($$renderer, $$props) {
       offsetY,
       imageWidth,
       imageHeight,
-      editFilters
+      editFilters,
+      blurEnabled,
+      blurBrushSize,
+      blurStrength,
+      blurSoften,
+      blurInvert,
+      blurMask,
+      showBrushPreview
     });
   });
 }
@@ -247,6 +376,10 @@ function Slider($$renderer, $$props) {
     let showValue = fallback($$props["showValue"], false);
     let onChange = fallback($$props["onChange"], (val) => {
     });
+    let onInteractionStart = fallback($$props["onInteractionStart"], () => {
+    });
+    let onInteractionEnd = fallback($$props["onInteractionEnd"], () => {
+    });
     $$renderer2.push(`<div class="slider-container svelte-jchife">`);
     if (label) {
       $$renderer2.push("<!--[-->");
@@ -262,7 +395,17 @@ function Slider($$renderer, $$props) {
       $$renderer2.push("<!--[!-->");
     }
     $$renderer2.push(`<!--]--> <input type="range" class="slider svelte-jchife"${attr("min", min)}${attr("max", max)}${attr("step", step)}${attr("value", value)}/></div>`);
-    bind_props($$props, { label, min, max, value, step, showValue, onChange });
+    bind_props($$props, {
+      label,
+      min,
+      max,
+      value,
+      step,
+      showValue,
+      onChange,
+      onInteractionStart,
+      onInteractionEnd
+    });
   });
 }
 function CropControls($$renderer, $$props) {
@@ -357,31 +500,19 @@ function CropControls($$renderer, $$props) {
     });
   });
 }
-function Button($$renderer, $$props) {
-  let variant = fallback($$props["variant"], "secondary");
-  let disabled = fallback($$props["disabled"], false);
-  let icon = fallback($$props["icon"], null);
-  let fullWidth = fallback($$props["fullWidth"], false);
-  $$renderer.push(`<button${attr_class(`btn btn-${stringify(variant)}`, "svelte-1xko78n", { "full-width": fullWidth })}${attr("disabled", disabled, true)}>`);
-  if (icon) {
-    $$renderer.push("<!--[-->");
-    $$renderer.push(`<img${attr("src", `/icons/${stringify(icon)}.svg`)} alt="" class="btn-icon svelte-1xko78n"/>`);
-  } else {
-    $$renderer.push("<!--[!-->");
-  }
-  $$renderer.push(`<!--]--> <!--[-->`);
-  slot($$renderer, $$props, "default", {});
-  $$renderer.push(`<!--]--></button>`);
-  bind_props($$props, { variant, disabled, icon, fullWidth });
-}
 function EditControls($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
+    let currentValue, sliderMin, sliderMax, currentBlurValue, blurSliderMin, blurSliderMax;
     let brightness = fallback($$props["brightness"], 0);
     let shadows = fallback($$props["shadows"], 0);
     let contrast = fallback($$props["contrast"], 0);
     let hdr = fallback($$props["hdr"], 0);
     let blurBrushSize = fallback($$props["blurBrushSize"], 50);
+    let blurStrength = fallback($$props["blurStrength"], 50);
+    let blurSoften = fallback($$props["blurSoften"], 50);
+    let blurInvert = fallback($$props["blurInvert"], false);
     let zoomLevel = fallback($$props["zoomLevel"], 1);
+    let blurEnabled = fallback($$props["blurEnabled"], false);
     let onBrightnessChange = fallback($$props["onBrightnessChange"], (val) => {
     });
     let onShadowsChange = fallback($$props["onShadowsChange"], (val) => {
@@ -392,92 +523,181 @@ function EditControls($$renderer, $$props) {
     });
     let onBlurBrushSizeChange = fallback($$props["onBlurBrushSizeChange"], (size) => {
     });
+    let onBlurStrengthChange = fallback($$props["onBlurStrengthChange"], (val) => {
+    });
+    let onBlurSoftenChange = fallback($$props["onBlurSoftenChange"], (val) => {
+    });
+    let onBlurInvertChange = fallback($$props["onBlurInvertChange"], (val) => {
+    });
     let onZoomChange = fallback($$props["onZoomChange"], (level) => {
     });
     let onNudge = fallback($$props["onNudge"], (direction) => {
     });
     let onResetZoom = fallback($$props["onResetZoom"], () => {
     });
-    $$renderer2.push(`<div class="edit-controls svelte-1e1k0ax"><div class="section svelte-1e1k0ax">`);
+    let onBlurToggle = fallback($$props["onBlurToggle"], (enabled) => {
+    });
+    let onBrushPreviewChange = fallback($$props["onBrushPreviewChange"], (visible) => {
+    });
+    let onEditEnd = fallback($$props["onEditEnd"], () => {
+    });
+    let activeEnhancement = "brightness";
+    let blurExpanded = blurEnabled;
+    let activeBlurControl = "brushSize";
+    const enhancements = [
+      { id: "brightness", label: "Brightness" },
+      { id: "shadows", label: "Shadows" },
+      { id: "contrast", label: "Contrast" },
+      { id: "hdr", label: "HDR" }
+    ];
+    const blurControls = [
+      { id: "brushSize", label: "Brush size" },
+      { id: "strength", label: "Strength" },
+      { id: "soften", label: "Soften edges" }
+    ];
+    function handleEnhancementChange(val) {
+      switch (activeEnhancement) {
+        case "brightness":
+          onBrightnessChange(val);
+          break;
+        case "shadows":
+          onShadowsChange(val);
+          break;
+        case "contrast":
+          onContrastChange(val);
+          break;
+        case "hdr":
+          onHdrChange(val);
+          break;
+      }
+    }
+    function handleBlurControlChange(val) {
+      switch (activeBlurControl) {
+        case "brushSize":
+          onBlurBrushSizeChange(val);
+          break;
+        case "strength":
+          onBlurStrengthChange(val);
+          break;
+        case "soften":
+          onBlurSoftenChange(val);
+          break;
+      }
+    }
+    function handleEnhancementSliderEnd() {
+      onEditEnd();
+    }
+    function handleBrushSliderStart() {
+      {
+        onBrushPreviewChange(true);
+      }
+    }
+    function handleBrushSliderEnd() {
+      onBrushPreviewChange(false);
+      onEditEnd();
+    }
+    currentValue = (() => {
+      switch (activeEnhancement) {
+        case "brightness":
+          return brightness;
+        case "shadows":
+          return shadows;
+        case "contrast":
+          return contrast;
+        case "hdr":
+          return hdr;
+        default:
+          return 0;
+      }
+    })();
+    sliderMin = -100;
+    sliderMax = 100;
+    currentBlurValue = (() => {
+      switch (activeBlurControl) {
+        case "brushSize":
+          return blurBrushSize;
+        case "strength":
+          return blurStrength;
+        case "soften":
+          return blurSoften;
+        default:
+          return 50;
+      }
+    })();
+    blurSliderMin = 1;
+    blurSliderMax = 100;
+    $$renderer2.push(`<div class="edit-controls svelte-1e1k0ax"><div class="enhancement-row svelte-1e1k0ax"><!--[-->`);
+    const each_array = ensure_array_like(enhancements);
+    for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+      let item = each_array[$$index];
+      $$renderer2.push(`<button${attr_class("enhancement-btn svelte-1e1k0ax", void 0, { "active": activeEnhancement === item.id })}>${escape_html(item.label)}</button>`);
+    }
+    $$renderer2.push(`<!--]--></div> <div class="slider-row svelte-1e1k0ax"><div class="slider-track svelte-1e1k0ax">`);
     Slider($$renderer2, {
-      label: "Brightness",
-      min: -100,
-      max: 100,
-      value: brightness,
-      showValue: true,
-      onChange: onBrightnessChange
+      min: sliderMin,
+      max: sliderMax,
+      value: currentValue,
+      step: 1,
+      onChange: handleEnhancementChange,
+      onInteractionEnd: handleEnhancementSliderEnd
     });
-    $$renderer2.push(`<!----></div> <div class="section svelte-1e1k0ax">`);
-    Slider($$renderer2, {
-      label: "Shadows",
-      min: -100,
-      max: 100,
-      value: shadows,
-      showValue: true,
-      onChange: onShadowsChange
-    });
-    $$renderer2.push(`<!----></div> <div class="section svelte-1e1k0ax">`);
-    Slider($$renderer2, {
-      label: "Contrast",
-      min: -100,
-      max: 100,
-      value: contrast,
-      showValue: true,
-      onChange: onContrastChange
-    });
-    $$renderer2.push(`<!----></div> <div class="section svelte-1e1k0ax">`);
-    Slider($$renderer2, {
-      label: "HDR",
-      min: 0,
-      max: 100,
-      value: hdr,
-      showValue: true,
-      onChange: onHdrChange
-    });
-    $$renderer2.push(`<!----></div> <div class="section svelte-1e1k0ax"><h3 class="section-header svelte-1e1k0ax">Blur Brush</h3> `);
-    Slider($$renderer2, {
-      label: "Size",
-      min: 10,
-      max: 100,
-      value: blurBrushSize,
-      showValue: true,
-      onChange: onBlurBrushSizeChange
-    });
-    $$renderer2.push(`<!----></div> <div class="section svelte-1e1k0ax"><h3 class="section-header svelte-1e1k0ax">Zoom</h3> `);
-    Slider($$renderer2, {
-      label: "Zoom In",
-      min: 1,
-      max: 3,
-      step: 0.1,
-      value: zoomLevel,
-      showValue: true,
-      onChange: onZoomChange
-    });
-    $$renderer2.push(`<!----> <div class="nudge-row svelte-1e1k0ax"><button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge up"><img src="/icons/icon-nudge-up.svg" alt="" class="svelte-1e1k0ax"/></button> <button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge down"><img src="/icons/icon-nudge-down.svg" alt="" class="svelte-1e1k0ax"/></button> <button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge left"><img src="/icons/icon-nudge-left.svg" alt="" class="svelte-1e1k0ax"/></button> <button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge right"><img src="/icons/icon-nudge-right.svg" alt="" class="svelte-1e1k0ax"/></button></div> `);
-    Button($$renderer2, {
-      variant: "secondary",
-      fullWidth: true,
-      children: ($$renderer3) => {
-        $$renderer3.push(`<!---->Reset`);
-      },
-      $$slots: { default: true }
-    });
-    $$renderer2.push(`<!----></div></div>`);
+    $$renderer2.push(`<!----></div> <button class="reset-btn svelte-1e1k0ax" aria-label="Reset"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-1e1k0ax"/></button></div> <div class="blur-section svelte-1e1k0ax"><div class="blur-header svelte-1e1k0ax"><button class="chevron-btn svelte-1e1k0ax"${attr("disabled", !blurEnabled, true)}${attr("aria-label", blurExpanded ? "Collapse" : "Expand")}><img${attr("src", `/icons/${stringify(blurExpanded ? "icon-collapse" : "icon-expand")}.svg`)} alt=""${attr_class("chevron-icon svelte-1e1k0ax", void 0, { "disabled": !blurEnabled })}/></button> <span class="blur-label svelte-1e1k0ax">Blur</span> <button${attr_class("toggle-switch svelte-1e1k0ax", void 0, { "active": blurEnabled })}${attr("aria-label", blurEnabled ? "Disable blur" : "Enable blur")}><span class="toggle-thumb svelte-1e1k0ax"></span></button></div> `);
+    if (blurExpanded && blurEnabled) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="blur-controls svelte-1e1k0ax"><div class="blur-control-row svelte-1e1k0ax"><!--[-->`);
+      const each_array_1 = ensure_array_like(blurControls);
+      for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
+        let item = each_array_1[$$index_1];
+        $$renderer2.push(`<button${attr_class("blur-control-btn svelte-1e1k0ax", void 0, { "active": activeBlurControl === item.id })}>${escape_html(item.label)}</button>`);
+      }
+      $$renderer2.push(`<!--]--> <label class="invert-checkbox svelte-1e1k0ax"><input type="checkbox"${attr("checked", blurInvert, true)} class="svelte-1e1k0ax"/> <span class="checkbox-label svelte-1e1k0ax">Invert</span></label></div> <div class="slider-row svelte-1e1k0ax"><div class="slider-track svelte-1e1k0ax">`);
+      Slider($$renderer2, {
+        min: blurSliderMin,
+        max: blurSliderMax,
+        value: currentBlurValue,
+        step: 1,
+        onChange: handleBlurControlChange,
+        onInteractionStart: handleBrushSliderStart,
+        onInteractionEnd: handleBrushSliderEnd
+      });
+      $$renderer2.push(`<!----></div> <button class="reset-btn svelte-1e1k0ax" aria-label="Reset"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-1e1k0ax"/></button></div> <div class="zoom-row svelte-1e1k0ax"><span class="zoom-label svelte-1e1k0ax">Zoom in</span> <div class="zoom-slider-row svelte-1e1k0ax"><div class="slider-track svelte-1e1k0ax">`);
+      Slider($$renderer2, {
+        min: 1,
+        max: 3,
+        step: 0.1,
+        value: zoomLevel,
+        onChange: onZoomChange
+      });
+      $$renderer2.push(`<!----></div> <button class="reset-btn svelte-1e1k0ax" aria-label="Reset zoom"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-1e1k0ax"/></button></div></div> <div class="nudge-row svelte-1e1k0ax"><button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge up"><img src="/icons/icon-nudge-up.svg" alt="" class="svelte-1e1k0ax"/></button> <button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge down"><img src="/icons/icon-nudge-down.svg" alt="" class="svelte-1e1k0ax"/></button> <button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge left"><img src="/icons/icon-nudge-left.svg" alt="" class="svelte-1e1k0ax"/></button> <button class="nudge-btn svelte-1e1k0ax" aria-label="Nudge right"><img src="/icons/icon-nudge-right.svg" alt="" class="svelte-1e1k0ax"/></button></div></div>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></div></div>`);
     bind_props($$props, {
       brightness,
       shadows,
       contrast,
       hdr,
       blurBrushSize,
+      blurStrength,
+      blurSoften,
+      blurInvert,
       zoomLevel,
+      blurEnabled,
       onBrightnessChange,
       onShadowsChange,
       onContrastChange,
       onHdrChange,
       onBlurBrushSizeChange,
+      onBlurStrengthChange,
+      onBlurSoftenChange,
+      onBlurInvertChange,
       onZoomChange,
       onNudge,
-      onResetZoom
+      onResetZoom,
+      onBlurToggle,
+      onBrushPreviewChange,
+      onEditEnd
     });
   });
 }
@@ -499,13 +719,15 @@ function FilterGrid($$renderer, $$props) {
   });
 }
 function FilterControls($$renderer, $$props) {
-  let showStrengthSlider;
+  let isOriginal;
   let imageUrl = fallback($$props["imageUrl"], "");
   let activeFilter = fallback($$props["activeFilter"], "original");
   let filterStrength = fallback($$props["filterStrength"], 50);
   let onFilterChange = fallback($$props["onFilterChange"], (filterId) => {
   });
   let onStrengthChange = fallback($$props["onStrengthChange"], (value) => {
+  });
+  let onReset = fallback($$props["onReset"], () => {
   });
   const filters = [
     { id: "original", label: "Original", css: "none" },
@@ -527,7 +749,7 @@ function FilterControls($$renderer, $$props) {
       css: "saturate(130%) hue-rotate(140deg)"
     }
   ];
-  showStrengthSlider = activeFilter !== "original";
+  isOriginal = activeFilter === "original";
   $$renderer.push(`<div class="filter-controls svelte-1274k9v">`);
   FilterGrid($$renderer, {
     filters,
@@ -535,28 +757,23 @@ function FilterControls($$renderer, $$props) {
     imageUrl,
     onChange: onFilterChange
   });
-  $$renderer.push(`<!----> `);
-  if (showStrengthSlider) {
-    $$renderer.push("<!--[-->");
-    $$renderer.push(`<div class="strength-slider svelte-1274k9v">`);
-    Slider($$renderer, {
-      label: "Strength",
-      min: 0,
-      max: 100,
-      value: filterStrength,
-      onChange: onStrengthChange
-    });
-    $$renderer.push(`<!----></div>`);
-  } else {
-    $$renderer.push("<!--[!-->");
-  }
-  $$renderer.push(`<!--]--></div>`);
+  $$renderer.push(`<!----> <div${attr_class("slider-row svelte-1274k9v", void 0, { "disabled": isOriginal })}><div class="slider-track svelte-1274k9v">`);
+  Slider($$renderer, {
+    label: "Strength",
+    min: 0,
+    max: 100,
+    value: filterStrength,
+    onChange: isOriginal ? () => {
+    } : onStrengthChange
+  });
+  $$renderer.push(`<!----></div> <button class="reset-btn svelte-1274k9v" aria-label="Reset filter"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-1274k9v"/></button></div></div>`);
   bind_props($$props, {
     imageUrl,
     activeFilter,
     filterStrength,
     onFilterChange,
-    onStrengthChange
+    onStrengthChange,
+    onReset
   });
 }
 const FILTER_DEFINITIONS = [
@@ -571,14 +788,23 @@ function createHistoryStore$1(initialState) {
   const history = [initialState];
   let currentIndex = 0;
   let baseIndex = 0;
+  const undoState = writable({ canUndo: false, canRedo: false });
   const { subscribe, set, update } = writable(initialState);
+  function updateUndoState() {
+    undoState.set({
+      canUndo: currentIndex > baseIndex,
+      canRedo: currentIndex < history.length - 1
+    });
+  }
   return {
     subscribe,
+    undoState,
     set: (value) => {
       history.splice(currentIndex + 1);
       history.push(value);
       currentIndex = history.length - 1;
       set(value);
+      updateUndoState();
     },
     update: (fn) => {
       update((currentValue) => {
@@ -586,6 +812,7 @@ function createHistoryStore$1(initialState) {
         history.splice(currentIndex + 1);
         history.push(newValue);
         currentIndex = history.length - 1;
+        updateUndoState();
         return newValue;
       });
     },
@@ -594,17 +821,20 @@ function createHistoryStore$1(initialState) {
     },
     setBaseState: () => {
       baseIndex = currentIndex;
+      updateUndoState();
     },
     undo: () => {
       if (currentIndex > baseIndex) {
         currentIndex--;
         set(history[currentIndex]);
+        updateUndoState();
       }
     },
     redo: () => {
       if (currentIndex < history.length - 1) {
         currentIndex++;
         set(history[currentIndex]);
+        updateUndoState();
       }
     },
     canUndo: () => currentIndex > baseIndex,
@@ -615,6 +845,7 @@ function createHistoryStore$1(initialState) {
       currentIndex = 0;
       baseIndex = 0;
       set(initialState);
+      updateUndoState();
     }
   };
 }
@@ -632,7 +863,6 @@ const initialCropState = {
   contrast: 0,
   shadows: 0,
   hdr: 0,
-  blurBrushSize: 20,
   activeFilter: "original",
   filterStrength: 50,
   cropBox: { x: 0, y: 0, width: 0, height: 0 },
@@ -640,7 +870,13 @@ const initialCropState = {
   cropPending: false,
   imageWidth: 0,
   imageHeight: 0,
+  blurEnabled: false,
+  blurBrushSize: 50,
+  blurStrength: 50,
+  blurSoften: 50,
+  blurInvert: false,
   blurMask: null,
+  showBrushPreview: false,
   zoomLevel: 1,
   zoomOffsetX: 0,
   zoomOffsetY: 0
@@ -656,6 +892,7 @@ function CropTab($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     var $$store_subs;
     let cropWidth, cropHeight, editFilterCss;
+    const undoState = cropState.undoState;
     const subMenuTabs = [
       { id: "crop", label: "Crop" },
       { id: "edit", label: "Edit" },
@@ -698,28 +935,36 @@ function CropTab($$renderer, $$props) {
       }
       activeSubMenu.set(store_get($$store_subs ??= {}, "$activeSubMenu", activeSubMenu) === tab ? "none" : tab);
     }
+    async function getFinalImage() {
+      const finalImage = await renderFinalImage(store_get($$store_subs ??= {}, "$cropState", cropState).currentImage, editFilterCss, store_get($$store_subs ??= {}, "$cropState", cropState).blurMask);
+      return finalImage;
+    }
     async function handleCopy() {
       if (store_get($$store_subs ??= {}, "$cropState", cropState).cropPending) {
         pendingAction = async () => {
-          await copyImageToClipboard(store_get($$store_subs ??= {}, "$cropState", cropState).currentImage);
+          const finalImage = await getFinalImage();
+          await copyImageToClipboard(finalImage);
         };
         modalType = "save";
         return;
       }
       if (store_get($$store_subs ??= {}, "$cropState", cropState).currentImage) {
-        await copyImageToClipboard(store_get($$store_subs ??= {}, "$cropState", cropState).currentImage);
+        const finalImage = await getFinalImage();
+        await copyImageToClipboard(finalImage);
       }
     }
-    function handleExport() {
+    async function handleExport() {
       if (store_get($$store_subs ??= {}, "$cropState", cropState).cropPending) {
-        pendingAction = () => {
-          downloadImage(store_get($$store_subs ??= {}, "$cropState", cropState).currentImage, "picflam-crop.png");
+        pendingAction = async () => {
+          const finalImage = await getFinalImage();
+          downloadImage(finalImage, "picflam-export.png");
         };
         modalType = "save";
         return;
       }
       if (store_get($$store_subs ??= {}, "$cropState", cropState).currentImage) {
-        downloadImage(store_get($$store_subs ??= {}, "$cropState", cropState).currentImage, "picflam-crop.png");
+        const finalImage = await getFinalImage();
+        downloadImage(finalImage, "picflam-export.png");
       }
     }
     function handleStartAgain() {
@@ -914,20 +1159,63 @@ function CropTab($$renderer, $$props) {
     function handleApplyCrop() {
       applyPendingCrop();
     }
+    let editStateBeforeChange = null;
+    function captureEditState() {
+      if (editStateBeforeChange === null) {
+        editStateBeforeChange = { ...store_get($$store_subs ??= {}, "$cropState", cropState) };
+      }
+    }
+    function commitEditChange() {
+      if (editStateBeforeChange !== null) {
+        cropState.set(store_get($$store_subs ??= {}, "$cropState", cropState));
+        editStateBeforeChange = null;
+      }
+    }
     function handleBrightnessChange(val) {
+      captureEditState();
       cropState.silentUpdate((state) => ({ ...state, brightness: val }));
     }
     function handleShadowsChange(val) {
+      captureEditState();
       cropState.silentUpdate((state) => ({ ...state, shadows: val }));
     }
     function handleContrastChange(val) {
+      captureEditState();
       cropState.silentUpdate((state) => ({ ...state, contrast: val }));
     }
     function handleHdrChange(val) {
+      captureEditState();
       cropState.silentUpdate((state) => ({ ...state, hdr: val }));
     }
+    function handleBlurToggle(enabled) {
+      cropState.set({
+        ...store_get($$store_subs ??= {}, "$cropState", cropState),
+        blurEnabled: enabled
+      });
+    }
     function handleBlurBrushSizeChange(size) {
+      captureEditState();
       cropState.silentUpdate((state) => ({ ...state, blurBrushSize: size }));
+    }
+    function handleBlurStrengthChange(val) {
+      captureEditState();
+      cropState.silentUpdate((state) => ({ ...state, blurStrength: val }));
+    }
+    function handleBlurSoftenChange(val) {
+      captureEditState();
+      cropState.silentUpdate((state) => ({ ...state, blurSoften: val }));
+    }
+    function handleBlurInvertChange(val) {
+      cropState.set({
+        ...store_get($$store_subs ??= {}, "$cropState", cropState),
+        blurInvert: val
+      });
+    }
+    function handleBrushPreviewChange(visible) {
+      cropState.silentUpdate((state) => ({ ...state, showBrushPreview: visible }));
+    }
+    function handleEditEnd() {
+      commitEditChange();
     }
     function handleZoomChange(level) {
       cropState.silentUpdate((state) => ({ ...state, zoomLevel: level }));
@@ -960,7 +1248,15 @@ function CropTab($$renderer, $$props) {
       cropState.silentUpdate((state) => ({ ...state, activeFilter: filterId }));
     }
     function handleStrengthChange(value) {
+      captureEditState();
       cropState.silentUpdate((state) => ({ ...state, filterStrength: value }));
+    }
+    function handleFilterReset() {
+      cropState.set({
+        ...store_get($$store_subs ??= {}, "$cropState", cropState),
+        activeFilter: "original",
+        filterStrength: 50
+      });
     }
     cropWidth = Math.round(store_get($$store_subs ??= {}, "$cropState", cropState).imageWidth * store_get($$store_subs ??= {}, "$cropState", cropState).cropBox.width / 100);
     cropHeight = Math.round(store_get($$store_subs ??= {}, "$cropState", cropState).imageHeight * store_get($$store_subs ??= {}, "$cropState", cropState).cropBox.height / 100);
@@ -972,10 +1268,23 @@ function CropTab($$renderer, $$props) {
       if (store_get($$store_subs ??= {}, "$cropState", cropState).contrast !== 0) {
         filters.push(`contrast(${1 + store_get($$store_subs ??= {}, "$cropState", cropState).contrast / 100})`);
       }
+      if (store_get($$store_subs ??= {}, "$cropState", cropState).shadows !== 0) {
+        const shadowAdjust = 1 + store_get($$store_subs ??= {}, "$cropState", cropState).shadows / 200;
+        filters.push(`brightness(${shadowAdjust})`);
+      }
+      if (store_get($$store_subs ??= {}, "$cropState", cropState).hdr !== 0) {
+        const saturation = 1 + store_get($$store_subs ??= {}, "$cropState", cropState).hdr / 100 * 0.3;
+        const contrast = 1 + store_get($$store_subs ??= {}, "$cropState", cropState).hdr / 100 * 0.2;
+        filters.push(`saturate(${saturation}) contrast(${contrast})`);
+      }
       if (store_get($$store_subs ??= {}, "$cropState", cropState).activeFilter !== "original") {
         const filterDef = FILTER_DEFINITIONS.find((f) => f.id === store_get($$store_subs ??= {}, "$cropState", cropState).activeFilter);
         if (filterDef && filterDef.css !== "none") {
-          filters.push(filterDef.css);
+          const strength = store_get($$store_subs ??= {}, "$cropState", cropState).filterStrength / 100;
+          const adjustedCss = filterDef.css.replace(/(\d+)%/g, (match, p1) => {
+            return `${Math.round(parseInt(p1) * strength)}%`;
+          });
+          filters.push(adjustedCss);
         }
       }
       return filters.length > 0 ? filters.join(" ") : "none";
@@ -991,8 +1300,8 @@ function CropTab($$renderer, $$props) {
     } else {
       $$renderer2.push("<!--[!-->");
       ActionBar($$renderer2, {
-        canUndo: cropState.canUndo(),
-        canRedo: cropState.canRedo(),
+        canUndo: store_get($$store_subs ??= {}, "$undoState", undoState).canUndo,
+        canRedo: store_get($$store_subs ??= {}, "$undoState", undoState).canRedo,
         onUndo: handleUndo,
         onRedo: handleRedo,
         onStartAgain: handleStartAgain,
@@ -1009,7 +1318,14 @@ function CropTab($$renderer, $$props) {
         offsetY: store_get($$store_subs ??= {}, "$activeSubMenu", activeSubMenu) === "edit" ? store_get($$store_subs ??= {}, "$cropState", cropState).zoomOffsetY : store_get($$store_subs ??= {}, "$cropState", cropState).offsetY,
         imageWidth: store_get($$store_subs ??= {}, "$cropState", cropState).imageWidth,
         imageHeight: store_get($$store_subs ??= {}, "$cropState", cropState).imageHeight,
-        editFilters: editFilterCss
+        editFilters: editFilterCss,
+        blurEnabled: store_get($$store_subs ??= {}, "$cropState", cropState).blurEnabled,
+        blurBrushSize: store_get($$store_subs ??= {}, "$cropState", cropState).blurBrushSize,
+        blurStrength: store_get($$store_subs ??= {}, "$cropState", cropState).blurStrength,
+        blurSoften: store_get($$store_subs ??= {}, "$cropState", cropState).blurSoften,
+        blurInvert: store_get($$store_subs ??= {}, "$cropState", cropState).blurInvert,
+        blurMask: store_get($$store_subs ??= {}, "$cropState", cropState).blurMask || [],
+        showBrushPreview: store_get($$store_subs ??= {}, "$cropState", cropState).showBrushPreview
       });
       $$renderer2.push(`<!----> `);
       SubMenuTabs($$renderer2, {
@@ -1045,16 +1361,26 @@ function CropTab($$renderer, $$props) {
             shadows: store_get($$store_subs ??= {}, "$cropState", cropState).shadows,
             contrast: store_get($$store_subs ??= {}, "$cropState", cropState).contrast,
             hdr: store_get($$store_subs ??= {}, "$cropState", cropState).hdr,
+            blurEnabled: store_get($$store_subs ??= {}, "$cropState", cropState).blurEnabled,
             blurBrushSize: store_get($$store_subs ??= {}, "$cropState", cropState).blurBrushSize,
+            blurStrength: store_get($$store_subs ??= {}, "$cropState", cropState).blurStrength,
+            blurSoften: store_get($$store_subs ??= {}, "$cropState", cropState).blurSoften,
+            blurInvert: store_get($$store_subs ??= {}, "$cropState", cropState).blurInvert,
             zoomLevel: store_get($$store_subs ??= {}, "$cropState", cropState).zoomLevel,
             onBrightnessChange: handleBrightnessChange,
             onShadowsChange: handleShadowsChange,
             onContrastChange: handleContrastChange,
             onHdrChange: handleHdrChange,
+            onBlurToggle: handleBlurToggle,
             onBlurBrushSizeChange: handleBlurBrushSizeChange,
+            onBlurStrengthChange: handleBlurStrengthChange,
+            onBlurSoftenChange: handleBlurSoftenChange,
+            onBlurInvertChange: handleBlurInvertChange,
             onZoomChange: handleZoomChange,
             onNudge: handleNudge,
-            onResetZoom: handleResetZoom
+            onResetZoom: handleResetZoom,
+            onBrushPreviewChange: handleBrushPreviewChange,
+            onEditEnd: handleEditEnd
           });
           $$renderer2.push(`<!----></div>`);
         } else {
@@ -1067,7 +1393,8 @@ function CropTab($$renderer, $$props) {
               activeFilter: store_get($$store_subs ??= {}, "$cropState", cropState).activeFilter,
               filterStrength: store_get($$store_subs ??= {}, "$cropState", cropState).filterStrength,
               onFilterChange: handleFilterChange,
-              onStrengthChange: handleStrengthChange
+              onStrengthChange: handleStrengthChange,
+              onReset: handleFilterReset
             });
             $$renderer2.push(`<!----></div>`);
           } else {

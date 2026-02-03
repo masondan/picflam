@@ -283,3 +283,113 @@ export async function applyFilter(dataUrl, filterCss, strength) {
 	ctx.putImageData(originalData, 0, 0);
 	return canvas.toDataURL('image/png');
 }
+
+export async function renderFinalImage(dataUrl, editFilterCss, blurMask) {
+	const img = await loadImage(dataUrl);
+	const canvas = document.createElement('canvas');
+	const ctx = canvas.getContext('2d');
+
+	canvas.width = img.naturalWidth;
+	canvas.height = img.naturalHeight;
+
+	if (editFilterCss && editFilterCss !== 'none') {
+		ctx.filter = editFilterCss;
+	}
+	ctx.drawImage(img, 0, 0);
+	ctx.filter = 'none';
+
+	if (blurMask && Array.isArray(blurMask) && blurMask.length > 0) {
+		const hasInvert = blurMask.some(p => p.invert);
+		
+		if (hasInvert) {
+			const avgStrength = blurMask.reduce((sum, p) => sum + (p.strength || 50), 0) / blurMask.length;
+			const blurAmount = 0.5 + (avgStrength / 100) * 9.5;
+			
+			const blurCanvas = document.createElement('canvas');
+			blurCanvas.width = canvas.width;
+			blurCanvas.height = canvas.height;
+			const blurCtx = blurCanvas.getContext('2d');
+			blurCtx.filter = `blur(${blurAmount}px)`;
+			if (editFilterCss && editFilterCss !== 'none') {
+				blurCtx.filter = `blur(${blurAmount}px) ${editFilterCss}`;
+			}
+			blurCtx.drawImage(img, 0, 0);
+			
+			const maskCanvas = document.createElement('canvas');
+			maskCanvas.width = canvas.width;
+			maskCanvas.height = canvas.height;
+			const maskCtx = maskCanvas.getContext('2d');
+			maskCtx.fillStyle = 'white';
+			maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+			
+			for (const point of blurMask) {
+				if (!point.invert) continue;
+				const soften = (point.soften || 50) / 100;
+				const gradient = maskCtx.createRadialGradient(point.x, point.y, 0, point.x, point.y, point.radius);
+				gradient.addColorStop(0, 'rgba(0,0,0,1)');
+				gradient.addColorStop(0.5 + soften * 0.3, 'rgba(0,0,0,0.5)');
+				gradient.addColorStop(1, 'rgba(0,0,0,0)');
+				maskCtx.fillStyle = gradient;
+				maskCtx.beginPath();
+				maskCtx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+				maskCtx.fill();
+			}
+			
+			const originalData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+			const blurredData = blurCtx.getImageData(0, 0, canvas.width, canvas.height);
+			const maskData = maskCtx.getImageData(0, 0, canvas.width, canvas.height);
+			
+			for (let i = 0; i < originalData.data.length; i += 4) {
+				const maskValue = maskData.data[i] / 255;
+				originalData.data[i] = originalData.data[i] * maskValue + blurredData.data[i] * (1 - maskValue);
+				originalData.data[i + 1] = originalData.data[i + 1] * maskValue + blurredData.data[i + 1] * (1 - maskValue);
+				originalData.data[i + 2] = originalData.data[i + 2] * maskValue + blurredData.data[i + 2] * (1 - maskValue);
+			}
+			ctx.putImageData(originalData, 0, 0);
+		} else {
+			for (const point of blurMask) {
+				const strength = point.strength || 50;
+				const soften = (point.soften || 50) / 100;
+				const blurAmount = 0.5 + (strength / 100) * 9.5;
+				
+				const blurCanvas = document.createElement('canvas');
+				blurCanvas.width = canvas.width;
+				blurCanvas.height = canvas.height;
+				const blurCtx = blurCanvas.getContext('2d');
+				blurCtx.filter = `blur(${blurAmount}px)`;
+				if (editFilterCss && editFilterCss !== 'none') {
+					blurCtx.filter = `blur(${blurAmount}px) ${editFilterCss}`;
+				}
+				blurCtx.drawImage(img, 0, 0);
+				
+				const maskCanvas = document.createElement('canvas');
+				maskCanvas.width = canvas.width;
+				maskCanvas.height = canvas.height;
+				const maskCtx = maskCanvas.getContext('2d');
+				
+				const gradient = maskCtx.createRadialGradient(point.x, point.y, 0, point.x, point.y, point.radius);
+				gradient.addColorStop(0, 'rgba(255,255,255,1)');
+				gradient.addColorStop(0.5 + soften * 0.3, 'rgba(255,255,255,0.5)');
+				gradient.addColorStop(1, 'rgba(255,255,255,0)');
+				maskCtx.fillStyle = gradient;
+				maskCtx.beginPath();
+				maskCtx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+				maskCtx.fill();
+				
+				const currentData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+				const blurredData = blurCtx.getImageData(0, 0, canvas.width, canvas.height);
+				const maskData = maskCtx.getImageData(0, 0, canvas.width, canvas.height);
+				
+				for (let i = 0; i < currentData.data.length; i += 4) {
+					const maskValue = maskData.data[i] / 255;
+					currentData.data[i] = currentData.data[i] * (1 - maskValue) + blurredData.data[i] * maskValue;
+					currentData.data[i + 1] = currentData.data[i + 1] * (1 - maskValue) + blurredData.data[i + 1] * maskValue;
+					currentData.data[i + 2] = currentData.data[i + 2] * (1 - maskValue) + blurredData.data[i + 2] * maskValue;
+				}
+				ctx.putImageData(currentData, 0, 0);
+			}
+		}
+	}
+
+	return canvas.toDataURL('image/png');
+}

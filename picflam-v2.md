@@ -16,13 +16,57 @@
 | 0.3 SvelteKit Template | ✅ Complete | Branch: v2-sveltekit |
 | 1: Architecture | ✅ Complete | Stores, tabs, utils |
 | 2: UI Components | ✅ Complete | Buttons, sliders, modals, drawers |
-| 3: Crop Tab | ✅ Complete | Crop, Edit, Filter controls with canvas |
-| 4: AI Tab | ⏳ Pending | |
+| 3: Crop Tab | ✅ Complete | Full implementation with all features |
+| 4: AI Tab | ⏳ Pending | Next phase |
 | 5: Design Tab | ⏳ Pending | |
 | 6: Polish & Test | ⏳ Pending | |
 | 7: Deployment | ⏳ Pending | |
 
 **Brand Color Decision**: Using `#5422b0` consistently (unified across all Flam apps)
+
+---
+
+## Phase 3 Completion Summary
+
+### Implemented Features
+
+**Crop Sub-tab:**
+- Image import via file picker, drag-and-drop, or clipboard paste
+- Interactive crop box with corner/edge handles and drag-to-move
+- Aspect ratio presets (Custom, 9:16, 1:1, 16:9) with ratio locking
+- Manual dimension input with constraint preservation
+- Flip horizontal and rotate 90° operations
+- Scale slider for canvas zoom
+- Apply crop confirmation workflow
+
+**Edit Sub-tab:**
+- Brightness, Shadows, Contrast, HDR adjustments with unified slider
+- Row-based enhancement selection with reset button
+- Blur brush with configurable settings:
+  - Brush size, Strength, Soften edges controls
+  - Invert mode (blur everything except painted area)
+  - Zoom and nudge controls for precision
+  - Live brush preview when adjusting brush size
+- All edits tracked in undo/redo history
+
+**Filter Sub-tab:**
+- Filter grid with live previews (Original, Greyscale, Sepia, Sunset, Azure, Teal)
+- Strength slider to adjust filter intensity (0-100%)
+- Reset button to return to original
+- Disabled state for slider when Original selected
+
+**Core Infrastructure:**
+- History-based undo/redo system with reactive state
+- Silent updates for smooth slider interaction (commits on release)
+- Export renders final image with all effects baked in (edits, filters, blur)
+- Copy to clipboard with full effects applied
+- Crop pending modal workflow for unsaved changes
+
+### Technical Decisions
+- CSS filters for real-time preview (brightness, contrast, etc.)
+- Canvas-based blur mask rendering with radial gradients for soft edges
+- Blur strength range: 0.5px (min) to 10px (max) for gentle effect
+- `renderFinalImage()` utility bakes all effects for export
 
 ---
 

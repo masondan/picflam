@@ -14,15 +14,25 @@ function createHistoryStore(initialState) {
 	let currentIndex = 0;
 	let baseIndex = 0;
 	
+	const undoState = writable({ canUndo: false, canRedo: false });
 	const { subscribe, set, update } = writable(initialState);
+	
+	function updateUndoState() {
+		undoState.set({
+			canUndo: currentIndex > baseIndex,
+			canRedo: currentIndex < history.length - 1
+		});
+	}
 	
 	return {
 		subscribe,
+		undoState,
 		set: (value) => {
 			history.splice(currentIndex + 1);
 			history.push(value);
 			currentIndex = history.length - 1;
 			set(value);
+			updateUndoState();
 		},
 		update: (fn) => {
 			update(currentValue => {
@@ -30,6 +40,7 @@ function createHistoryStore(initialState) {
 				history.splice(currentIndex + 1);
 				history.push(newValue);
 				currentIndex = history.length - 1;
+				updateUndoState();
 				return newValue;
 			});
 		},
@@ -38,17 +49,20 @@ function createHistoryStore(initialState) {
 		},
 		setBaseState: () => {
 			baseIndex = currentIndex;
+			updateUndoState();
 		},
 		undo: () => {
 			if (currentIndex > baseIndex) {
 				currentIndex--;
 				set(history[currentIndex]);
+				updateUndoState();
 			}
 		},
 		redo: () => {
 			if (currentIndex < history.length - 1) {
 				currentIndex++;
 				set(history[currentIndex]);
+				updateUndoState();
 			}
 		},
 		canUndo: () => currentIndex > baseIndex,
@@ -59,6 +73,7 @@ function createHistoryStore(initialState) {
 			currentIndex = 0;
 			baseIndex = 0;
 			set(initialState);
+			updateUndoState();
 		}
 	};
 }
@@ -77,7 +92,6 @@ const initialCropState = {
 	contrast: 0,
 	shadows: 0,
 	hdr: 0,
-	blurBrushSize: 20,
 	activeFilter: 'original',
 	filterStrength: 50,
 	
@@ -87,7 +101,13 @@ const initialCropState = {
 	imageWidth: 0,
 	imageHeight: 0,
 	
+	blurEnabled: false,
+	blurBrushSize: 50,
+	blurStrength: 50,
+	blurSoften: 50,
+	blurInvert: false,
 	blurMask: null,
+	showBrushPreview: false,
 	zoomLevel: 1,
 	zoomOffsetX: 0,
 	zoomOffsetY: 0
