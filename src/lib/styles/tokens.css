@@ -1,0 +1,84 @@
+/* PicFlam Design System Tokens */
+/* Single source of truth - see DESIGN_SYSTEM.md */
+
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;500;600;700&family=Lora:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto+Slab:wght@400;700&family=Saira+Condensed:wght@400;700&family=Special+Elite&display=swap');
+
+:root {
+  /* Colors - UI */
+  --color-primary: #5422b0;
+  --color-primary-light: #f0e6f7;
+  --color-surface: #ffffff;
+  --color-surface-dark: #555555;
+  --color-text-primary: #333333;
+  --color-text-secondary: #555555;
+  --color-text-muted: #999999;
+  --color-text-inverse: #ffffff;
+  --color-border: #cccccc;
+  --color-border-light: #eeeeee;
+  --color-accent: #FFD700;
+  --color-error: #DC143C;
+  --color-success: #10b981;
+
+  /* Colors - Canvas Palette */
+  --canvas-white: #FFFFFF;
+  --canvas-black: #000000;
+  --canvas-green: #007C1F;
+  --canvas-blue: #00679D;
+  --canvas-red: #B20715;
+  --canvas-highlight: #FFD700;
+
+  /* Typography */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Spacing */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Layout */
+  --header-height: 64px;
+  --footer-height: 70px;
+  --app-max-width: 480px;
+  --content-padding: var(--space-4);
+  --touch-target-min: 44px;
+
+  /* Border Radius */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-card: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+  --transition-drawer: 300ms ease-out;
+}
