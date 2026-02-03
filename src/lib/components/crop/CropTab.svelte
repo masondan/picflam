@@ -2,8 +2,13 @@
 	import ImportArea from '$lib/components/ui/ImportArea.svelte';
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
-	import { cropState, activeSubMenu, hasImage, resetCropState } from '$lib/stores/cropStore.js';
-	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
+	import CropCanvas from './CropCanvas.svelte';
+	import CropControls from './CropControls.svelte';
+	import EditControls from './EditControls.svelte';
+	import FilterControls from './FilterControls.svelte';
+	import { cropState, activeSubMenu, hasImage, resetCropState, FILTER_DEFINITIONS } from '$lib/stores/cropStore.js';
+	import { copyImageToClipboard, downloadImage, getImageDimensions, applyCrop, flipImage, rotateImage } from '$lib/utils/imageUtils.js';
 	
 	const subMenuTabs = [
 		{ id: 'crop', label: 'Crop' },
@@ -11,29 +16,397 @@
 		{ id: 'filter', label: 'Filter' }
 	];
 	
-	function handleImageImport(dataUrl) {
+	let modalType = null;
+	let pendingAction = null;
+	
+	$: cropWidth = Math.round($cropState.imageWidth * $cropState.cropBox.width / 100);
+	$: cropHeight = Math.round($cropState.imageHeight * $cropState.cropBox.height / 100);
+	
+	async function handleImageImport(dataUrl) {
+		const dims = await getImageDimensions(dataUrl);
 		cropState.set({
 			...$cropState,
 			originalImage: dataUrl,
-			currentImage: dataUrl
+			currentImage: dataUrl,
+			imageWidth: dims.width,
+			imageHeight: dims.height,
+			width: dims.width,
+			height: dims.height,
+			cropBox: { x: 0, y: 0, width: 100, height: 100 },
+			isCropping: true,
+			cropPending: false,
+			aspectRatio: 'custom',
+			ratioLocked: false
 		});
+		cropState.setBaseState();
+		activeSubMenu.set('crop');
 	}
 	
 	function handleSubMenuChange(tab) {
+		if ($cropState.cropPending && $activeSubMenu === 'crop' && tab !== 'crop') {
+			pendingAction = () => {
+				activeSubMenu.set(tab);
+				cropState.silentUpdate(state => ({ ...state, isCropping: false }));
+			};
+			modalType = 'save';
+			return;
+		}
+		
+		if (tab === 'crop') {
+			cropState.silentUpdate(state => ({
+				...state,
+				isCropping: true
+			}));
+		} else {
+			cropState.silentUpdate(state => ({
+				...state,
+				isCropping: false
+			}));
+		}
+		
 		activeSubMenu.set($activeSubMenu === tab ? 'none' : tab);
 	}
 	
 	async function handleCopy() {
+		if ($cropState.cropPending) {
+			pendingAction = async () => {
+				await copyImageToClipboard($cropState.currentImage);
+			};
+			modalType = 'save';
+			return;
+		}
 		if ($cropState.currentImage) {
 			await copyImageToClipboard($cropState.currentImage);
 		}
 	}
 	
 	function handleExport() {
+		if ($cropState.cropPending) {
+			pendingAction = () => {
+				downloadImage($cropState.currentImage, 'picflam-crop.png');
+			};
+			modalType = 'save';
+			return;
+		}
 		if ($cropState.currentImage) {
 			downloadImage($cropState.currentImage, 'picflam-crop.png');
 		}
 	}
+	
+	function handleStartAgain() {
+		modalType = 'startAgain';
+	}
+	
+	function handleUndo() {
+		cropState.undo();
+	}
+	
+	function handleRedo() {
+		cropState.redo();
+	}
+	
+	async function handleSaveConfirm() {
+		modalType = null;
+		await applyPendingCrop();
+		if (pendingAction) {
+			await pendingAction();
+			pendingAction = null;
+		}
+	}
+	
+	function handleSaveCancel() {
+		modalType = null;
+		pendingAction = null;
+	}
+	
+	function handleStartAgainConfirm() {
+		modalType = null;
+		resetCropState();
+	}
+	
+	function handleStartAgainCancel() {
+		modalType = null;
+	}
+	
+	async function applyPendingCrop() {
+		const state = $cropState;
+		if (!state.currentImage || !state.cropPending) return;
+		
+		const croppedImage = await applyCrop(
+			state.currentImage,
+			state.cropBox,
+			state.imageWidth,
+			state.imageHeight
+		);
+		
+		const dims = await getImageDimensions(croppedImage);
+		
+		cropState.set({
+			...state,
+			currentImage: croppedImage,
+			imageWidth: dims.width,
+			imageHeight: dims.height,
+			width: dims.width,
+			height: dims.height,
+			cropBox: { x: 0, y: 0, width: 100, height: 100 },
+			cropPending: false
+		});
+	}
+	
+	function handleRatioChange(ratio) {
+		if (ratio === 'custom') {
+			cropState.silentUpdate(state => ({
+				...state,
+				aspectRatio: 'custom',
+				cropBox: { x: 0, y: 0, width: 100, height: 100 },
+				ratioLocked: false,
+				cropPending: false
+			}));
+			return;
+		}
+		
+		const aspectRatios = {
+			'9:16': 9 / 16,
+			'1:1': 1,
+			'16:9': 16 / 9
+		};
+		
+		const targetRatio = aspectRatios[ratio];
+		const imageRatio = $cropState.imageWidth / $cropState.imageHeight;
+		let newCropBox;
+		
+		if (ratio === '9:16') {
+			const cropHeight = 100;
+			const cropWidth = (targetRatio / imageRatio) * 100;
+			if (cropWidth <= 100) {
+				newCropBox = { x: (100 - cropWidth) / 2, y: 0, width: cropWidth, height: cropHeight };
+			} else {
+				const adjustedHeight = (imageRatio / targetRatio) * 100;
+				newCropBox = { x: 0, y: (100 - adjustedHeight) / 2, width: 100, height: adjustedHeight };
+			}
+		} else if (ratio === '16:9') {
+			const cropWidth = 100;
+			const cropHeight = (imageRatio / targetRatio) * 100;
+			if (cropHeight <= 100) {
+				newCropBox = { x: 0, y: (100 - cropHeight) / 2, width: cropWidth, height: cropHeight };
+			} else {
+				const adjustedWidth = (targetRatio / imageRatio) * 100;
+				newCropBox = { x: (100 - adjustedWidth) / 2, y: 0, width: adjustedWidth, height: 100 };
+			}
+		} else if (ratio === '1:1') {
+			if (imageRatio > 1) {
+				const cropWidth = 100 / imageRatio;
+				newCropBox = { x: (100 - cropWidth) / 2, y: 0, width: cropWidth, height: 100 };
+			} else {
+				const cropHeight = 100 * imageRatio;
+				newCropBox = { x: 0, y: (100 - cropHeight) / 2, width: 100, height: cropHeight };
+			}
+		}
+		
+		cropState.silentUpdate(state => ({
+			...state,
+			aspectRatio: ratio,
+			cropBox: newCropBox,
+			cropPending: true,
+			isCropping: true,
+			ratioLocked: true
+		}));
+	}
+	
+	function handleDimensionsChange({ width: newWidth, height: newHeight }) {
+		const maxWidth = $cropState.imageWidth;
+		const maxHeight = $cropState.imageHeight;
+		
+		const clampedWidth = Math.min(Math.max(1, newWidth), maxWidth);
+		const clampedHeight = Math.min(Math.max(1, newHeight), maxHeight);
+		
+		const widthPercent = (clampedWidth / maxWidth) * 100;
+		const heightPercent = (clampedHeight / maxHeight) * 100;
+		
+		let newCropBox;
+		
+		if ($cropState.ratioLocked) {
+			const currentRatio = cropWidth / cropHeight;
+			if (newWidth !== cropWidth) {
+				const adjustedHeight = clampedWidth / currentRatio;
+				const adjustedHeightPercent = (adjustedHeight / maxHeight) * 100;
+				newCropBox = {
+					x: (100 - widthPercent) / 2,
+					y: (100 - Math.min(100, adjustedHeightPercent)) / 2,
+					width: widthPercent,
+					height: Math.min(100, adjustedHeightPercent)
+				};
+			} else {
+				const adjustedWidth = clampedHeight * currentRatio;
+				const adjustedWidthPercent = (adjustedWidth / maxWidth) * 100;
+				newCropBox = {
+					x: (100 - Math.min(100, adjustedWidthPercent)) / 2,
+					y: (100 - heightPercent) / 2,
+					width: Math.min(100, adjustedWidthPercent),
+					height: heightPercent
+				};
+			}
+		} else {
+			newCropBox = {
+				x: (100 - widthPercent) / 2,
+				y: (100 - heightPercent) / 2,
+				width: widthPercent,
+				height: heightPercent
+			};
+		}
+		
+		cropState.silentUpdate(state => ({
+			...state,
+			cropBox: newCropBox,
+			cropPending: true
+		}));
+	}
+	
+	function handleLockToggle() {
+		cropState.silentUpdate(state => ({
+			...state,
+			ratioLocked: !state.ratioLocked
+		}));
+	}
+	
+	async function handleFlip() {
+		const flipped = await flipImage($cropState.currentImage, true);
+		cropState.set({
+			...$cropState,
+			currentImage: flipped
+		});
+	}
+	
+	async function handleRotate() {
+		const rotated = await rotateImage($cropState.currentImage, 90);
+		const dims = await getImageDimensions(rotated);
+		cropState.set({
+			...$cropState,
+			currentImage: rotated,
+			imageWidth: dims.width,
+			imageHeight: dims.height,
+			cropBox: { x: 0, y: 0, width: 100, height: 100 },
+			cropPending: false
+		});
+	}
+	
+	function handleScaleChange(scale) {
+		cropState.silentUpdate(state => ({
+			...state,
+			scale: scale / 100
+		}));
+	}
+	
+	function handleCropChange(e) {
+		const newCropBox = e.detail.cropBox;
+		
+		if ($cropState.ratioLocked && $cropState.aspectRatio !== 'custom') {
+			const aspectRatios = {
+				'9:16': 9 / 16,
+				'1:1': 1,
+				'16:9': 16 / 9
+			};
+			const targetRatio = aspectRatios[$cropState.aspectRatio];
+			const imageRatio = $cropState.imageWidth / $cropState.imageHeight;
+			
+			const currentCropRatio = (newCropBox.width * $cropState.imageWidth) / (newCropBox.height * $cropState.imageHeight);
+			
+			if (Math.abs(currentCropRatio - targetRatio) > 0.01) {
+				const cropWidthPx = (newCropBox.width / 100) * $cropState.imageWidth;
+				const constrainedHeightPx = cropWidthPx / targetRatio;
+				const constrainedHeightPercent = (constrainedHeightPx / $cropState.imageHeight) * 100;
+				
+				newCropBox.height = Math.min(100, constrainedHeightPercent);
+				if (newCropBox.y + newCropBox.height > 100) {
+					newCropBox.y = 100 - newCropBox.height;
+				}
+			}
+		}
+		
+		cropState.silentUpdate(state => ({
+			...state,
+			cropBox: newCropBox,
+			cropPending: true
+		}));
+	}
+	
+	function handleApplyCrop() {
+		applyPendingCrop();
+	}
+	
+	function handleBrightnessChange(val) {
+		cropState.silentUpdate(state => ({ ...state, brightness: val }));
+	}
+	
+	function handleShadowsChange(val) {
+		cropState.silentUpdate(state => ({ ...state, shadows: val }));
+	}
+	
+	function handleContrastChange(val) {
+		cropState.silentUpdate(state => ({ ...state, contrast: val }));
+	}
+	
+	function handleHdrChange(val) {
+		cropState.silentUpdate(state => ({ ...state, hdr: val }));
+	}
+	
+	function handleBlurBrushSizeChange(size) {
+		cropState.silentUpdate(state => ({ ...state, blurBrushSize: size }));
+	}
+	
+	function handleZoomChange(level) {
+		cropState.silentUpdate(state => ({ ...state, zoomLevel: level }));
+	}
+	
+	function handleNudge(direction) {
+		const nudgeAmount = 20;
+		cropState.silentUpdate(state => {
+			let { zoomOffsetX, zoomOffsetY } = state;
+			switch (direction) {
+				case 'up': zoomOffsetY -= nudgeAmount; break;
+				case 'down': zoomOffsetY += nudgeAmount; break;
+				case 'left': zoomOffsetX -= nudgeAmount; break;
+				case 'right': zoomOffsetX += nudgeAmount; break;
+			}
+			return { ...state, zoomOffsetX, zoomOffsetY };
+		});
+	}
+	
+	function handleResetZoom() {
+		cropState.silentUpdate(state => ({
+			...state,
+			zoomLevel: 1,
+			zoomOffsetX: 0,
+			zoomOffsetY: 0
+		}));
+	}
+	
+	function handleFilterChange(filterId) {
+		cropState.silentUpdate(state => ({ ...state, activeFilter: filterId }));
+	}
+	
+	function handleStrengthChange(value) {
+		cropState.silentUpdate(state => ({ ...state, filterStrength: value }));
+	}
+	
+	$: editFilterCss = (() => {
+		let filters = [];
+		
+		if ($cropState.brightness !== 0) {
+			filters.push(`brightness(${1 + $cropState.brightness / 100})`);
+		}
+		if ($cropState.contrast !== 0) {
+			filters.push(`contrast(${1 + $cropState.contrast / 100})`);
+		}
+		if ($cropState.activeFilter !== 'original') {
+			const filterDef = FILTER_DEFINITIONS.find(f => f.id === $cropState.activeFilter);
+			if (filterDef && filterDef.css !== 'none') {
+				filters.push(filterDef.css);
+			}
+		}
+		
+		return filters.length > 0 ? filters.join(' ') : 'none';
+	})();
 </script>
 
 <div class="crop-tab">
@@ -47,20 +420,25 @@
 		<ActionBar 
 			canUndo={cropState.canUndo()}
 			canRedo={cropState.canRedo()}
-			onUndo={() => cropState.undo()}
-			onRedo={() => cropState.redo()}
-			onStartAgain={resetCropState}
+			onUndo={handleUndo}
+			onRedo={handleRedo}
+			onStartAgain={handleStartAgain}
 			onCopy={handleCopy}
 			onExport={handleExport}
 		/>
 		
-		<div class="image-container">
-			<img 
-				src={$cropState.currentImage} 
-				alt="Working image" 
-				class="working-image"
-			/>
-		</div>
+		<CropCanvas
+			imageSrc={$cropState.currentImage}
+			cropBox={$cropState.cropBox}
+			isCropping={$cropState.isCropping}
+			scale={$activeSubMenu === 'edit' ? $cropState.zoomLevel : $cropState.scale}
+			offsetX={$activeSubMenu === 'edit' ? $cropState.zoomOffsetX : $cropState.offsetX}
+			offsetY={$activeSubMenu === 'edit' ? $cropState.zoomOffsetY : $cropState.offsetY}
+			imageWidth={$cropState.imageWidth}
+			imageHeight={$cropState.imageHeight}
+			editFilters={editFilterCss}
+			on:cropChange={handleCropChange}
+		/>
 		
 		<SubMenuTabs 
 			tabs={subMenuTabs}
@@ -69,18 +447,71 @@
 		/>
 		
 		{#if $activeSubMenu === 'crop'}
-			<div class="controls-panel">
-				<p class="placeholder">Crop controls coming in Phase 3</p>
-			</div>
+			<CropControls
+				aspectRatio={$cropState.aspectRatio}
+				cropWidth={cropWidth}
+				cropHeight={cropHeight}
+				ratioLocked={$cropState.ratioLocked}
+				scale={Math.round($cropState.scale * 100)}
+				cropPending={$cropState.cropPending}
+				onRatioChange={handleRatioChange}
+				onDimensionsChange={handleDimensionsChange}
+				onLockToggle={handleLockToggle}
+				onFlip={handleFlip}
+				onRotate={handleRotate}
+				onScaleChange={handleScaleChange}
+				onApply={handleApplyCrop}
+			/>
 		{:else if $activeSubMenu === 'edit'}
 			<div class="controls-panel">
-				<p class="placeholder">Edit controls coming in Phase 3</p>
+				<EditControls
+					brightness={$cropState.brightness}
+					shadows={$cropState.shadows}
+					contrast={$cropState.contrast}
+					hdr={$cropState.hdr}
+					blurBrushSize={$cropState.blurBrushSize}
+					zoomLevel={$cropState.zoomLevel}
+					onBrightnessChange={handleBrightnessChange}
+					onShadowsChange={handleShadowsChange}
+					onContrastChange={handleContrastChange}
+					onHdrChange={handleHdrChange}
+					onBlurBrushSizeChange={handleBlurBrushSizeChange}
+					onZoomChange={handleZoomChange}
+					onNudge={handleNudge}
+					onResetZoom={handleResetZoom}
+				/>
 			</div>
 		{:else if $activeSubMenu === 'filter'}
 			<div class="controls-panel">
-				<p class="placeholder">Filter controls coming in Phase 3</p>
+				<FilterControls
+					imageUrl={$cropState.currentImage}
+					activeFilter={$cropState.activeFilter}
+					filterStrength={$cropState.filterStrength}
+					onFilterChange={handleFilterChange}
+					onStrengthChange={handleStrengthChange}
+				/>
 			</div>
 		{/if}
+	{/if}
+	
+	{#if modalType === 'save'}
+		<ConfirmModal
+			message="Save changes?"
+			confirmText="Yes"
+			cancelText="Cancel"
+			onConfirm={handleSaveConfirm}
+			onCancel={handleSaveCancel}
+		/>
+	{/if}
+	
+	{#if modalType === 'startAgain'}
+		<ConfirmModal
+			message="Start again? Your changes will be lost."
+			confirmText="Yes"
+			cancelText="Cancel"
+			onConfirm={handleStartAgainConfirm}
+			onCancel={handleStartAgainCancel}
+		/>
 	{/if}
 </div>
 
@@ -91,23 +522,7 @@
 		flex-direction: column;
 	}
 	
-	.image-container {
-		width: 100%;
-	}
-	
-	.working-image {
-		width: 100%;
-		height: auto;
-		display: block;
-	}
-	
 	.controls-panel {
 		padding: var(--space-4) 0;
-	}
-	
-	.placeholder {
-		color: var(--color-text-muted);
-		text-align: center;
-		font-size: var(--font-size-sm);
 	}
 </style>

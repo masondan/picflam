@@ -49,7 +49,7 @@
 		align-items: center;
 		justify-content: space-between;
 		height: 64px;
-		padding: 0 var(--space-4);
+		padding: 0 var(--space-6);
 		border-bottom: 1px solid #999999;
 		background-color: var(--color-surface);
 	}

@@ -18,7 +18,7 @@
 					background-image: url({imageUrl});
 					filter: {filter.css || 'none'};
 				"
-			/>
+			></div>
 			<span class="filter-label" class:active={value === filter.id}>
 				{filter.label}
 			</span>

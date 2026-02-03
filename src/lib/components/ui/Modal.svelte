@@ -7,8 +7,15 @@
 	export let onCancel = () => {};
 </script>
 
-<div class="modal-overlay" on:click={onCancel} role="dialog" aria-modal="true">
-	<div class="modal" on:click|stopPropagation>
+<div 
+	class="modal-overlay" 
+	on:click={onCancel}
+	on:keydown={(e) => e.key === 'Escape' && onCancel()}
+	role="dialog" 
+	aria-modal="true"
+	tabindex="-1"
+>
+	<div class="modal" on:click|stopPropagation on:keydown|stopPropagation role="document">
 		{#if title}
 			<h2 class="modal-title">{title}</h2>
 		{/if}

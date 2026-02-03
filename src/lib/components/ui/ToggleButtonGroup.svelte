@@ -7,19 +7,21 @@
 
 <div class="toggle-group">
 	{#each options as option}
-		<button 
-			class="toggle-btn"
-			class:active={value === option.id}
-			on:click={() => onChange(option.id)}
-			aria-label={option.label}
-		>
-			{#if option.icon}
-				<img src="/icons/{option.icon}.svg" alt="" class="toggle-icon" />
-			{/if}
+		<div class="toggle-item" class:active={value === option.id}>
+			<button 
+				class="toggle-btn"
+				class:active={value === option.id}
+				on:click={() => onChange(option.id)}
+				aria-label={option.label}
+			>
+				{#if option.icon}
+					<img src="/icons/{option.icon}.svg" alt="" class="toggle-icon" />
+				{/if}
+			</button>
 			{#if showLabels && option.label}
 				<span class="toggle-label">{option.label}</span>
 			{/if}
-		</button>
+		</div>
 	{/each}
 </div>
 
@@ -28,18 +30,25 @@
 		display: flex;
 		gap: var(--space-3);
 	}
-	
-	.toggle-btn {
+
+	.toggle-item {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: var(--space-1);
-		padding: var(--space-2);
+	}
+	
+	.toggle-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 60px;
+		height: 60px;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
 		transition: all var(--transition-fast);
-		min-width: 60px;
+		cursor: pointer;
 	}
 	
 	.toggle-btn:hover:not(.active) {
@@ -69,7 +78,7 @@
 		color: var(--color-text-secondary);
 	}
 	
-	.toggle-btn.active .toggle-label {
+	.toggle-item.active .toggle-label {
 		color: var(--color-primary);
 	}
 </style>

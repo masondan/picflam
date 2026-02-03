@@ -16,7 +16,7 @@
 | 0.3 SvelteKit Template | ✅ Complete | Branch: v2-sveltekit |
 | 1: Architecture | ✅ Complete | Stores, tabs, utils |
 | 2: UI Components | ✅ Complete | Buttons, sliders, modals, drawers |
-| 3: Crop Tab | ⏳ Pending | |
+| 3: Crop Tab | ✅ Complete | Crop, Edit, Filter controls with canvas |
 | 4: AI Tab | ⏳ Pending | |
 | 5: Design Tab | ⏳ Pending | |
 | 6: Polish & Test | ⏳ Pending | |

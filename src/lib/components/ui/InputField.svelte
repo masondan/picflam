@@ -14,16 +14,27 @@
 
 <div class="input-field">
 	{#if label}
-		<label class="input-label">{label}</label>
+		<label class="input-label">
+			{label}
+			<input 
+				class="input"
+				{type}
+				{value}
+				{placeholder}
+				{disabled}
+				on:input={handleInput}
+			/>
+		</label>
+	{:else}
+		<input 
+			class="input"
+			{type}
+			{value}
+			{placeholder}
+			{disabled}
+			on:input={handleInput}
+		/>
 	{/if}
-	<input 
-		class="input"
-		{type}
-		{value}
-		{placeholder}
-		{disabled}
-		on:input={handleInput}
-	/>
 </div>
 
 <style>
@@ -34,6 +45,9 @@
 	}
 	
 	.input-label {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
 	}
