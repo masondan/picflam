@@ -25,6 +25,7 @@
 	let showBrushPreview = false;
 	let displayWidth = 0;
 	let displayHeight = 0;
+	let showCompare = false;
 	
 	$: brushDisplaySize = (brushSize / 100) * Math.min(displayWidth || 300, displayHeight || 300) * 0.5;
 	
@@ -225,7 +226,16 @@
 			
 			<div class="spacer"></div>
 			
-			<button class="icon-btn" title="Compare">
+			<button 
+				class="icon-btn" 
+				class:active={showCompare}
+				title="Compare"
+				on:mousedown={() => showCompare = true}
+				on:mouseup={() => showCompare = false}
+				on:mouseleave={() => showCompare = false}
+				on:touchstart={() => showCompare = true}
+				on:touchend={() => showCompare = false}
+			>
 				<img src="/icons/icon-compare.svg" alt="Compare" />
 			</button>
 		</div>
@@ -242,6 +252,14 @@
 				role="presentation"
 			>
 				<canvas bind:this={canvasElement}></canvas>
+				
+				{#if showCompare && originalFullImage}
+					<img 
+						src={originalFullImage} 
+						alt="Original" 
+						class="compare-overlay"
+					/>
+				{/if}
 				
 				{#if brushPosition.visible && displayWidth > 0}
 					<div 
@@ -400,6 +418,15 @@
 		background-color: var(--color-border-light);
 	}
 	
+	.icon-btn.active {
+		background-color: var(--color-primary);
+		border-color: var(--color-primary);
+	}
+	
+	.icon-btn.active img {
+		filter: brightness(0) invert(1);
+	}
+	
 	.icon-btn img {
 		width: 20px;
 		height: 20px;
@@ -429,6 +456,16 @@
 		height: auto;
 		cursor: none;
 		display: block;
+	}
+	
+	.compare-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		pointer-events: none;
 	}
 	
 	.brush-indicator {
