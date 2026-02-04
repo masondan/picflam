@@ -89,9 +89,7 @@
 	>
 		<div class="slider-line"></div>
 		<div class="slider-thumb">
-			<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-				<path d="M10 7L6 11M10 7L6 3M10 17L6 13M10 17L6 21M14 7L18 11M14 7L18 3M14 17L18 13M14 17L18 21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg>
+			<img src="/icons/icon-ai-slider.svg" alt="" class="slider-icon" />
 		</div>
 	</div>
 </div>
@@ -124,6 +122,14 @@
 		width: 100%;
 		height: 100%;
 		overflow: hidden;
+		background-image: 
+			linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+			linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+			linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+			linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+		background-size: 16px 16px;
+		background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+		background-color: #ffffff;
 	}
 	
 	.after-image img {
@@ -167,8 +173,10 @@
 		transform: translateY(-50%);
 	}
 	
-	.slider-thumb svg {
+	.slider-icon {
 		width: 20px;
 		height: 20px;
+		filter: brightness(0) invert(1);
+		pointer-events: none;
 	}
 </style>

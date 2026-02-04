@@ -1,19 +1,17 @@
 <script>
 	import { aiState } from '$lib/stores/aiStore.js';
 	import { removeBackground } from '$lib/utils/aiUtils.js';
-	import BeforeAfterSlider from '$lib/components/ui/BeforeAfterSlider.svelte';
 	import EraseRestoreDrawer from '$lib/components/ai/EraseRestoreDrawer.svelte';
 	
 	let isProcessing = false;
 	let progressStatus = '';
 	let error = null;
-	let showComparison = false;
-	let comparisonPosition = 50;
 	let showEraseDrawer = false;
-	let eraseRestoreActive = false;
+	
+	$: hasProcessedImage = $aiState.showComparison && $aiState.processedImage;
 	
 	async function handleRemoveBackground() {
-		if (!$aiState.currentImage) return;
+		if (!$aiState.originalImage) return;
 		
 		try {
 			isProcessing = true;
@@ -21,13 +19,11 @@
 			progressStatus = 'Starting...';
 			aiState.startProcessing('background');
 			
-			const resultDataUrl = await removeBackground($aiState.currentImage, (status) => {
+			const resultDataUrl = await removeBackground($aiState.originalImage, (status) => {
 				progressStatus = status;
 			});
 			
 			aiState.finishProcessing(resultDataUrl);
-			showComparison = true;
-			eraseRestoreActive = true;
 		} catch (err) {
 			error = err.message || 'Background removal failed';
 			aiState.cancelProcessing();
@@ -44,81 +40,49 @@
 		aiState.cancelProcessing();
 	}
 	
-	function handleComparisonChange(newPosition) {
-		comparisonPosition = newPosition;
-		aiState.setComparisonPosition(newPosition);
-	}
-	
 	function handleEraseRestore() {
 		showEraseDrawer = true;
 	}
 	
 	function handleDrawerClose() {
 		showEraseDrawer = false;
-	}
-</script>
+	}</script>
 
 <div class="background-controls">
-	{#if !showComparison}
-		<div class="controls-content">
-			{#if isProcessing}
-				<button class="processing-btn" disabled>
-					<span class="spinner"></span>
-					{progressStatus || 'Processing...'}
-				</button>
-				<button class="cancel-btn" on:click={handleCancel}>Cancel</button>
-			{:else}
-				<button class="remove-btn" on:click={handleRemoveBackground}>
-					<img src="/icons/icon-ai.svg" alt="" class="btn-icon" />
-					Remove background
-				</button>
-				<p class="hint">Remove image background with AI</p>
-				
-				<button class="erase-btn" disabled>
-					<img src="/icons/icon-erase.svg" alt="" class="btn-icon" />
-					Erase and restore
-				</button>
-				<p class="hint">Manually clean up background</p>
-			{/if}
-			
-			{#if error}
-				<div class="error-message">{error}</div>
-			{/if}
-		</div>
-	{:else}
-		<div class="comparison-content">
-			<BeforeAfterSlider 
-				beforeImage={$aiState.originalImage}
-				afterImage={$aiState.processedImage}
-				position={comparisonPosition}
-				onChange={handleComparisonChange}
-			/>
-			
-			<button 
-				class="remove-btn" 
-				on:click={handleRemoveBackground}
-				disabled={isProcessing}
-			>
+	<div class="controls-content">
+		{#if isProcessing}
+			<button class="processing-btn" disabled>
+				<span class="spinner"></span>
+				{progressStatus || 'Processing...'}
+			</button>
+			<button class="cancel-btn" on:click={handleCancel}>Cancel</button>
+		{:else}
+			<button class="remove-btn" on:click={handleRemoveBackground}>
 				<img src="/icons/icon-ai.svg" alt="" class="btn-icon" />
 				Remove background
 			</button>
 			<p class="hint">Remove image background with AI</p>
-			
-			<button 
+
+			<button
 				class="erase-btn"
 				on:click={handleEraseRestore}
-				disabled={!eraseRestoreActive}
+				disabled={!hasProcessedImage}
 			>
 				<img src="/icons/icon-erase.svg" alt="" class="btn-icon" />
 				Erase and restore
 			</button>
 			<p class="hint">Manually clean up background</p>
-		</div>
-	{/if}
-	
+		{/if}
+
+		{#if error}
+			<div class="error-message">{error}</div>
+		{/if}
+	</div>
+
 	{#if showEraseDrawer}
-		<EraseRestoreDrawer 
+		<EraseRestoreDrawer
 			image={$aiState.processedImage}
+			originalFullImage={$aiState.originalImage}
 			onClose={handleDrawerClose}
 			onSave={(result) => {
 				aiState.finishProcessing(result);
@@ -134,12 +98,6 @@
 	}
 	
 	.controls-content {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-4);
-	}
-	
-	.comparison-content {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);

@@ -23,7 +23,7 @@ async function POST({ request }) {
         input: {
           image,
           scale,
-          face_enhance: true
+          face_enhance: false
         }
       })
     });

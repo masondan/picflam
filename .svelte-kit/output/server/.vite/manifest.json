@@ -130,7 +130,16 @@
       "_index.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.BT99pl2Z.css"
+      "_app/immutable/assets/_page.BKmfCpmr.css"
+    ]
+  },
+  "src/routes/api/face-enhance/+server.js": {
+    "file": "entries/endpoints/api/face-enhance/_server.js",
+    "name": "entries/endpoints/api/face-enhance/_server",
+    "src": "src/routes/api/face-enhance/+server.js",
+    "isEntry": true,
+    "imports": [
+      "_shared-server.js"
     ]
   },
   "src/routes/api/upscale/+server.js": {

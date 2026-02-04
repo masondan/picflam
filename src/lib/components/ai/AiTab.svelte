@@ -2,14 +2,20 @@
 	import ImportArea from '$lib/components/ui/ImportArea.svelte';
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
-	import EnhanceControls from '$lib/components/ai/EnhanceControls.svelte';
+	import BeforeAfterSlider from '$lib/components/ui/BeforeAfterSlider.svelte';
 	import UpscaleControls from '$lib/components/ai/UpscaleControls.svelte';
 	import RemoveBackgroundControls from '$lib/components/ai/RemoveBackgroundControls.svelte';
 	import { aiState, activeAiMenu, hasAiImage } from '$lib/stores/aiStore.js';
 	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
 	
+	let comparisonPosition = 50;
+	
+	function handleComparisonChange(newPosition) {
+		comparisonPosition = newPosition;
+		aiState.setComparisonPosition(newPosition);
+	}
+	
 	const subMenuTabs = [
-		{ id: 'enhance', label: 'Enhance' },
 		{ id: 'upscale', label: 'Upscale' },
 		{ id: 'background', label: 'Remove background' }
 	];
@@ -38,7 +44,7 @@
 <div class="ai-tab">
 	{#if !$hasAiImage}
 		<ImportArea 
-			title="Enhance, upscale and remove backgrounds using AI power"
+			title="Upscale and remove backgrounds using AI power"
 			hint="Import, drag or paste an image"
 			onImageImport={handleImageImport}
 		/>
@@ -54,11 +60,20 @@
 		/>
 		
 		<div class="image-container">
-			<img 
-				src={$aiState.currentImage} 
-				alt="Working image" 
-				class="working-image"
-			/>
+			{#if $aiState.showComparison && $aiState.processedImage}
+				<BeforeAfterSlider
+					beforeImage={$aiState.originalImage}
+					afterImage={$aiState.processedImage}
+					position={comparisonPosition}
+					onChange={handleComparisonChange}
+				/>
+			{:else}
+				<img 
+					src={$aiState.currentImage} 
+					alt="Working image" 
+					class="working-image"
+				/>
+			{/if}
 		</div>
 		
 		<SubMenuTabs 
@@ -67,9 +82,7 @@
 			onTabChange={handleSubMenuChange}
 		/>
 		
-		{#if $activeAiMenu === 'enhance'}
-			<EnhanceControls />
-		{:else if $activeAiMenu === 'upscale'}
+		{#if $activeAiMenu === 'upscale'}
 			<UpscaleControls />
 		{:else if $activeAiMenu === 'background'}
 			<RemoveBackgroundControls />

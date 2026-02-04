@@ -4,10 +4,12 @@
 	import { loadImage } from '$lib/utils/imageUtils.js';
 	
 	export let image = '';
+	export let originalFullImage = '';
 	export let onClose = () => {};
 	export let onSave = () => {};
 	
 	let canvasElement;
+	let canvasWrapper;
 	let ctx;
 	let isEraseMode = true;
 	let brushSize = 20;
@@ -18,6 +20,13 @@
 	let isDrawing = false;
 	let history = [];
 	let historyIndex = 0;
+	let restoreSourceImage = null;
+	let brushPosition = { x: 0, y: 0, visible: false };
+	let showBrushPreview = false;
+	let displayWidth = 0;
+	let displayHeight = 0;
+	
+	$: brushDisplaySize = (brushSize / 100) * Math.min(displayWidth || 300, displayHeight || 300) * 0.5;
 	
 	onMount(async () => {
 		const img = await loadImage(image);
@@ -26,8 +35,23 @@
 		ctx = canvasElement.getContext('2d');
 		ctx.drawImage(img, 0, 0);
 		
+		if (originalFullImage) {
+			restoreSourceImage = await loadImage(originalFullImage);
+		} else {
+			restoreSourceImage = img;
+		}
+		
+		updateDisplayDimensions();
 		saveToHistory();
 	});
+	
+	function updateDisplayDimensions() {
+		if (canvasWrapper) {
+			const rect = canvasWrapper.getBoundingClientRect();
+			displayWidth = rect.width;
+			displayHeight = rect.height;
+		}
+	}
 	
 	function saveToHistory() {
 		history = history.slice(0, historyIndex + 1);
@@ -58,47 +82,93 @@
 		img.src = history[historyIndex];
 	}
 	
+	function getCanvasCoordinates(e) {
+		const rect = canvasWrapper.getBoundingClientRect();
+		const scaleX = canvasElement.width / rect.width;
+		const scaleY = canvasElement.height / rect.height;
+		const x = (e.clientX - rect.left) * scaleX;
+		const y = (e.clientY - rect.top) * scaleY;
+		return { x, y };
+	}
+	
 	function handleMouseDown(e) {
 		isDrawing = true;
-		const rect = canvasElement.getBoundingClientRect();
-		const x = (e.clientX - rect.left) / zoomLevel - offsetX;
-		const y = (e.clientY - rect.top) / zoomLevel - offsetY;
+		const { x, y } = getCanvasCoordinates(e);
 		paint(x, y);
 	}
 	
 	function handleMouseMove(e) {
+		const rect = canvasWrapper.getBoundingClientRect();
+		brushPosition = {
+			x: e.clientX - rect.left,
+			y: e.clientY - rect.top,
+			visible: true
+		};
+		
 		if (!isDrawing) return;
-		const rect = canvasElement.getBoundingClientRect();
-		const x = (e.clientX - rect.left) / zoomLevel - offsetX;
-		const y = (e.clientY - rect.top) / zoomLevel - offsetY;
+		const { x, y } = getCanvasCoordinates(e);
 		paint(x, y);
 	}
 	
 	function handleMouseUp() {
-		isDrawing = false;
-		saveToHistory();
+		if (isDrawing) {
+			isDrawing = false;
+			saveToHistory();
+		}
+	}
+	
+	function handleMouseLeave() {
+		brushPosition = { ...brushPosition, visible: false };
+		if (isDrawing) {
+			isDrawing = false;
+			saveToHistory();
+		}
 	}
 	
 	function paint(x, y) {
-		const gradient = ctx.createRadialGradient(x, y, 0, x, y, brushSize);
+		const scaleX = canvasElement.width / canvasWrapper.getBoundingClientRect().width;
+		const radius = (brushDisplaySize / 2) * scaleX;
+		const softness = softenEdges / 100;
+		const innerRadius = Math.min(radius - 0.001, radius * (1 - softness));
 		
-		if (isEraseMode) {
-			gradient.addColorStop(0, 'rgba(0,0,0,1)');
-			gradient.addColorStop(0.5, 'rgba(0,0,0,0.5)');
-			gradient.addColorStop(1, 'rgba(0,0,0,0)');
-			ctx.globalCompositeOperation = 'destination-out';
-		} else {
-			gradient.addColorStop(0, 'rgba(255,255,255,1)');
-			gradient.addColorStop(0.5, 'rgba(255,255,255,0.5)');
-			gradient.addColorStop(1, 'rgba(255,255,255,0)');
-			ctx.globalCompositeOperation = 'destination-over';
+		ctx.save();
+		try {
+			if (isEraseMode) {
+				const gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, radius);
+				gradient.addColorStop(0, 'rgba(0,0,0,1)');
+				gradient.addColorStop(1, 'rgba(0,0,0,0)');
+				ctx.globalCompositeOperation = 'destination-out';
+				ctx.fillStyle = gradient;
+				ctx.beginPath();
+				ctx.arc(x, y, radius, 0, Math.PI * 2);
+				ctx.fill();
+			} else {
+				if (!restoreSourceImage) return;
+				
+				const tempCanvas = document.createElement('canvas');
+				tempCanvas.width = canvasElement.width;
+				tempCanvas.height = canvasElement.height;
+				const tempCtx = tempCanvas.getContext('2d');
+				
+				const gradient = tempCtx.createRadialGradient(x, y, innerRadius, x, y, radius);
+				gradient.addColorStop(0, 'rgba(0,0,0,1)');
+				gradient.addColorStop(1, 'rgba(0,0,0,0)');
+				
+				tempCtx.globalCompositeOperation = 'source-over';
+				tempCtx.drawImage(restoreSourceImage, 0, 0, tempCanvas.width, tempCanvas.height);
+				
+				tempCtx.globalCompositeOperation = 'destination-in';
+				tempCtx.fillStyle = gradient;
+				tempCtx.beginPath();
+				tempCtx.arc(x, y, radius, 0, Math.PI * 2);
+				tempCtx.fill();
+				
+				ctx.globalCompositeOperation = 'source-over';
+				ctx.drawImage(tempCanvas, 0, 0);
+			}
+		} finally {
+			ctx.restore();
 		}
-		
-		ctx.fillStyle = gradient;
-		ctx.beginPath();
-		ctx.arc(x, y, brushSize, 0, Math.PI * 2);
-		ctx.fill();
-		ctx.globalCompositeOperation = 'source-over';
 	}
 	
 	function resetBrushSize() {
@@ -160,16 +230,43 @@
 			</button>
 		</div>
 		
-		<div 
-			class="canvas-wrapper"
-			on:mousedown={handleMouseDown}
-			on:mousemove={handleMouseMove}
-			on:mouseup={handleMouseUp}
-			on:mouseleave={handleMouseUp}
-			style="transform: scale({zoomLevel}) translate({offsetX}px, {offsetY}px)"
-			role="presentation"
-		>
-			<canvas bind:this={canvasElement}></canvas>
+		<div class="canvas-container">
+			<div 
+				class="canvas-wrapper"
+				bind:this={canvasWrapper}
+				on:mousedown={handleMouseDown}
+				on:mousemove={handleMouseMove}
+				on:mouseup={handleMouseUp}
+				on:mouseleave={handleMouseLeave}
+				style="transform: scale({zoomLevel}) translate({offsetX}px, {offsetY}px)"
+				role="presentation"
+			>
+				<canvas bind:this={canvasElement}></canvas>
+				
+				{#if brushPosition.visible && displayWidth > 0}
+					<div 
+						class="brush-indicator"
+						style="
+							left: {brushPosition.x}px;
+							top: {brushPosition.y}px;
+							width: {brushDisplaySize}px;
+							height: {brushDisplaySize}px;
+						"
+					></div>
+				{/if}
+				
+				{#if showBrushPreview && displayWidth > 0 && displayHeight > 0}
+					<div 
+						class="brush-preview"
+						style="
+						left: {displayWidth / 2}px;
+						top: {displayHeight / 2}px;
+						width: {brushDisplaySize}px;
+						height: {brushDisplaySize}px;
+					"
+					></div>
+				{/if}
+			</div>
 		</div>
 		
 		<div class="controls-section">
@@ -201,6 +298,8 @@
 						step={1}
 						value={brushSize}
 						onChange={(newValue) => brushSize = newValue}
+						onInteractionStart={() => { updateDisplayDimensions(); showBrushPreview = true; }}
+						onInteractionEnd={() => showBrushPreview = false}
 					/>
 					<button class="reset-btn" on:click={resetBrushSize} title="Reset">
 						<img src="/icons/icon-reset.svg" alt="Reset" />
@@ -257,9 +356,9 @@
 
 <style>
 	.drawer-overlay {
-		position: fixed;
+		position: absolute;
 		inset: 0;
-		background-color: rgba(0, 0, 0, 0.5);
+		background-color: transparent;
 		display: flex;
 		align-items: flex-end;
 		z-index: 100;
@@ -267,12 +366,12 @@
 	
 	.drawer {
 		width: 100%;
-		max-width: 480px;
+		max-width: 100%;
 		background-color: var(--color-surface);
-		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		border-radius: 0;
 		display: flex;
 		flex-direction: column;
-		max-height: 90vh;
+		height: 100%;
 		overflow-y: auto;
 	}
 	
@@ -310,21 +409,44 @@
 		flex: 1;
 	}
 	
-	.canvas-wrapper {
-		flex: 1;
+	.canvas-container {
 		overflow: hidden;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background-color: #f5f5f5;
-		transform-origin: center;
+		margin: var(--space-4) var(--space-6);
+		width: calc(100% - var(--space-6) * 2);
+		border: 1px solid var(--color-border);
+	}
+	
+	.canvas-wrapper {
+		display: block;
+		background-color: transparent;
+		width: 100%;
+		position: relative;
+		transform-origin: center center;
 	}
 	
 	canvas {
-		max-width: 100%;
-		max-height: 100%;
-		cursor: crosshair;
+		width: 100%;
+		height: auto;
+		cursor: none;
 		display: block;
+	}
+	
+	.brush-indicator {
+		position: absolute;
+		border-radius: 50%;
+		background-color: rgba(84, 34, 176, 0.3);
+		border: 2px solid var(--color-primary);
+		pointer-events: none;
+		transform: translate(-50%, -50%);
+	}
+	
+	.brush-preview {
+		position: absolute;
+		border-radius: 50%;
+		background-color: rgba(84, 34, 176, 0.2);
+		border: 1px solid var(--color-primary);
+		pointer-events: none;
+		transform: translate(-50%, -50%);
 	}
 	
 	.controls-section {
