@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
-const REPLICATE_MODEL_VERSION = 'f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa';
+// CodeFormer model version from Replicate - handles both upscaling and face enhancement
+const CODEFORMER_VERSION = 'cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2';
 
 export async function POST({ request }) {
 	const apiKey = env.REPLICATE_API_KEY;
@@ -10,7 +11,7 @@ export async function POST({ request }) {
 	}
 
 	try {
-		const { image, scale = 4 } = await request.json();
+		const { image, scale = 4, faceEnhance = 0.5 } = await request.json();
 
 		if (!image) {
 			return json({ error: 'No image provided' }, { status: 400 });
@@ -24,11 +25,13 @@ export async function POST({ request }) {
 				'Prefer': 'wait'
 			},
 			body: JSON.stringify({
-				version: REPLICATE_MODEL_VERSION,
+				version: CODEFORMER_VERSION,
 				input: {
-					image,
-					scale,
-					face_enhance: false
+					image: image,
+					codeformer_fidelity: Number(faceEnhance),
+					upscale: Number(scale),
+					face_upsample: true,
+					background_enhance: true
 				}
 			})
 		});
@@ -41,7 +44,7 @@ export async function POST({ request }) {
 		const result = await response.json();
 
 		if (result.status === 'failed') {
-			return json({ error: result.error || 'Upscaling failed' }, { status: 500 });
+			return json({ error: result.error || 'Face enhancement failed' }, { status: 500 });
 		}
 
 		if (result.status === 'succeeded' && result.output) {
@@ -49,15 +52,15 @@ export async function POST({ request }) {
 		}
 
 		if (result.status === 'processing' || result.status === 'starting') {
-			return json({ 
-				status: result.status, 
-				pollUrl: result.urls?.get 
+			return json({
+				status: result.status,
+				pollUrl: result.urls?.get
 			});
 		}
 
 		return json({ error: 'Unexpected response from Replicate' }, { status: 500 });
 	} catch (error) {
-		console.error('Upscale API error:', error);
+		console.error('Face enhance API error:', error);
 		return json({ error: error.message || 'Internal server error' }, { status: 500 });
 	}
 }
@@ -89,12 +92,12 @@ export async function GET({ url }) {
 		}
 
 		if (result.status === 'failed') {
-			return json({ error: result.error || 'Upscaling failed' }, { status: 500 });
+			return json({ error: result.error || 'Face enhancement failed' }, { status: 500 });
 		}
 
 		return json({ status: result.status });
 	} catch (error) {
-		console.error('Poll API error:', error);
+		console.error('Face enhance poll error:', error);
 		return json({ error: error.message || 'Polling failed' }, { status: 500 });
 	}
 }

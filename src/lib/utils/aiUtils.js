@@ -8,10 +8,10 @@ const TILE_OVERLAP = 16;
 export async function upscaleImageCloud(imageDataUrl, scale = 4, onProgress) {
     onProgress?.('Uploading image...');
 
-    const response = await fetch('/api/upscale', {
+    const response = await fetch('/api/face-enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageDataUrl, scale })
+        body: JSON.stringify({ image: imageDataUrl, scale, faceEnhance: 0.5 })
     });
 
     const result = await response.json();
@@ -26,7 +26,7 @@ export async function upscaleImageCloud(imageDataUrl, scale = 4, onProgress) {
     }
 
     if (result.status === 'processing' || result.status === 'starting') {
-        onProgress?.('Processing in cloud...');
+        onProgress?.('Processing with CodeFormer...');
         return await pollForResult(result.pollUrl, onProgress);
     }
 
@@ -473,6 +473,8 @@ export function dataUrlToImage(dataUrl) {
 }
 
 export async function getImageDimensions(dataUrl) {
-    const img = await dataUrlToImage(dataUrl);
-    return { width: img.width, height: img.height };
+	const img = await dataUrlToImage(dataUrl);
+	return { width: img.width, height: img.height };
 }
+
+

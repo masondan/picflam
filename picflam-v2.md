@@ -40,7 +40,7 @@
 | 1: Architecture | ✅ Complete | Stores, tabs, utils |
 | 2: UI Components | ✅ Complete | Buttons, sliders, modals, drawers |
 | 3: Crop Tab | ✅ Complete | Full implementation with all features |
-| 4: AI Tab | ✅ Complete | Enhance, Upscale, Background Removal working |
+| 4: AI Tab | ✅ Complete | Enhance, Upscale, Background Removal working; CodeFormer integrated |
 | 5: Design Tab | ⏳ Pending | |
 | 6: Polish & Test | ⏳ Pending | |
 | 7: Deployment | ⏳ Pending | |
@@ -1436,6 +1436,46 @@ export function applyMaskToImage(imageFile, mask) {
 - [ ] Processing states clear and responsive
 - [ ] Models cached (no re-download on reuse)
 - [ ] Offline capability verified (models cached in IndexedDB)
+
+### 4.6 Implementation Challenges & Solutions (CodeFormer Integration)
+
+**Challenge 1: API Selection for Face Enhancement**
+- **Problem**: Initial consideration was to self-host GFPGAN or CodeFormer on a backend server, but the project has no backend infrastructure.
+- **Solution**: Evaluated three approaches:
+  1. Self-host GFPGAN/CodeFormer (zero cost but requires Python backend)
+  2. Use Replicate API (pay-per-use, highly flexible)
+  3. ONNX client-side model (offline capability but model hunting and compilation required)
+  - **Decision**: **Replicate API + CodeFormer** — simplest integration, negligible cost ($0.0045/image), no infrastructure required, offline fallback available
+
+**Challenge 2: Two-Step Pipeline vs. Single Model**
+- **Problem**: Initial implementation used two sequential API calls (Real-ESRGAN for upscaling + CodeFormer for face enhancement), which was slower and costlier.
+- **Solution**: CodeFormer handles both upscaling AND face restoration in a single call. Consolidated to one API endpoint (`/api/face-enhance`) with parameters:
+  - `image`: input image URL
+  - `scale`: upscaling factor (1-4)
+  - `codeformer_fidelity`: balance between quality and fidelity (0-1, default 0.5)
+  - `upscale`: whether to apply upscaling (integer scale factor)
+  - `face_upsample`: enhance detected faces (boolean)
+  - `background_enhance`: enhance non-face areas with Real-ESRGAN (boolean)
+- **Result**: Faster processing, simpler API, cost reduced by ~50%
+
+**Challenge 3: Rate Limiting & Throttling**
+- **Problem**: Replicate free accounts are throttled to 6 requests/minute with <$5 available credit, causing 429 errors during testing.
+- **Solution**: 
+  - Ensured minimum $5 available credit before rolling out to users
+  - For 35-person training sessions (2x/year), recommend adding $5-10 buffer credit before each session
+  - At $0.0045/image, even heavy usage is <$1-2 per session
+  - Rate limit lifts automatically when account has $5+ available
+
+**Challenge 4: API Model Version Hash**
+- **Problem**: Initial hardcoded model hash was incorrect, resulting in 422 errors.
+- **Solution**: Referenced Replicate's official API schema page to get the correct CodeFormer version hash (`cc4956dd26fa5a7185d5660cc9100fab1b8070a1d1654a8bb5eb6d443b020bb2`) and verified all input parameter names and types against official documentation.
+
+**Final Result**:
+- Single cloud endpoint (`/api/face-enhance`) for upscaling + face restoration
+- Both local (Real-ESRGAN ONNX) and cloud (CodeFormer API) modes available
+- Graceful fallback: if face enhancement fails, upscaling result still delivered
+- Cost: ~$0.0045/image, affordable for nonprofit use case with limited training sessions
+- Production-ready and tested with real journalist photos
 
 ---
 

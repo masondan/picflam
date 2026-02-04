@@ -98,7 +98,7 @@
 	
 	{#if useCloud}
 		<div class="cloud-info">
-			<span class="cloud-badge">Face Enhancement ON</span>
+			<span class="cloud-badge">✓ CodeFormer (Upscaling + Face Enhancement)</span>
 		</div>
 	{/if}
 	
@@ -121,7 +121,7 @@
 					<img src="/icons/icon-ai.svg" alt="" class="btn-icon" />
 					Upscale {useCloud ? '(Cloud)' : '(Local)'}
 				</button>
-				<p class="hint">{useCloud ? 'Uses cloud API with GFPGAN face enhancement' : 'Upscales using local Real-ESRGAN model'}</p>
+				<p class="hint">{useCloud ? 'Uses CodeFormer for upscaling and face restoration' : 'Upscales using local Real-ESRGAN model'}</p>
 			{/if}
 			
 			{#if error}
@@ -141,7 +141,7 @@
 				<img src="/icons/icon-ai.svg" alt="" class="btn-icon" />
 				Upscale {useCloud ? '(Cloud)' : '(Local)'}
 			</button>
-			<p class="hint">{useCloud ? 'Uses cloud API with GFPGAN face enhancement' : 'Upscales using local Real-ESRGAN model'}</p>
+			<p class="hint">{useCloud ? 'Uses CodeFormer for upscaling and face restoration' : 'Upscales using local Real-ESRGAN model'}</p>
 		</div>
 	{/if}
 </div>
