@@ -1,3 +1,6 @@
 {
-	"/": []
+	"/": [],
+	"/api/upscale": [
+		"src/routes/api/upscale/+server.js"
+	]
 }

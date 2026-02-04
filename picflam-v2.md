@@ -1,5 +1,28 @@
 # PicFlam v2 - Comprehensive Build Plan
 
+---
+
+## ⚠️ PREREQUISITE: Read Both Documents
+
+**Agents and collaborators MUST read these in order before beginning any phase:**
+
+1. **DESIGN_SYSTEM.md** — Single source of truth for all styling
+   - Color tokens (UI and design canvas)
+   - Typography scale and font families
+   - Spacing system and layout constants
+   - Component specifications (buttons, sliders, modals, etc.)
+   - This is shared across all Flam apps for consistency
+
+2. **picflam-v2.md** (this document) — Project roadmap and implementation plan
+   - Phases 0–7 with deliverables and gates
+   - Technical decisions and architecture
+   - UI/UX behavior and state management
+   - Links to visuals and technical requirements
+
+**Without both documents, you will lack critical context for color values, spacing, component patterns, and design consistency.**
+
+---
+
 **Version**: 2.0 (SvelteKit Rebuild)  
 **Target**: Educational tool for journalists in Africa  
 **Mobile-First**: Designed for offline capability on older devices  
@@ -17,7 +40,7 @@
 | 1: Architecture | ✅ Complete | Stores, tabs, utils |
 | 2: UI Components | ✅ Complete | Buttons, sliders, modals, drawers |
 | 3: Crop Tab | ✅ Complete | Full implementation with all features |
-| 4: AI Tab | ⏳ Pending | Next phase |
+| 4: AI Tab | ✅ Complete | Enhance, Upscale, Background Removal working |
 | 5: Design Tab | ⏳ Pending | |
 | 6: Polish & Test | ⏳ Pending | |
 | 7: Deployment | ⏳ Pending | |
@@ -1371,16 +1394,18 @@ export async function enhanceImage(imageFile) {
   - "Erase and restore" button now active
 - **UI State 4 (ai12)**: On "Erase and restore" click:
   - Full-page drawer opens from bottom
-  - Undo/Redo buttons
-  - Compare button (tap & hold to see original)
-  - Image with removed background
-  - Erase / Restore toggle buttons
-  - Brush size slider (shows purple circle)
-  - Zoom controls
-  - Cancel / Done buttons
+  - **Toolbar**: Undo/Redo buttons (left), Compare button (right)
+  - **Image**: Removed background with transparent areas shown as white + grey border
+  - **Controls**:
+    - Erase / Restore toggle buttons (primary/secondary states)
+    - Brush size slider + reset button
+    - Soften edges slider + reset button
+    - Zoom in slider + reset button
+    - Four nudge buttons (up, down, left, right)
+  - **Actions**: Cancel / Done buttons (bottom)
   - Close drawer on Done/Cancel, return to ai11
 
-**Component**: `RemoveBackgroundControls.svelte` + `EraseRestoreDrawer.svelte`
+**Component**: `RemoveBackgroundControls.svelte` + `EraseRestoreDrawer.svelte` (using shared `BrushEditor.svelte`)
 
 **Backend**: 
 ```javascript

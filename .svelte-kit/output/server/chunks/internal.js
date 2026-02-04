@@ -2,12 +2,7 @@ import { H as HYDRATION_ERROR, C as COMMENT_NODE, a as HYDRATION_END, g as get_n
 import { i as is_passive_event, r as render } from "./index2.js";
 import "clsx";
 import "./environment.js";
-let public_env = {};
-function set_private_env(environment) {
-}
-function set_public_env(environment) {
-  public_env = environment;
-}
+import "./shared-server.js";
 function hydration_mismatch(location) {
   {
     console.warn(`https://svelte.dev/e/hydration_mismatch`);
@@ -973,7 +968,7 @@ const options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "1s74vst"
+  version_hash: "1p118qd"
 };
 async function get_hooks() {
   let handle;
@@ -994,12 +989,9 @@ async function get_hooks() {
   };
 }
 export {
-  set_public_env as a,
-  set_read_implementation as b,
-  set_manifest as c,
+  set_manifest as a,
   get_hooks as g,
   options as o,
-  public_env as p,
   read_implementation as r,
-  set_private_env as s
+  set_read_implementation as s
 };

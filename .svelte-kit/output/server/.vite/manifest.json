@@ -6,7 +6,8 @@
     "isEntry": true,
     "imports": [
       "_internal.js",
-      "_environment.js"
+      "_environment.js",
+      "_shared-server.js"
     ]
   },
   "_context.js": {
@@ -48,8 +49,13 @@
     "imports": [
       "_context.js",
       "_index2.js",
-      "_environment.js"
+      "_environment.js",
+      "_shared-server.js"
     ]
+  },
+  "_shared-server.js": {
+    "file": "chunks/shared-server.js",
+    "name": "shared-server"
   },
   "_shared.js": {
     "file": "chunks/shared.js",
@@ -97,6 +103,7 @@
       "_exports.js",
       "_utils.js",
       "_index.js",
+      "_shared-server.js",
       "_internal.js"
     ]
   },
@@ -123,7 +130,16 @@
       "_index.js"
     ],
     "css": [
-      "_app/immutable/assets/_page.CLS4J4Ez.css"
+      "_app/immutable/assets/_page.BT99pl2Z.css"
+    ]
+  },
+  "src/routes/api/upscale/+server.js": {
+    "file": "entries/endpoints/api/upscale/_server.js",
+    "name": "entries/endpoints/api/upscale/_server",
+    "src": "src/routes/api/upscale/+server.js",
+    "isEntry": true,
+    "imports": [
+      "_shared-server.js"
     ]
   }
 }

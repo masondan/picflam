@@ -26,6 +26,7 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const REPLICATE_API_KEY: string;
 	export const VITE_PEXELS_API_KEY: string;
 	export const VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 	export const NODE: string;
@@ -119,6 +120,7 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		REPLICATE_API_KEY: string;
 		VITE_PEXELS_API_KEY: string;
 		VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 		NODE: string;

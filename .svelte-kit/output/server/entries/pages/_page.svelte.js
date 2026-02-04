@@ -1,6 +1,7 @@
 import { a as attr_class, b as bind_props, c as attr, e as ensure_array_like, d as attr_style, f as stringify, g as store_get, u as unsubscribe_stores } from "../../chunks/index2.js";
 import { a1 as fallback, a0 as escape_html } from "../../chunks/context.js";
 import { d as derived, w as writable } from "../../chunks/index.js";
+import "clsx";
 function Header($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let activeTab2 = fallback($$props["activeTab"], "crop");
@@ -1488,6 +1489,99 @@ function createStore() {
 const aiState = createStore();
 const activeAiMenu = writable("enhance");
 const hasAiImage = derived(aiState, ($state) => $state.currentImage !== null);
+function EnhanceControls($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    $$renderer2.push(`<div class="enhance-controls svelte-5xpgkj">`);
+    {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="controls-content svelte-5xpgkj">`);
+      {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<button class="enhance-btn svelte-5xpgkj"><img src="/icons/icon-ai.svg" alt="" class="btn-icon svelte-5xpgkj"/> Enhance image</button> <p class="hint svelte-5xpgkj">Sharpens and enhances images at the same size</p>`);
+      }
+      $$renderer2.push(`<!--]--> `);
+      {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--></div>`);
+    }
+    $$renderer2.push(`<!--]--></div>`);
+  });
+}
+function UpscaleControls($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    var $$store_subs;
+    const scaleFactor = 4;
+    let outputDimensions = null;
+    let useCloud = true;
+    async function updateOutputDimensions() {
+      try {
+        const img = await loadImage(store_get($$store_subs ??= {}, "$aiState", aiState).originalImage);
+        const width = Math.round(img.naturalWidth * scaleFactor);
+        const height = Math.round(img.naturalHeight * scaleFactor);
+        outputDimensions = `${width} x ${height}`;
+      } catch (err) {
+        console.error("Failed to get image dimensions:", err);
+      }
+    }
+    if (store_get($$store_subs ??= {}, "$aiState", aiState).originalImage) {
+      updateOutputDimensions();
+    }
+    $$renderer2.push(`<div class="upscale-controls svelte-1rgvkgu"><div class="mode-toggle svelte-1rgvkgu"><button${attr_class("mode-btn svelte-1rgvkgu", void 0, { "active": !useCloud })}>Fast (Local)</button> <button${attr_class("mode-btn svelte-1rgvkgu", void 0, { "active": useCloud })}>HQ (Cloud)</button></div> `);
+    {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="cloud-info svelte-1rgvkgu"><span class="cloud-badge svelte-1rgvkgu">Face Enhancement ON</span></div>`);
+    }
+    $$renderer2.push(`<!--]--> `);
+    {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="controls-content svelte-1rgvkgu">`);
+      if (outputDimensions) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<div class="size-display svelte-1rgvkgu">Output: ${escape_html(outputDimensions)}</div>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--> `);
+      {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<button class="upscale-btn svelte-1rgvkgu"><img src="/icons/icon-ai.svg" alt="" class="btn-icon svelte-1rgvkgu"/> Upscale ${escape_html("(Cloud)")}</button> <p class="hint svelte-1rgvkgu">${escape_html(
+          "Uses cloud API with GFPGAN face enhancement"
+        )}</p>`);
+      }
+      $$renderer2.push(`<!--]--> `);
+      {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--></div>`);
+    }
+    $$renderer2.push(`<!--]--></div>`);
+    if ($$store_subs) unsubscribe_stores($$store_subs);
+  });
+}
+function RemoveBackgroundControls($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    $$renderer2.push(`<div class="background-controls svelte-1wdmsm1">`);
+    {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="controls-content svelte-1wdmsm1">`);
+      {
+        $$renderer2.push("<!--[!-->");
+        $$renderer2.push(`<button class="remove-btn svelte-1wdmsm1"><img src="/icons/icon-ai.svg" alt="" class="btn-icon svelte-1wdmsm1"/> Remove background</button> <p class="hint svelte-1wdmsm1">Remove image background with AI</p> <button class="erase-btn svelte-1wdmsm1" disabled><img src="/icons/icon-erase.svg" alt="" class="btn-icon svelte-1wdmsm1"/> Erase and restore</button> <p class="hint svelte-1wdmsm1">Manually clean up background</p>`);
+      }
+      $$renderer2.push(`<!--]--> `);
+      {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--></div>`);
+    }
+    $$renderer2.push(`<!--]--> `);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></div>`);
+  });
+}
 function AiTab($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     var $$store_subs;
@@ -1542,17 +1636,17 @@ function AiTab($$renderer, $$props) {
       $$renderer2.push(`<!----> `);
       if (store_get($$store_subs ??= {}, "$activeAiMenu", activeAiMenu) === "enhance") {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<div class="controls-panel svelte-17agwu4"><button class="ai-action-btn svelte-17agwu4"><img src="/icons/icon-ai.svg" alt="" class="ai-icon svelte-17agwu4"/> Enhance image</button> <p class="ai-hint svelte-17agwu4">Sharpens and enhances images at the same size</p></div>`);
+        EnhanceControls($$renderer2);
       } else {
         $$renderer2.push("<!--[!-->");
         if (store_get($$store_subs ??= {}, "$activeAiMenu", activeAiMenu) === "upscale") {
           $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<div class="controls-panel svelte-17agwu4"><p class="placeholder svelte-17agwu4">Upscale controls coming in Phase 4</p></div>`);
+          UpscaleControls($$renderer2);
         } else {
           $$renderer2.push("<!--[!-->");
           if (store_get($$store_subs ??= {}, "$activeAiMenu", activeAiMenu) === "background") {
             $$renderer2.push("<!--[-->");
-            $$renderer2.push(`<div class="controls-panel svelte-17agwu4"><p class="placeholder svelte-17agwu4">Background removal coming in Phase 4</p></div>`);
+            RemoveBackgroundControls($$renderer2);
           } else {
             $$renderer2.push("<!--[!-->");
           }

@@ -10,7 +10,7 @@ return {
 	assets: new Set(["icons/icon-add.svg","icons/icon-ai-slider.svg","icons/icon-ai.svg","icons/icon-align-center.svg","icons/icon-align-left.svg","icons/icon-align-right.svg","icons/icon-bold.svg","icons/icon-close.svg","icons/icon-collapse.svg","icons/icon-compare.svg","icons/icon-copy.svg","icons/icon-crop.svg","icons/icon-custom.svg","icons/icon-design.svg","icons/icon-erase.svg","icons/icon-expand.svg","icons/icon-export.svg","icons/icon-flip-horizontal.svg","icons/icon-horizontal.svg","icons/icon-lock.svg","icons/icon-no-wrap.svg","icons/icon-none.svg","icons/icon-nudge-down.svg","icons/icon-nudge-left.svg","icons/icon-nudge-right.svg","icons/icon-nudge-up.svg","icons/icon-redo.svg","icons/icon-reset.svg","icons/icon-restore.svg","icons/icon-rotate.svg","icons/icon-square.svg","icons/icon-startagain.svg","icons/icon-undo.svg","icons/icon-unlock.svg","icons/icon-upload.svg","icons/icon-vertical.svg","icons/icon-wrap.svg","logos/logo-picflam-gen.png","logos/logo-picflam-logotype.png","logos/logo-picflam-maskable.png","logos/logo-picflam-touch.png","manifest.json"]),
 	mimeTypes: {".svg":"image/svg+xml",".png":"image/png",".json":"application/json"},
 	_: {
-		client: {start:"_app/immutable/entry/start.Bt_LU3I-.js",app:"_app/immutable/entry/app.CW3uqSQD.js",imports:["_app/immutable/entry/start.Bt_LU3I-.js","_app/immutable/chunks/BzB9HHFv.js","_app/immutable/chunks/DL0h0sBs.js","_app/immutable/chunks/BDE9GExf.js","_app/immutable/entry/app.CW3uqSQD.js","_app/immutable/chunks/DL0h0sBs.js","_app/immutable/chunks/MAvR_4Wi.js","_app/immutable/chunks/CEHU2p6w.js","_app/immutable/chunks/BDE9GExf.js","_app/immutable/chunks/Dd6Z9Yti.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.ChjfjYAQ.js",app:"_app/immutable/entry/app.C6nDMpmc.js",imports:["_app/immutable/entry/start.ChjfjYAQ.js","_app/immutable/chunks/DDlejvFq.js","_app/immutable/chunks/DKVK_XYJ.js","_app/immutable/chunks/umaFkCoN.js","_app/immutable/entry/app.C6nDMpmc.js","_app/immutable/chunks/BJ6IQwyK.js","_app/immutable/chunks/DKVK_XYJ.js","_app/immutable/chunks/umaFkCoN.js","_app/immutable/chunks/CuybRmit.js","_app/immutable/chunks/fofpT_Z8.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
@@ -26,6 +26,13 @@ return {
 				params: [],
 				page: { layouts: [0,], errors: [1,], leaf: 2 },
 				endpoint: null
+			},
+			{
+				id: "/api/upscale",
+				pattern: /^\/api\/upscale\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/upscale/_server.js'))
 			}
 		],
 		prerendered_routes: new Set([]),

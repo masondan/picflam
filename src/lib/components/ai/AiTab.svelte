@@ -2,6 +2,9 @@
 	import ImportArea from '$lib/components/ui/ImportArea.svelte';
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
+	import EnhanceControls from '$lib/components/ai/EnhanceControls.svelte';
+	import UpscaleControls from '$lib/components/ai/UpscaleControls.svelte';
+	import RemoveBackgroundControls from '$lib/components/ai/RemoveBackgroundControls.svelte';
 	import { aiState, activeAiMenu, hasAiImage } from '$lib/stores/aiStore.js';
 	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
 	
@@ -65,21 +68,11 @@
 		/>
 		
 		{#if $activeAiMenu === 'enhance'}
-			<div class="controls-panel">
-				<button class="ai-action-btn">
-					<img src="/icons/icon-ai.svg" alt="" class="ai-icon" />
-					Enhance image
-				</button>
-				<p class="ai-hint">Sharpens and enhances images at the same size</p>
-			</div>
+			<EnhanceControls />
 		{:else if $activeAiMenu === 'upscale'}
-			<div class="controls-panel">
-				<p class="placeholder">Upscale controls coming in Phase 4</p>
-			</div>
+			<UpscaleControls />
 		{:else if $activeAiMenu === 'background'}
-			<div class="controls-panel">
-				<p class="placeholder">Background removal coming in Phase 4</p>
-			</div>
+			<RemoveBackgroundControls />
 		{/if}
 	{/if}
 </div>
@@ -99,46 +92,5 @@
 		width: 100%;
 		height: auto;
 		display: block;
-	}
-	
-	.controls-panel {
-		padding: var(--space-4) 0;
-	}
-	
-	.ai-action-btn {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: var(--space-2);
-		padding: var(--space-4);
-		background-color: var(--color-primary);
-		color: var(--color-text-inverse);
-		border-radius: var(--radius-md);
-		font-size: var(--font-size-base);
-		font-weight: var(--font-weight-semibold);
-		transition: opacity var(--transition-fast);
-	}
-	
-	.ai-action-btn:hover {
-		opacity: 0.9;
-	}
-	
-	.ai-icon {
-		width: 24px;
-		height: 24px;
-		filter: brightness(0) invert(1);
-	}
-	
-	.ai-hint {
-		margin-top: var(--space-3);
-		color: var(--color-text-muted);
-		font-size: var(--font-size-sm);
-	}
-	
-	.placeholder {
-		color: var(--color-text-muted);
-		text-align: center;
-		font-size: var(--font-size-sm);
 	}
 </style>
