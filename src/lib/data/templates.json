@@ -1,0 +1,192 @@
+{
+  "templates": [
+    {
+      "id": 1,
+      "name": "Quote Card",
+      "state": {
+        "canvasSize": "1/1",
+        "background": {
+          "type": "solid",
+          "value": "#FFFFFF",
+          "direction": "down",
+          "gradientColors": [
+            "#5422b0",
+            "#4B0082"
+          ]
+        },
+        "text1": "Add your quote here",
+        "text1Font": "Playfair Display",
+        "text1Size": 7,
+        "text1YPosition": 4,
+        "text1LineSpacing": 5,
+        "text1Color": "#000000",
+        "text1HighlightColor": "transparent",
+        "text1IsBold": true,
+        "text1Align": "center",
+        "text1QuoteStyle": "serif",
+        "text1QuoteSize": 5,
+        "text2": "Attribution",
+        "text2Font": "Inter",
+        "text2Size": 3,
+        "text2YPosition": 85,
+        "text2LineSpacing": 5,
+        "text2Color": "#555555",
+        "text2LabelColor": "transparent",
+        "text2IsBold": false,
+        "text2Align": "center",
+        "overlay": null,
+        "overlaySize": 50,
+        "overlayOpacity": 100,
+        "overlayX": 50,
+        "overlayY": 50,
+        "overlayMask": "none",
+        "overlayLayer": "above",
+        "overlayBorderWidth": 0,
+        "overlayBorderColor": "#FFFFFF",
+        "overlayNaturalWidth": 0,
+        "overlayNaturalHeight": 0
+      }
+    },
+    {
+      "id": 2,
+      "name": "News Banner",
+      "state": {
+        "canvasSize": "16/9",
+        "background": {
+          "type": "solid",
+          "value": "#5422b0",
+          "direction": "down",
+          "gradientColors": [
+            "#5422b0",
+            "#4B0082"
+          ]
+        },
+        "text1": "Headline Goes Here",
+        "text1Font": "Saira Condensed",
+        "text1Size": 8,
+        "text1YPosition": 3,
+        "text1LineSpacing": 5,
+        "text1Color": "#FFFFFF",
+        "text1HighlightColor": "#FFD700",
+        "text1IsBold": true,
+        "text1Align": "left",
+        "text1QuoteStyle": "none",
+        "text1QuoteSize": 5,
+        "text2": "Publication Name",
+        "text2Font": "Inter",
+        "text2Size": 2,
+        "text2YPosition": 92,
+        "text2LineSpacing": 5,
+        "text2Color": "#FFFFFF",
+        "text2LabelColor": "transparent",
+        "text2IsBold": false,
+        "text2Align": "left",
+        "overlay": null,
+        "overlaySize": 50,
+        "overlayOpacity": 100,
+        "overlayX": 50,
+        "overlayY": 50,
+        "overlayMask": "none",
+        "overlayLayer": "above",
+        "overlayBorderWidth": 0,
+        "overlayBorderColor": "#FFFFFF",
+        "overlayNaturalWidth": 0,
+        "overlayNaturalHeight": 0
+      }
+    },
+    {
+      "id": 3,
+      "name": "Simple quote",
+      "state": {
+        "canvasSize": "1/1",
+        "background": {
+          "type": "gradient",
+          "value": "linear-gradient(to bottom, #5422b0 0%, #4B0082 100%)",
+          "direction": "down",
+          "gradientColors": [
+            "#5422b0",
+            "#4B0082"
+          ]
+        },
+        "text1": "Judge a man by \nhis ==questions== rather than by \nhis ==answers==",
+        "text1Font": "Inter",
+        "text1Size": 5,
+        "text1YPosition": 5,
+        "text1LineSpacing": 2,
+        "text1Color": "#FFFFFF",
+        "text1HighlightColor": "#FFD700",
+        "text1IsBold": true,
+        "text1Align": "center",
+        "text1QuoteStyle": "serif",
+        "text1QuoteSize": 5,
+        "text2": "Voltaire",
+        "text2Font": "Roboto Slab",
+        "text2Size": 2,
+        "text2YPosition": 8,
+        "text2LineSpacing": 5,
+        "text2Color": "#FFFFFF",
+        "text2LabelColor": "transparent",
+        "text2IsBold": false,
+        "text2Align": "center",
+        "overlay": null,
+        "overlaySize": 50,
+        "overlayOpacity": 100,
+        "overlayX": 50,
+        "overlayY": 50,
+        "overlayMask": "none",
+        "overlayLayer": "above",
+        "overlayBorderWidth": 0,
+        "overlayBorderColor": "#FFFFFF",
+        "overlayNaturalWidth": 0,
+        "overlayNaturalHeight": 0
+      }
+    },
+    {
+      "id": 4,
+      "name": "template-4",
+      "state": {
+        "canvasSize": "1/1",
+        "background": {
+          "type": "gradient",
+          "value": "linear-gradient(to bottom, #5422b0 0%, #4B0082 100%)",
+          "direction": "down",
+          "gradientColors": [
+            "#5422b0",
+            "#4B0082"
+          ]
+        },
+        "text1": "Judge a man by \nhis ==questions== rather than by \nhis ==answers==",
+        "text1Font": "Inter",
+        "text1Size": 5,
+        "text1YPosition": 5,
+        "text1LineSpacing": 2,
+        "text1Color": "#FFFFFF",
+        "text1HighlightColor": "#FFD700",
+        "text1IsBold": true,
+        "text1Align": "center",
+        "text1QuoteStyle": "serif",
+        "text1QuoteSize": 5,
+        "text2": "Voltaire",
+        "text2Font": "Roboto Slab",
+        "text2Size": 2,
+        "text2YPosition": 8,
+        "text2LineSpacing": 5,
+        "text2Color": "#FFFFFF",
+        "text2LabelColor": "transparent",
+        "text2IsBold": false,
+        "text2Align": "center",
+        "overlay": null,
+        "overlaySize": 50,
+        "overlayOpacity": 100,
+        "overlayX": 50,
+        "overlayY": 50,
+        "overlayMask": "none",
+        "overlayLayer": "above",
+        "overlayBorderWidth": 0,
+        "overlayBorderColor": "#FFFFFF",
+        "overlayNaturalWidth": 0,
+        "overlayNaturalHeight": 0
+      }
+    }
+  ]
+}

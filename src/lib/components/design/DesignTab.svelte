@@ -10,6 +10,7 @@
 	import OverlayControls from './OverlayControls.svelte';
 	import { slideState, showTemplatePicker, activeDesignMenu, resetDesignState } from '$lib/stores/designStore.js';
 	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
+	import templatesData from '$lib/data/templates.json';
 	
 	let canvasEl;
 	let canvasMinDim = 300;
@@ -58,11 +59,47 @@
 		{ id: 'overlay', label: 'Overlay' }
 	];
 	
-	function selectTemplate(template) {
-		if (template === 'blank') {
+	function selectTemplate(templateId) {
+		if (templateId === 'blank') {
 			slideState.reset();
+		} else {
+			const template = templatesData.templates.find(t => t.id === templateId);
+			if (template) {
+				slideState.set(JSON.parse(JSON.stringify(template.state)));
+			}
 		}
 		showTemplatePicker.set(false);
+	}
+
+	function handleSaveTemplate() {
+		const templateName = prompt('Template name:', `template-${templatesData.templates.length + 1}`);
+		if (!templateName) return;
+
+		let maxId = 0;
+		templatesData.templates.forEach(t => {
+			if (t.id > maxId) maxId = t.id;
+		});
+
+		const newTemplate = {
+			id: maxId + 1,
+			name: templateName,
+			state: JSON.parse(JSON.stringify($slideState))
+		};
+
+		// Add to templates array in memory
+		templatesData.templates.push(newTemplate);
+
+		// Trigger download of updated templates.json
+		const dataStr = JSON.stringify(templatesData, null, 2);
+		const dataBlob = new Blob([dataStr], { type: 'application/json' });
+		const url = URL.createObjectURL(dataBlob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = 'templates.json';
+		link.click();
+		URL.revokeObjectURL(url);
+
+		alert(`Template "${templateName}" exported. Replace /src/lib/data/templates.json with the downloaded file.`);
 	}
 	
 	function handleSubMenuChange(tab) {
@@ -225,13 +262,13 @@
 			</button>
 			
 			<div class="template-grid">
-				{#each [1, 2, 3, 4, 5, 6] as templateNum}
+				{#each templatesData.templates as template (template.id)}
 					<button 
 						class="template-card"
-						on:click={() => selectTemplate(`template-${templateNum}`)}
+						on:click={() => selectTemplate(template.id)}
 					>
 						<div class="template-placeholder">
-							Template {templateNum}
+							{template.name}
 						</div>
 					</button>
 				{/each}
@@ -435,6 +472,14 @@
 				/>
 			{/if}
 		</div>
+
+		{#if import.meta.env.DEV}
+			<div class="admin-footer">
+				<button class="save-template-btn" on:click={handleSaveTemplate}>
+					💾 Save as Template
+				</button>
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -525,9 +570,9 @@
 
 	.text1-wrapper {
 		position: absolute;
-		left: 5%;
-		right: 5%;
-		width: 90%;
+		left: 7.5%;
+		right: 7.5%;
+		width: 85%;
 		transform: translateY(-50%);
 		z-index: 5;
 		overflow: visible;
@@ -535,9 +580,9 @@
 
 	.canvas-quote {
 		position: absolute;
-		left: 5%;
-		right: 5%;
-		width: 90%;
+		left: 7.5%;
+		right: 7.5%;
+		width: 85%;
 		line-height: 1;
 		transform: translateY(-50%);
 		z-index: 5;
@@ -550,9 +595,9 @@
 
 	.canvas-text.text2 {
 		position: absolute;
-		left: 5%;
-		right: 5%;
-		width: 90%;
+		left: 7.5%;
+		right: 7.5%;
+		width: 85%;
 		z-index: 5;
 	}
 
@@ -644,5 +689,25 @@
 	
 	.controls-panel {
 		padding: var(--space-4) 0;
+	}
+
+	.admin-footer {
+		padding: var(--space-3) var(--space-4);
+		border-top: 1px solid var(--color-border-light);
+		text-align: center;
+	}
+
+	.save-template-btn {
+		font-size: var(--font-size-sm);
+		padding: var(--space-2) var(--space-3);
+		background: none;
+		border: none;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: color var(--transition-fast);
+	}
+
+	.save-template-btn:hover {
+		color: var(--color-primary);
 	}
 </style>
