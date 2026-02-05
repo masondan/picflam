@@ -14,9 +14,16 @@ const CANVAS_COLORS = {
 
 const FONTS = ['Inter', 'Roboto Slab', 'Saira Condensed', 'Lora', 'Playfair Display', 'Special Elite'];
 
+const GRADIENT_DIRECTIONS = {
+	up: 'to top',
+	down: 'to bottom',
+	left: 'to left',
+	right: 'to right'
+};
+
 const initialSlideState = {
 	canvasSize: '1/1',
-	background: { type: 'solid', value: '#FFFFFF' },
+	background: { type: 'solid', value: '#FFFFFF', direction: 'down', gradientColors: ['#5422b0', '#4B0082'] },
 	text1: '',
 	text1Font: 'Inter',
 	text1Size: 5,
@@ -38,14 +45,16 @@ const initialSlideState = {
 	text2IsBold: false,
 	text2Align: 'center',
 	overlay: null,
-	overlayScale: 1,
-	overlayOpacity: 1,
-	overlayX: 0,
-	overlayY: 0,
+	overlaySize: 50,
+	overlayOpacity: 100,
+	overlayX: 50,
+	overlayY: 50,
 	overlayMask: 'none',
-	overlayWrap: false,
+	overlayLayer: 'above',
 	overlayBorderWidth: 0,
-	overlayBorderColor: '#FFFFFF'
+	overlayBorderColor: '#FFFFFF',
+	overlayNaturalWidth: 0,
+	overlayNaturalHeight: 0
 };
 
 function createHistoryStore(initialState) {
@@ -109,7 +118,7 @@ export const hasDesignContent = derived(slideState, $state =>
 	$state.text1 || $state.text2 || $state.overlay || $state.background.value !== '#FFFFFF'
 );
 
-export { CANVAS_COLORS, FONTS };
+export { CANVAS_COLORS, FONTS, GRADIENT_DIRECTIONS };
 
 export function resetDesignState() {
 	slideState.reset();

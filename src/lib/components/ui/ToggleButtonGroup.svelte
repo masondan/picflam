@@ -3,9 +3,10 @@
 	export let value = '';
 	export let onChange = (val) => {};
 	export let showLabels = true;
+	export let centered = false;
 </script>
 
-<div class="toggle-group">
+<div class="toggle-group" class:centered>
 	{#each options as option}
 		<div class="toggle-item" class:active={value === option.id}>
 			<button 
@@ -29,6 +30,10 @@
 	.toggle-group {
 		display: flex;
 		gap: var(--space-3);
+	}
+	
+	.toggle-group.centered {
+		justify-content: center;
 	}
 
 	.toggle-item {

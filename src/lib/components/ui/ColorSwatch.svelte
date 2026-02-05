@@ -77,16 +77,19 @@
 		background: conic-gradient(
 			red, yellow, lime, aqua, blue, magenta, red
 		);
+		overflow: hidden;
+		padding: 0;
+		background-clip: padding-box;
 	}
 	
 	.color-picker-popover {
-		position: absolute;
-		top: 100%;
-		left: 0;
-		margin-top: var(--space-2);
-		z-index: 10;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 100;
 		background: var(--color-surface);
-		padding: var(--space-2);
+		padding: var(--space-3);
 		border-radius: var(--radius-md);
 		box-shadow: var(--shadow-lg);
 	}

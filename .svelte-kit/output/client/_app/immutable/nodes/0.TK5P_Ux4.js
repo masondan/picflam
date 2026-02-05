@@ -1,1 +1,0 @@
-import{f as o,a as f}from"../chunks/fofpT_Z8.js";import"../chunks/B0wnF16V.js";import{i as s,j as l,k as d,l as m}from"../chunks/DKVK_XYJ.js";function v(r,t,a,e,u){s&&l();var i=t.$$slots?.[a],n=!1;i===!0&&(i=t.children,n=!0),i===void 0||i(r,n?()=>e:e)}var c=o('<div class="app"><!></div>');function y(r,t){var a=c(),e=d(a);v(e,t,"default",{}),m(a),f(r,a)}export{y as component};
