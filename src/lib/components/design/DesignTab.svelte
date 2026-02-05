@@ -256,8 +256,6 @@
 					{@const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5}
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
 					{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4)}
-					{@const quoteFontSizePx = canvasMinDim * 0.08 * $slideState.text1QuoteSize}
-					{@const quoteOffsetTopPx = -(quoteFontSizePx + gapPx)}
 					
 					<div 
 						class="text1-wrapper"
@@ -267,9 +265,9 @@
 							<div 
 								class="canvas-quote"
 								style="
-									top: {quoteOffsetTopPx}px;
+									bottom: {gapPx}px;
 									font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
-									font-size: {quoteFontSizePx}px;
+									font-size: {canvasMinDim * 0.08 * $slideState.text1QuoteSize}px;
 									font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
 									color: {$slideState.text1Color};
 								"
