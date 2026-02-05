@@ -59,6 +59,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: var(--space-2) 0;
+		margin-bottom: var(--space-3);
 	}
 	
 	.action-group {
@@ -67,8 +68,8 @@
 	}
 	
 	.action-btn {
-		width: 44px;
-		height: 44px;
+		width: 38px;
+		height: 38px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -87,8 +88,12 @@
 	}
 	
 	.action-icon {
-		width: 24px;
-		height: 24px;
-		opacity: 0.7;
+		width: 22px;
+		height: 22px;
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+	}
+	
+	.action-btn:disabled .action-icon {
+		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
 	}
 </style>

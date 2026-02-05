@@ -1,7 +1,7 @@
 let segmentationPipeline = null;
 
 export async function upscaleImageCloud(imageDataUrl, scale = 4, onProgress) {
-    onProgress?.('Uploading image...');
+    onProgress?.('Invoking AI ...');
 
     const response = await fetch('/api/face-enhance', {
         method: 'POST',
@@ -16,7 +16,7 @@ export async function upscaleImageCloud(imageDataUrl, scale = 4, onProgress) {
     }
 
     if (result.status === 'succeeded' && result.output) {
-        onProgress?.('Downloading result...');
+        onProgress?.('Final checks ...');
         return await fetchImageAsDataUrl(result.output);
     }
 
@@ -40,7 +40,7 @@ async function pollForResult(pollUrl, onProgress, maxAttempts = 60) {
         }
         
         if (result.status === 'succeeded' && result.output) {
-            onProgress?.('Downloading result...');
+            onProgress?.('Final checks ...');
             return await fetchImageAsDataUrl(result.output);
         }
         
@@ -69,7 +69,6 @@ async function getSegmentationPipeline(onProgress) {
     if (segmentationPipeline) return segmentationPipeline;
 
     console.log('[AI] Loading RMBG background removal model...');
-    onProgress?.('Downloading model (first time only)...');
 
     const { pipeline, env } = await import('@huggingface/transformers');
 
@@ -97,10 +96,11 @@ async function getSegmentationPipeline(onProgress) {
 export async function removeBackground(imageDataUrl, onProgress) {
     try {
         console.log('[AI] Starting background removal...');
+        onProgress?.('Starting engine ...');
 
         const segmenter = await getSegmentationPipeline(onProgress);
 
-        onProgress?.('Processing image...');
+        onProgress?.('Processing ...');
 
         const result = await segmenter(imageDataUrl);
         console.log('[AI] Segmentation result:', result);

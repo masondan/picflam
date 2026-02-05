@@ -50,7 +50,7 @@
 		justify-content: space-between;
 		height: 64px;
 		padding: 0 var(--space-6);
-		border-bottom: 1px solid #999999;
+		border-bottom: 1px solid #aaaaaa;
 		background-color: var(--color-surface);
 	}
 	
@@ -65,8 +65,8 @@
 	}
 	
 	.nav-btn {
-		width: 40px;
-		height: 40px;
+		width: 36px;
+		height: 36px;
 		display: flex;
 		align-items: center;
 		justify-content: center;

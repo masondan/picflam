@@ -229,30 +229,30 @@
 			const minSize = 10;
 			
 			if (dragType.includes('left')) {
-				const newX = initialCropBox.x + deltaX;
-				const newWidth = initialCropBox.width - deltaX;
-				if (newWidth >= minSize && newX >= 0) {
+				const newX = Math.max(0, initialCropBox.x + deltaX);
+				const newWidth = initialCropBox.width - (newX - initialCropBox.x);
+				if (newWidth >= minSize) {
 					newCropBox.x = newX;
 					newCropBox.width = newWidth;
 				}
 			}
 			if (dragType.includes('right')) {
-				const newWidth = initialCropBox.width + deltaX;
-				if (newWidth >= minSize && initialCropBox.x + newWidth <= 100) {
+				const newWidth = Math.min(100 - initialCropBox.x, initialCropBox.width + deltaX);
+				if (newWidth >= minSize) {
 					newCropBox.width = newWidth;
 				}
 			}
 			if (dragType.includes('top')) {
-				const newY = initialCropBox.y + deltaY;
-				const newHeight = initialCropBox.height - deltaY;
-				if (newHeight >= minSize && newY >= 0) {
+				const newY = Math.max(0, initialCropBox.y + deltaY);
+				const newHeight = initialCropBox.height - (newY - initialCropBox.y);
+				if (newHeight >= minSize) {
 					newCropBox.y = newY;
 					newCropBox.height = newHeight;
 				}
 			}
 			if (dragType.includes('bottom')) {
-				const newHeight = initialCropBox.height + deltaY;
-				if (newHeight >= minSize && initialCropBox.y + newHeight <= 100) {
+				const newHeight = Math.min(100 - initialCropBox.y, initialCropBox.height + deltaY);
+				if (newHeight >= minSize) {
 					newCropBox.height = newHeight;
 				}
 			}

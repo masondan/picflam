@@ -59,12 +59,6 @@
 
 <div class="upscale-controls">
 	<div class="controls-content">
-		{#if outputDimensions}
-			<div class="size-display">
-				Output: {outputDimensions}
-			</div>
-		{/if}
-		
 		{#if isProcessing}
 			<button class="processing-btn" disabled>
 				<span class="spinner"></span>
@@ -76,7 +70,11 @@
 				<img src="/icons/icon-ai.svg" alt="" class="btn-icon" />
 				Upscale image
 			</button>
-			<p class="hint">Upscales, sharpens and enhances images</p>
+			{#if outputDimensions}
+				<div class="size-display">
+					Output: {outputDimensions}
+				</div>
+			{/if}
 		{/if}
 		
 		{#if error}
@@ -100,9 +98,10 @@
 	}
 	
 	.size-display {
-		text-align: right;
+		text-align: left;
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
+		margin-top: calc(var(--space-2) * -1);
 	}
 	
 	.upscale-btn {
@@ -165,8 +164,10 @@
 		color: var(--color-text-secondary);
 		border: none;
 		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
 		cursor: pointer;
 		text-align: right;
+		margin-top: calc(var(--space-4) * -1);
 	}
 	
 	.cancel-btn:hover {

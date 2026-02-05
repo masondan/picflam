@@ -396,14 +396,14 @@
 	.drawer-header {
 		display: flex;
 		align-items: center;
-		padding: var(--space-3);
-		border-bottom: 1px solid var(--color-border-light);
+		padding: var(--space-6) var(--space-6) var(--space-1) var(--space-6);
+		margin-bottom: 0;
 		gap: var(--space-2);
 	}
 	
 	.icon-btn {
-		width: 44px;
-		height: 44px;
+		width: 38px;
+		height: 38px;
 		border-radius: var(--radius-md);
 		border: 1px solid var(--color-border);
 		background-color: var(--color-surface);
@@ -428,8 +428,9 @@
 	}
 	
 	.icon-btn img {
-		width: 20px;
-		height: 20px;
+		width: 22px;
+		height: 22px;
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.spacer {
@@ -487,8 +488,7 @@
 	}
 	
 	.controls-section {
-		padding: var(--space-4);
-		border-top: 1px solid var(--color-border-light);
+		padding: 0 var(--space-6) var(--space-4) var(--space-6);
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);
@@ -501,7 +501,8 @@
 	
 	.mode-btn {
 		flex: 1;
-		padding: var(--space-3) var(--space-2);
+		height: 40px;
+		padding: 0 var(--space-2);
 		border: 1px solid var(--color-border);
 		background-color: var(--color-surface);
 		border-radius: var(--radius-md);
@@ -528,11 +529,11 @@
 	.mode-btn img {
 		width: 16px;
 		height: 16px;
-		filter: brightness(0) invert(1);
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.mode-btn.active img {
-		filter: none;
+		filter: brightness(0) invert(1);
 	}
 	
 	.control-row {
@@ -578,35 +579,44 @@
 	
 	.nudge-buttons {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(4, 38px);
 		gap: var(--space-2);
+		justify-content: center;
 	}
 	
 	.nudge-btn {
-		padding: var(--space-2) var(--space-1);
+		width: 38px;
+		height: 38px;
+		padding: 0;
 		border: 1px solid var(--color-border);
 		background-color: var(--color-surface);
 		border-radius: var(--radius-md);
 		cursor: pointer;
-		font-size: var(--font-size-base);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		transition: all var(--transition-fast);
-		height: 44px;
 	}
 	
 	.nudge-btn:hover {
 		background-color: var(--color-border-light);
 	}
 	
+	.nudge-btn img {
+		width: 22px;
+		height: 22px;
+	}
+	
 	.drawer-footer {
 		display: flex;
 		gap: var(--space-3);
 		padding-top: var(--space-3);
-		border-top: 1px solid var(--color-border-light);
+		justify-content: space-between;
 	}
 	
 	.btn-cancel {
-		flex: 1;
-		padding: var(--space-3) var(--space-4);
+		height: 38px;
+		padding: 0 var(--space-4);
 		background-color: var(--color-surface);
 		color: var(--color-text-secondary);
 		border: 1px solid var(--color-border);
@@ -615,6 +625,7 @@
 		font-size: var(--font-size-base);
 		font-weight: var(--font-weight-medium);
 		transition: all var(--transition-fast);
+		white-space: nowrap;
 	}
 	
 	.btn-cancel:hover {
@@ -622,19 +633,22 @@
 	}
 	
 	.btn-done {
-		flex: 1;
-		padding: var(--space-3) var(--space-4);
-		background-color: var(--color-primary);
-		color: var(--color-text-inverse);
-		border: none;
+		height: 38px;
+		padding: 0 var(--space-4);
+		background-color: var(--color-surface);
+		color: var(--color-primary);
+		border: 1px solid var(--color-primary);
 		border-radius: var(--radius-md);
 		cursor: pointer;
 		font-size: var(--font-size-base);
 		font-weight: var(--font-weight-medium);
 		transition: all var(--transition-fast);
+		white-space: nowrap;
 	}
 	
 	.btn-done:hover {
-		opacity: 0.9;
+		background-color: var(--color-primary);
+		color: white;
+		border-color: var(--color-primary);
 	}
 </style>

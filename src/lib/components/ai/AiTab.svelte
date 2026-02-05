@@ -44,7 +44,8 @@
 <div class="ai-tab">
 	{#if !$hasAiImage}
 		<ImportArea 
-			title="Upscale and remove backgrounds using AI power"
+			title="Remove backgrounds,"
+			subtitle="upscale images with AI"
 			hint="Import, drag or paste an image"
 			onImageImport={handleImageImport}
 		/>

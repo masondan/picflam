@@ -2,6 +2,7 @@
 	import { fileToDataUrl, pasteImageFromClipboard, resizeImage } from '$lib/utils/imageUtils.js';
 	
 	export let title = 'Import an image';
+	export let subtitle = '';
 	export let hint = 'Import, drag or paste an image';
 	export let onImageImport = (dataUrl) => {};
 	
@@ -61,7 +62,7 @@
 	tabindex="0"
 	on:keypress={(e) => e.key === 'Enter' && handleClick()}
 >
-	<p class="import-title">{title}</p>
+	<p class="import-title">{title}{#if subtitle}<br />{subtitle}{/if}</p>
 	
 	<img src="/icons/icon-upload.svg" alt="" class="import-icon" />
 	
@@ -91,6 +92,7 @@
 		padding: var(--space-8);
 		border: 2px dashed var(--color-border);
 		border-radius: var(--radius-lg);
+		background-color: var(--color-border-light);
 		text-align: center;
 		cursor: pointer;
 		transition: all var(--transition-fast);
@@ -107,12 +109,13 @@
 		font-weight: var(--font-weight-medium);
 		font-size: var(--font-size-lg);
 		line-height: var(--line-height-tight);
+		margin-bottom: calc(var(--space-4) * 6);
 	}
 	
 	.import-icon {
 		width: 48px;
 		height: 48px;
-		opacity: 0.5;
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
 	}
 	
 	.import-hint {
@@ -122,15 +125,22 @@
 	
 	.btn-paste {
 		padding: var(--space-2) var(--space-6);
-		border: 1px solid var(--color-border);
+		border: 1px solid var(--color-primary);
 		border-radius: var(--radius-md);
-		color: var(--color-text-secondary);
+		color: var(--color-primary);
 		font-weight: var(--font-weight-medium);
-		background: var(--color-surface);
+		background: var(--color-border-light);
 		transition: all var(--transition-fast);
 	}
 	
+	.import-area:hover .btn-paste,
+	.import-area.dragging .btn-paste {
+		background-color: var(--color-primary-light);
+	}
+	
 	.btn-paste:hover {
-		background-color: var(--color-border-light);
+		background-color: var(--color-primary);
+		color: white;
+		border-color: var(--color-primary);
 	}
 </style>

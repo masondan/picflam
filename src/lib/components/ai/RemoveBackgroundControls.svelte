@@ -61,18 +61,16 @@
 				<img src="/icons/icon-ai.svg" alt="" class="btn-icon" />
 				Remove background
 			</button>
-			<p class="hint">Remove image background with AI</p>
-
-			<button
-				class="erase-btn"
-				on:click={handleEraseRestore}
-				disabled={!hasProcessedImage}
-			>
-				<img src="/icons/icon-erase.svg" alt="" class="btn-icon" />
-				Erase and restore
-			</button>
-			<p class="hint">Manually clean up background</p>
 		{/if}
+
+		<button
+			class="erase-btn"
+			on:click={handleEraseRestore}
+			disabled={!hasProcessedImage}
+		>
+			<img src="/icons/icon-erase.svg" alt="" class="btn-icon" />
+			Erase and restore
+		</button>
 
 		{#if error}
 			<div class="error-message">{error}</div>
@@ -130,12 +128,12 @@
 	}
 	
 	.erase-btn {
-		width: 100%;
 		display: flex;
+		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		gap: var(--space-2);
-		padding: var(--space-4);
+		height: 38px;
+		padding: 0 var(--space-4);
 		background-color: var(--color-surface);
 		color: var(--color-text-secondary);
 		border: 1px solid var(--color-border);
@@ -144,10 +142,33 @@
 		font-weight: var(--font-weight-semibold);
 		cursor: pointer;
 		transition: all var(--transition-fast);
+		align-self: flex-start;
+		white-space: nowrap;
+		gap: var(--space-2);
+	}
+	
+	.erase-btn .btn-icon {
+		flex-shrink: 0;
+		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
+	}
+	
+	.erase-btn:not(:disabled) {
+		color: var(--color-primary);
+		border-color: var(--color-primary);
+	}
+	
+	.erase-btn:not(:disabled) .btn-icon {
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
 	}
 	
 	.erase-btn:hover:not(:disabled) {
-		background-color: var(--color-border-light);
+		background-color: var(--color-primary);
+		color: white;
+		border-color: var(--color-primary);
+	}
+	
+	.erase-btn:hover:not(:disabled) .btn-icon {
+		filter: brightness(0) invert(1);
 	}
 	
 	.erase-btn:disabled {
@@ -194,8 +215,10 @@
 		color: var(--color-text-secondary);
 		border: none;
 		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
 		cursor: pointer;
 		text-align: right;
+		margin-top: calc(var(--space-4) * -1);
 	}
 	
 	.cancel-btn:hover {

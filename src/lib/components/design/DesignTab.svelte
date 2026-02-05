@@ -53,8 +53,8 @@
 	const subMenuTabs = [
 		{ id: 'size', label: 'Size' },
 		{ id: 'background', label: 'Background' },
-		{ id: 'text1', label: 'Text 1' },
-		{ id: 'text2', label: 'Text 2' },
+		{ id: 'text1', label: 'T1' },
+		{ id: 'text2', label: 'T2' },
 		{ id: 'quote', label: 'Quote' },
 		{ id: 'overlay', label: 'Overlay' }
 	];
@@ -252,7 +252,7 @@
 <div class="design-tab">
 	{#if $showTemplatePicker}
 		<div class="template-picker">
-			<p class="picker-title">Create quotes and cards. Start with a template or blank canvas</p>
+			<p class="picker-title">Create quotes & cards with<br>a template or blank canvas</p>
 			
 			<button 
 				class="blank-canvas-btn"

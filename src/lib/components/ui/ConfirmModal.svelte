@@ -15,7 +15,7 @@
   tabindex="-1"
 >
   <div class="modal" on:click|stopPropagation on:keydown|stopPropagation role="document">
-    <p class="modal-message">{message}</p>
+    <p class="modal-message"><span class="modal-message-first">Start again?</span><br /><span class="modal-message-second">Your changes will be lost.</span></p>
     <div class="modal-actions">
       <button class="btn-text" on:click={onCancel}>{cancelText}</button>
       <button class="btn-text btn-confirm" on:click={onConfirm}>{confirmText}</button>
@@ -42,14 +42,23 @@
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
   }
   
   .modal-message {
     text-align: center;
-    color: var(--color-text-primary);
     font-size: var(--font-size-base);
-    margin: 0 0 var(--space-6) 0;
+    margin: 0 0 var(--space-4) 0;
     line-height: var(--line-height-normal);
+  }
+  
+  .modal-message-first {
+    color: #333333;
+  }
+  
+  .modal-message-second {
+    color: var(--color-text-primary);
   }
   
   .modal-actions {
@@ -63,14 +72,11 @@
     padding: var(--space-2) var(--space-3);
     color: var(--color-text-secondary);
     font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
     cursor: pointer;
   }
   
   .btn-text:hover {
     color: var(--color-text-primary);
-  }
-  
-  .btn-confirm {
-    font-weight: var(--font-weight-medium);
   }
 </style>

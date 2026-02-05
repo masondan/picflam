@@ -41,6 +41,7 @@
 		value={aspectRatio} 
 		onChange={onRatioChange}
 		showLabels={true}
+		centered={true}
 	/>
 
 	<div class="dimensions-row">
@@ -113,6 +114,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);
+		margin-top: var(--space-2);
 	}
 
 	.dimensions-row {
@@ -130,9 +132,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 44px;
-		height: 44px;
-		min-width: 44px;
+		width: 38px;
+		height: 38px;
+		min-width: 38px;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
@@ -157,15 +159,17 @@
 
 	.btn-apply {
 		padding: var(--space-2) var(--space-4);
-		border: 1px solid var(--color-border);
+		border: 1px solid var(--color-primary);
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
-		color: var(--color-text-secondary);
+		color: var(--color-primary);
 		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-bold);
 		cursor: pointer;
 	}
 
 	.btn-apply:hover {
-		background-color: var(--color-border-light);
+		background-color: var(--color-primary);
+		color: white;
 	}
 </style>

@@ -14,7 +14,7 @@
 			class="swatch"
 			class:active={value === color}
 			class:white={color === '#FFFFFF'}
-			style="background-color: {color};"
+			style="background-color: {color}; {value === color && color !== '#FFFFFF' ? `box-shadow: 0 0 0 3px ${color};` : ''}"
 			on:click={() => onChange(color)}
 			aria-label="Select color {color}"
 		/>
@@ -23,7 +23,8 @@
 	{#if showRainbow}
 		<button 
 			class="swatch rainbow"
-			class:active={!colors.includes(value) && value !== 'transparent'}
+			class:active={value && !colors.includes(value) && value !== 'transparent'}
+			style="{value && !colors.includes(value) && value !== 'transparent' ? `box-shadow: 0 0 0 3px ${customColor};` : ''}"
 			on:click={() => showPicker = !showPicker}
 			aria-label="Custom color"
 		/>
@@ -52,9 +53,12 @@
 		width: 36px;
 		height: 36px;
 		border-radius: var(--radius-full);
-		border: 2px solid transparent;
+		border: 3px solid transparent;
 		cursor: pointer;
 		transition: all var(--transition-fast);
+		padding: 0;
+		box-sizing: border-box;
+		overflow: hidden;
 	}
 	
 	.swatch:hover {
@@ -62,24 +66,22 @@
 	}
 	
 	.swatch.active {
-		border-color: var(--color-primary);
+		border-color: white;
 	}
 	
 	.swatch.white {
-		border-color: var(--color-border);
+		border-color: #999999;
 	}
 	
 	.swatch.white.active {
-		border-color: var(--color-primary);
+		border-color: #555555;
 	}
 	
 	.swatch.rainbow {
 		background: conic-gradient(
 			red, yellow, lime, aqua, blue, magenta, red
 		);
-		overflow: hidden;
 		padding: 0;
-		background-clip: padding-box;
 	}
 	
 	.color-picker-popover {

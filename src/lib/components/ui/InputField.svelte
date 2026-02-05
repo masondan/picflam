@@ -54,7 +54,7 @@
 	
 	.input {
 		width: 100%;
-		height: 44px;
+		height: 38px;
 		padding: var(--space-2) var(--space-3);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);

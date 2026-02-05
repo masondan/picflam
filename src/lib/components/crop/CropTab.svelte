@@ -527,7 +527,8 @@
 <div class="crop-tab">
 	{#if !$hasImage}
 		<ImportArea 
-			title="Crop, edit and add filters to photos"
+			title="Crop, edit and add"
+			subtitle="filters to photos"
 			hint="Import, drag or paste an image"
 			onImageImport={handleImageImport}
 		/>
@@ -658,5 +659,9 @@
 	
 	.controls-panel {
 		padding: var(--space-4) 0;
+	}
+	
+	:global(.crop-canvas) {
+		margin-top: var(--space-3);
 	}
 </style>

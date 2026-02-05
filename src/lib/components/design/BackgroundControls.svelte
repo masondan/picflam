@@ -71,12 +71,13 @@
 	<div class="section">
 		<div class="gradient-row">
 			{#each gradientPresets as colors, index}
+				{@const isActive = background.type === 'gradient' && 
+					background.gradientColors?.[0] === colors[0] && 
+					background.gradientColors?.[1] === colors[1]}
 				<button 
 					class="gradient-swatch"
-					class:active={background.type === 'gradient' && 
-						background.gradientColors?.[0] === colors[0] && 
-						background.gradientColors?.[1] === colors[1]}
-					style="background: linear-gradient(135deg, {colors[0]} 0%, {colors[1]} 100%);"
+					class:active={isActive}
+					style="background: linear-gradient(135deg, {colors[0]} 0%, {colors[1]} 100%); {isActive ? `box-shadow: 0 0 0 3px ${colors[0]};` : ''}"
 					on:click={() => selectGradient(index)}
 					aria-label="Select gradient"
 				></button>
@@ -185,12 +186,12 @@
 		width: 36px;
 		height: 36px;
 		border-radius: var(--radius-full);
-		border: 2px solid transparent;
+		border: 3px solid transparent;
 		cursor: pointer;
 		transition: all var(--transition-fast);
-		overflow: hidden;
 		padding: 0;
-		background-clip: padding-box;
+		box-sizing: border-box;
+		overflow: hidden;
 	}
 
 	.gradient-swatch:hover {
@@ -198,7 +199,7 @@
 	}
 
 	.gradient-swatch.active {
-		border-color: var(--color-primary);
+		border-color: white;
 	}
 
 	.gradient-preview-row {
@@ -223,9 +224,10 @@
 	}
 
 	.gradient-preview {
-		flex: 1;
+		flex: 1 0 0;
 		height: 36px;
 		border-radius: 18px;
+		min-width: 0;
 	}
 
 	.direction-row {

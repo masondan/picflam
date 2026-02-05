@@ -47,9 +47,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 60px;
-		height: 60px;
-		border: 1px solid var(--color-border);
+		width: 52px;
+		height: 52px;
+		border: 1px solid #777777;
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
 		transition: all var(--transition-fast);
@@ -71,11 +71,11 @@
 	}
 	
 	.toggle-btn:not(.active) .toggle-icon {
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.toggle-btn.active .toggle-icon {
-		filter: none;
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
 	}
 	
 	.toggle-label {
