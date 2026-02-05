@@ -264,11 +264,13 @@
 							<div 
 								class="canvas-quote"
 								style="
+									position: absolute;
+									bottom: calc(100% + {gapPx}px);
+									width: 100%;
 									font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
 									font-size: {canvasMinDim * 0.08 * $slideState.text1QuoteSize}px;
 									font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
 									color: {$slideState.text1Color};
-									margin-bottom: {gapPx}px;
 								"
 							>&#8220;</div>
 						{/if}
