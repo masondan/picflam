@@ -255,33 +255,26 @@
 				{#if $slideState.text1}
 					{@const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5}
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
-					{@const textTopPercent = $slideState.text1YPosition * 10}
-					{@const textTopPx = (canvasHeight * textTopPercent) / 100}
-					{@const totalTextHeightPx = textLineHeightPx * 3}
-					{@const textStartPx = textTopPx - (totalTextHeightPx / 2)}
 					{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4)}
-					{@const quoteBottomPx = textStartPx - gapPx}
 					{@const quoteFontSizePx = canvasMinDim * 0.08 * $slideState.text1QuoteSize}
-					{@const quoteTopPx = quoteBottomPx - quoteFontSizePx * 0.75}
-					{@const quoteTopPercent = (quoteTopPx / canvasHeight) * 100}
-					
-					{#if $slideState.text1QuoteStyle !== 'none'}
-						<div 
-							class="canvas-quote"
-							style="
-								top: {quoteTopPercent}%;
-								font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
-								font-size: {quoteFontSizePx}px;
-								font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
-								color: {$slideState.text1Color};
-							"
-						>&#8220;</div>
-					{/if}
+					{@const quoteOffsetTopPx = -(quoteFontSizePx + gapPx)}
 					
 					<div 
 						class="text1-wrapper"
-						style="top: {textTopPercent}%;"
+						style="top: {$slideState.text1YPosition * 10}%;"
 					>
+						{#if $slideState.text1QuoteStyle !== 'none'}
+							<div 
+								class="canvas-quote"
+								style="
+									top: {quoteOffsetTopPx}px;
+									font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
+									font-size: {quoteFontSizePx}px;
+									font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
+									color: {$slideState.text1Color};
+								"
+							>&#8220;</div>
+						{/if}
 						<div 
 							class="canvas-text text1"
 							style="
@@ -531,8 +524,6 @@
 		width: 90%;
 		text-align: center;
 		line-height: 1;
-		z-index: 5;
-		transform: translateY(-50%);
 	}
 
 	.canvas-text {

@@ -2156,7 +2156,6 @@ function DesignTab($$renderer, $$props) {
     var $$store_subs;
     let overlayDimensions;
     let canvasMinDim = 300;
-    let canvasHeight = 300;
     onDestroy(() => {
     });
     const subMenuTabs = [
@@ -2261,22 +2260,17 @@ function DesignTab($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         const textFontSizePx = canvasMinDim * 0.1 * store_get($$store_subs ??= {}, "$slideState", slideState).text1Size / 5;
         const textLineHeightPx = textFontSizePx * (1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1);
-        const textTopPercent = store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10;
-        const textTopPx = canvasHeight * textTopPercent / 100;
-        const totalTextHeightPx = textLineHeightPx * 3;
-        const textStartPx = textTopPx - totalTextHeightPx / 2;
         const gapPx = textLineHeightPx * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? 0.35 : 0.4);
-        const quoteBottomPx = textStartPx - gapPx;
         const quoteFontSizePx = canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize;
-        const quoteTopPx = quoteBottomPx - quoteFontSizePx * 0.75;
-        const quoteTopPercent = quoteTopPx / canvasHeight * 100;
+        const quoteOffsetTopPx = -(quoteFontSizePx + gapPx);
+        $$renderer2.push(`<div class="text1-wrapper svelte-fxk5n4"${attr_style(`top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10)}%;`)}>`);
         if (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle !== "none") {
           $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` top: ${stringify(quoteTopPercent)}%; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(quoteFontSizePx)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);
+          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` top: ${stringify(quoteOffsetTopPx)}px; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(quoteFontSizePx)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);
         } else {
           $$renderer2.push("<!--[!-->");
         }
-        $$renderer2.push(`<!--]--> <div class="text1-wrapper svelte-fxk5n4"${attr_style(`top: ${stringify(textTopPercent)}%;`)}><div class="canvas-text text1 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Size * 0.5)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1)}; `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text1.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor};">$1</span>`).replace(/\n/g, "<br>"))}</div></div>`);
+        $$renderer2.push(`<!--]--> <div class="canvas-text text1 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Size * 0.5)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1)}; `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text1.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor};">$1</span>`).replace(/\n/g, "<br>"))}</div></div>`);
       } else {
         $$renderer2.push("<!--[!-->");
       }
