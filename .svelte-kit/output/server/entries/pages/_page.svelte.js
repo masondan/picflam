@@ -2157,6 +2157,7 @@ function DesignTab($$renderer, $$props) {
     let overlayDimensions;
     let canvasMinDim = 300;
     let canvasHeight = 300;
+    let text1HeightPx = 0;
     onDestroy(() => {
     });
     const subMenuTabs = [
@@ -2263,8 +2264,8 @@ function DesignTab($$renderer, $$props) {
         const textLineHeightPx = textFontSizePx * (1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1);
         const gapPx = textLineHeightPx * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? 0.35 : 0.4);
         const textYPosPct = store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10;
-        const estimatedTextHeightPct = 8;
-        const quoteYPosPct = textYPosPct - estimatedTextHeightPct - gapPx / canvasHeight * 100;
+        const textHeightPct = text1HeightPx / canvasHeight * 100;
+        const quoteYPosPct = textYPosPct - textHeightPct / 2 - gapPx / canvasHeight * 100;
         if (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle !== "none") {
           $$renderer2.push("<!--[-->");
           $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` top: ${stringify(quoteYPosPct)}%; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);

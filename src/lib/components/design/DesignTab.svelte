@@ -16,6 +16,8 @@
 	let canvasWidth = 300;
 	let canvasHeight = 300;
 	let resizeObserver;
+	let text1WrapperEl;
+	let text1HeightPx = 0;
 	let isDraggingOverlay = false;
 	let dragStartX = 0;
 	let dragStartY = 0;
@@ -37,6 +39,14 @@
 	onDestroy(() => {
 		if (resizeObserver) resizeObserver.disconnect();
 	});
+	
+	// Measure text1 wrapper height dynamically to adjust quote position
+	$: if (text1WrapperEl) {
+		// Use setTimeout to ensure DOM has been fully rendered
+		setTimeout(() => {
+			text1HeightPx = text1WrapperEl.offsetHeight || 0;
+		}, 0);
+	}
 	
 	const subMenuTabs = [
 		{ id: 'size', label: 'Size' },
@@ -257,8 +267,8 @@
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
 					{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4)}
 					{@const textYPosPct = $slideState.text1YPosition * 10}
-					{@const estimatedTextHeightPct = 8}
-					{@const quoteYPosPct = textYPosPct - estimatedTextHeightPct - (gapPx / canvasHeight * 100)}
+					{@const textHeightPct = (text1HeightPx / canvasHeight) * 100}
+					{@const quoteYPosPct = textYPosPct - (textHeightPct / 2) - (gapPx / canvasHeight * 100)}
 					
 					{#if $slideState.text1QuoteStyle !== 'none'}
 						<div 
@@ -275,6 +285,7 @@
 					
 					<div 
 						class="text1-wrapper"
+						bind:this={text1WrapperEl}
 						style="top: {textYPosPct}%;"
 					>
 						<div 
