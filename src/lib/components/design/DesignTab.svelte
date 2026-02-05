@@ -266,7 +266,7 @@
 				{#if $slideState.text1}
 					{@const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5}
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
-					{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4)}
+					{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? -0.25 : 0.1)}
 					{@const textYPosPct = $slideState.text1YPosition * 10}
 					{@const textHeightPct = (text1HeightPx / canvasHeight) * 100}
 					{@const quoteYPosPct = textYPosPct - (textHeightPct / 2) - (gapPx / canvasHeight * 100)}
