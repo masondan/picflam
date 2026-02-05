@@ -41,8 +41,9 @@
 	});
 	
 	// Measure text1 wrapper height dynamically to adjust quote position
-	$: if (text1WrapperEl) {
-		// Use setTimeout to ensure DOM has been fully rendered
+	// Depends on both element existence and text content changes
+	$: if (text1WrapperEl && $slideState.text1) {
+		// Use setTimeout to ensure DOM has been fully rendered with new content
 		setTimeout(() => {
 			text1HeightPx = text1WrapperEl.offsetHeight || 0;
 		}, 0);
