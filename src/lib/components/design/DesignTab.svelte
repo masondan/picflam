@@ -258,6 +258,9 @@
 						style="top: {$slideState.text1YPosition * 10}%;"
 					>
 						{#if $slideState.text1QuoteStyle !== 'none'}
+							{@const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5}
+							{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
+							{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4)}
 							<div 
 								class="canvas-quote"
 								style="
@@ -265,7 +268,7 @@
 									font-size: {canvasMinDim * 0.08 * $slideState.text1QuoteSize}px;
 									font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
 									color: {$slideState.text1Color};
-									--quote-gap: {(1 + $slideState.text1LineSpacing * 0.1) * $slideState.text1Size * 0.5 * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4)}em;
+									margin-bottom: {gapPx}px;
 								"
 							>&#8220;</div>
 						{/if}
@@ -514,7 +517,6 @@
 	.canvas-quote {
 		text-align: center;
 		line-height: 1;
-		margin-bottom: var(--quote-gap, 0.5em);
 	}
 
 	.canvas-text {

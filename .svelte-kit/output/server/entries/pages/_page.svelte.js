@@ -1757,7 +1757,7 @@ const initialSlideState = {
   overlayX: 50,
   overlayY: 50,
   overlayMask: "none",
-  overlayWrap: false,
+  overlayLayer: "above",
   overlayBorderWidth: 0,
   overlayBorderColor: "#FFFFFF",
   overlayNaturalWidth: 0,
@@ -2087,7 +2087,7 @@ function OverlayControls($$renderer, $$props) {
     let overlaySize = fallback($$props["overlaySize"], 50);
     let overlayOpacity = fallback($$props["overlayOpacity"], 100);
     let overlayMask = fallback($$props["overlayMask"], "none");
-    let overlayWrap = fallback($$props["overlayWrap"], false);
+    let overlayLayer = fallback($$props["overlayLayer"], "above");
     let overlayBorderWidth = fallback($$props["overlayBorderWidth"], 0);
     let overlayBorderColor = fallback($$props["overlayBorderColor"], "#FFFFFF");
     let onChange = fallback($$props["onChange"], (key, value) => {
@@ -2120,7 +2120,7 @@ function OverlayControls($$renderer, $$props) {
         value: overlayOpacity,
         onChange: (val) => onChange("overlayOpacity", val)
       });
-      $$renderer2.push(`<!----></div> <div class="mask-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Mask</span> <div class="mask-buttons svelte-qirtgp"><button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "none" })} aria-label="No mask"><img src="/icons/icon-none.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "rounded" })} aria-label="Rounded mask"><img src="/icons/icon-square.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "circle" })} aria-label="Circle mask"><div class="circle-icon svelte-qirtgp"></div></button></div> <span class="row-label wrap-label svelte-qirtgp">Text wrap</span> <div class="wrap-buttons svelte-qirtgp"><button${attr_class("wrap-btn svelte-qirtgp", void 0, { "active": overlayWrap })} aria-label="Text wrap on"><img src="/icons/icon-wrap.svg" alt="" class="wrap-icon svelte-qirtgp"/></button> <button${attr_class("wrap-btn svelte-qirtgp", void 0, { "active": !overlayWrap })} aria-label="Text wrap off"><img src="/icons/icon-no-wrap.svg" alt="" class="wrap-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp">`);
+      $$renderer2.push(`<!----></div> <div class="mask-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Mask</span> <div class="mask-buttons svelte-qirtgp"><button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "none" })} aria-label="No mask"><img src="/icons/icon-none.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "rounded" })} aria-label="Rounded mask"><img src="/icons/icon-square.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "circle" })} aria-label="Circle mask"><div class="circle-icon svelte-qirtgp"></div></button></div> <span class="row-label layer-label svelte-qirtgp">Layers</span> <div class="layer-buttons svelte-qirtgp"><button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} aria-label="Overlay above text"><img src="/icons/icon-layer-above.svg" alt="" class="layer-icon svelte-qirtgp"/></button> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} aria-label="Overlay below text"><img src="/icons/icon-layer-below.svg" alt="" class="layer-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp">`);
       Slider($$renderer2, {
         label: "Border width",
         min: 0,
@@ -2144,7 +2144,7 @@ function OverlayControls($$renderer, $$props) {
       overlaySize,
       overlayOpacity,
       overlayMask,
-      overlayWrap,
+      overlayLayer,
       overlayBorderWidth,
       overlayBorderColor,
       onChange
@@ -2154,7 +2154,7 @@ function OverlayControls($$renderer, $$props) {
 function DesignTab($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     var $$store_subs;
-    let overlayDimensions, textExclusionStyle;
+    let overlayDimensions;
     let canvasMinDim = 300;
     onDestroy(() => {
     });
@@ -2200,8 +2200,12 @@ function DesignTab($$renderer, $$props) {
             overlayX: 50,
             overlayY: 50
           }));
+          activeDesignMenu.set("overlay");
         };
         img.src = value;
+      } else if (key === "overlayLayer") {
+        slideState.update((state) => ({ ...state, [key]: value }));
+        activeDesignMenu.set("none");
       } else {
         slideState.update((state) => ({ ...state, [key]: value }));
       }
@@ -2213,6 +2217,7 @@ function DesignTab($$renderer, $$props) {
         overlayNaturalWidth: 0,
         overlayNaturalHeight: 0
       }));
+      activeDesignMenu.set("none");
     }
     function calculateOverlayDimensions(state) {
       if (!state.overlay || !state.overlayNaturalWidth) return null;
@@ -2228,22 +2233,7 @@ function DesignTab($$renderer, $$props) {
       }
       return { width, height };
     }
-    function calculateTextExclusion(state, dims) {
-      if (!state.overlayWrap || !state.overlay || !dims) return "";
-      const padding = 8;
-      const overlayLeft = state.overlayX - dims.width / 2;
-      const overlayRight = state.overlayX + dims.width / 2;
-      if (overlayRight > 50) {
-        const exclusionWidth = 100 - overlayLeft + padding;
-        return `padding-right: ${exclusionWidth}%;`;
-      } else if (overlayLeft < 50) {
-        const exclusionWidth = overlayRight + padding;
-        return `padding-left: ${exclusionWidth}%;`;
-      }
-      return "";
-    }
     overlayDimensions = calculateOverlayDimensions(store_get($$store_subs ??= {}, "$slideState", slideState));
-    textExclusionStyle = calculateTextExclusion(store_get($$store_subs ??= {}, "$slideState", slideState), overlayDimensions);
     $$renderer2.push(`<div class="design-tab svelte-fxk5n4">`);
     if (store_get($$store_subs ??= {}, "$showTemplatePicker", showTemplatePicker)) {
       $$renderer2.push("<!--[-->");
@@ -2268,10 +2258,13 @@ function DesignTab($$renderer, $$props) {
       $$renderer2.push(`<!----> <div class="canvas-container svelte-fxk5n4"><div class="design-canvas svelte-fxk5n4"${attr_style(` aspect-ratio: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).canvasSize)}; background: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).background.type === "solid" ? store_get($$store_subs ??= {}, "$slideState", slideState).background.value : store_get($$store_subs ??= {}, "$slideState", slideState).background.value)}; `)} role="button" tabindex="0">`);
       if (store_get($$store_subs ??= {}, "$slideState", slideState).text1) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<div class="text1-wrapper svelte-fxk5n4"${attr_style(`top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10)}%; ${stringify(textExclusionStyle)}`)}>`);
+        $$renderer2.push(`<div class="text1-wrapper svelte-fxk5n4"${attr_style(`top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10)}%;`)}>`);
         if (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle !== "none") {
           $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; --quote-gap: ${stringify((1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1) * store_get($$store_subs ??= {}, "$slideState", slideState).text1Size * 0.5 * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? 0.35 : 0.4))}em; `)}>“</div>`);
+          const textFontSizePx = canvasMinDim * 0.1 * store_get($$store_subs ??= {}, "$slideState", slideState).text1Size / 5;
+          const textLineHeightPx = textFontSizePx * (1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1);
+          const gapPx = textLineHeightPx * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? 0.35 : 0.4);
+          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; margin-bottom: ${stringify(gapPx)}px; `)}>“</div>`);
         } else {
           $$renderer2.push("<!--[!-->");
         }
@@ -2282,7 +2275,7 @@ function DesignTab($$renderer, $$props) {
       $$renderer2.push(`<!--]--> `);
       if (store_get($$store_subs ??= {}, "$slideState", slideState).text2) {
         $$renderer2.push("<!--[-->");
-        $$renderer2.push(`<div class="canvas-text text2 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Size * 0.5)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Align)}; top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2YPosition * 10)}%; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text2LineSpacing * 0.1)}; ${stringify(textExclusionStyle)} `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text2.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text2LabelColor};">$1</span>`).replace(/\n/g, "<br>"))}</div>`);
+        $$renderer2.push(`<div class="canvas-text text2 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Size * 0.5)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2Align)}; top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text2YPosition * 10)}%; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text2LineSpacing * 0.1)}; `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text2.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text2LabelColor};">$1</span>`).replace(/\n/g, "<br>"))}</div>`);
       } else {
         $$renderer2.push("<!--[!-->");
       }
@@ -2291,7 +2284,11 @@ function DesignTab($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<div${attr_class("overlay-wrapper svelte-fxk5n4", void 0, {
           "active": store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "overlay"
-        })}${attr_style(` left: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayX)}%; top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayY)}%; width: ${stringify(overlayDimensions.width)}%; opacity: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayOpacity / 100)}; `)} role="button" tabindex="0"><div class="overlay-bounding-box svelte-fxk5n4"${attr_style(` border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; `)}><button class="delete-btn svelte-fxk5n4" aria-label="Delete overlay"><img src="/icons/icon-close.svg" alt="" class="delete-icon svelte-fxk5n4"/></button> <div${attr_class("overlay-image-container svelte-fxk5n4", void 0, {
+        })}${attr_style(` left: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayX)}%; top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayY)}%; width: ${stringify(overlayDimensions.width)}%; opacity: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayOpacity / 100)}; z-index: ${stringify(store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "overlay" ? 11 : store_get($$store_subs ??= {}, "$slideState", slideState).overlayLayer === "below" ? 1 : 10)}; `)} role="button" tabindex="0"><div${attr_class("overlay-bounding-box svelte-fxk5n4", void 0, {
+          "mask-none": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "none",
+          "mask-rounded": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "rounded",
+          "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle"
+        })}${attr_style(` border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; `)}><button class="delete-btn svelte-fxk5n4" aria-label="Delete overlay"><img src="/icons/icon-close.svg" alt="" class="delete-icon svelte-fxk5n4"/></button> <div${attr_class("overlay-image-container svelte-fxk5n4", void 0, {
           "mask-rounded": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "rounded",
           "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle"
         })}><img${attr("src", store_get($$store_subs ??= {}, "$slideState", slideState).overlay)} alt="Overlay" class="overlay-image svelte-fxk5n4" draggable="false"/></div></div></div>`);
@@ -2305,75 +2302,75 @@ function DesignTab($$renderer, $$props) {
         onTabChange: handleSubMenuChange
       });
       $$renderer2.push(`<!----> <div class="controls-panel svelte-fxk5n4">`);
-      if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "size") {
+      if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "overlay" || store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "none" && store_get($$store_subs ??= {}, "$slideState", slideState).overlay) {
         $$renderer2.push("<!--[-->");
-        SizeControls($$renderer2, {
-          canvasSize: store_get($$store_subs ??= {}, "$slideState", slideState).canvasSize,
-          onSizeChange: handleSizeChange
+        OverlayControls($$renderer2, {
+          overlay: store_get($$store_subs ??= {}, "$slideState", slideState).overlay,
+          overlaySize: store_get($$store_subs ??= {}, "$slideState", slideState).overlaySize,
+          overlayOpacity: store_get($$store_subs ??= {}, "$slideState", slideState).overlayOpacity,
+          overlayMask: store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask,
+          overlayLayer: store_get($$store_subs ??= {}, "$slideState", slideState).overlayLayer,
+          overlayBorderWidth: store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth,
+          overlayBorderColor: store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor,
+          onChange: handleOverlayChange,
+          onDelete: handleDeleteOverlay
         });
       } else {
         $$renderer2.push("<!--[!-->");
-        if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "background") {
+        if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "size") {
           $$renderer2.push("<!--[-->");
-          BackgroundControls($$renderer2, {
-            background: store_get($$store_subs ??= {}, "$slideState", slideState).background,
-            onBackgroundChange: handleBackgroundChange
+          SizeControls($$renderer2, {
+            canvasSize: store_get($$store_subs ??= {}, "$slideState", slideState).canvasSize,
+            onSizeChange: handleSizeChange
           });
         } else {
           $$renderer2.push("<!--[!-->");
-          if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "text1") {
+          if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "background") {
             $$renderer2.push("<!--[-->");
-            Text1Controls($$renderer2, {
-              text1: store_get($$store_subs ??= {}, "$slideState", slideState).text1,
-              text1Font: store_get($$store_subs ??= {}, "$slideState", slideState).text1Font,
-              text1Size: store_get($$store_subs ??= {}, "$slideState", slideState).text1Size,
-              text1YPosition: store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition,
-              text1LineSpacing: store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing,
-              text1Color: store_get($$store_subs ??= {}, "$slideState", slideState).text1Color,
-              text1HighlightColor: store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor,
-              text1IsBold: store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold,
-              text1Align: store_get($$store_subs ??= {}, "$slideState", slideState).text1Align,
-              onChange: handleText1Change
+            BackgroundControls($$renderer2, {
+              background: store_get($$store_subs ??= {}, "$slideState", slideState).background,
+              onBackgroundChange: handleBackgroundChange
             });
           } else {
             $$renderer2.push("<!--[!-->");
-            if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "text2") {
+            if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "text1") {
               $$renderer2.push("<!--[-->");
-              Text2Controls($$renderer2, {
-                text2: store_get($$store_subs ??= {}, "$slideState", slideState).text2,
-                text2Font: store_get($$store_subs ??= {}, "$slideState", slideState).text2Font,
-                text2Size: store_get($$store_subs ??= {}, "$slideState", slideState).text2Size,
-                text2YPosition: store_get($$store_subs ??= {}, "$slideState", slideState).text2YPosition,
-                text2LineSpacing: store_get($$store_subs ??= {}, "$slideState", slideState).text2LineSpacing,
-                text2Color: store_get($$store_subs ??= {}, "$slideState", slideState).text2Color,
-                text2LabelColor: store_get($$store_subs ??= {}, "$slideState", slideState).text2LabelColor,
-                text2IsBold: store_get($$store_subs ??= {}, "$slideState", slideState).text2IsBold,
-                text2Align: store_get($$store_subs ??= {}, "$slideState", slideState).text2Align,
-                onChange: handleText2Change
+              Text1Controls($$renderer2, {
+                text1: store_get($$store_subs ??= {}, "$slideState", slideState).text1,
+                text1Font: store_get($$store_subs ??= {}, "$slideState", slideState).text1Font,
+                text1Size: store_get($$store_subs ??= {}, "$slideState", slideState).text1Size,
+                text1YPosition: store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition,
+                text1LineSpacing: store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing,
+                text1Color: store_get($$store_subs ??= {}, "$slideState", slideState).text1Color,
+                text1HighlightColor: store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor,
+                text1IsBold: store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold,
+                text1Align: store_get($$store_subs ??= {}, "$slideState", slideState).text1Align,
+                onChange: handleText1Change
               });
             } else {
               $$renderer2.push("<!--[!-->");
-              if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "quote") {
+              if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "text2") {
                 $$renderer2.push("<!--[-->");
-                QuoteControls($$renderer2, {
-                  quoteStyle: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle,
-                  quoteSize: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize,
-                  onChange: handleQuoteChange
+                Text2Controls($$renderer2, {
+                  text2: store_get($$store_subs ??= {}, "$slideState", slideState).text2,
+                  text2Font: store_get($$store_subs ??= {}, "$slideState", slideState).text2Font,
+                  text2Size: store_get($$store_subs ??= {}, "$slideState", slideState).text2Size,
+                  text2YPosition: store_get($$store_subs ??= {}, "$slideState", slideState).text2YPosition,
+                  text2LineSpacing: store_get($$store_subs ??= {}, "$slideState", slideState).text2LineSpacing,
+                  text2Color: store_get($$store_subs ??= {}, "$slideState", slideState).text2Color,
+                  text2LabelColor: store_get($$store_subs ??= {}, "$slideState", slideState).text2LabelColor,
+                  text2IsBold: store_get($$store_subs ??= {}, "$slideState", slideState).text2IsBold,
+                  text2Align: store_get($$store_subs ??= {}, "$slideState", slideState).text2Align,
+                  onChange: handleText2Change
                 });
               } else {
                 $$renderer2.push("<!--[!-->");
-                if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "overlay") {
+                if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "quote") {
                   $$renderer2.push("<!--[-->");
-                  OverlayControls($$renderer2, {
-                    overlay: store_get($$store_subs ??= {}, "$slideState", slideState).overlay,
-                    overlaySize: store_get($$store_subs ??= {}, "$slideState", slideState).overlaySize,
-                    overlayOpacity: store_get($$store_subs ??= {}, "$slideState", slideState).overlayOpacity,
-                    overlayMask: store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask,
-                    overlayWrap: store_get($$store_subs ??= {}, "$slideState", slideState).overlayWrap,
-                    overlayBorderWidth: store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth,
-                    overlayBorderColor: store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor,
-                    onChange: handleOverlayChange,
-                    onDelete: handleDeleteOverlay
+                  QuoteControls($$renderer2, {
+                    quoteStyle: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle,
+                    quoteSize: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize,
+                    onChange: handleQuoteChange
                   });
                 } else {
                   $$renderer2.push("<!--[!-->");
