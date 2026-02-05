@@ -276,6 +276,7 @@
 							class="canvas-quote"
 							style="
 								top: {quoteYPosPct}%;
+								text-align: {$slideState.text1Align};
 								font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
 								font-size: {canvasMinDim * 0.08 * $slideState.text1QuoteSize}px;
 								font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
@@ -537,7 +538,6 @@
 		left: 5%;
 		right: 5%;
 		width: 90%;
-		text-align: center;
 		line-height: 1;
 		transform: translateY(-50%);
 		z-index: 5;

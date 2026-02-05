@@ -2268,7 +2268,7 @@ function DesignTab($$renderer, $$props) {
         const quoteYPosPct = textYPosPct - textHeightPct / 2 - gapPx / canvasHeight * 100;
         if (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle !== "none") {
           $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` top: ${stringify(quoteYPosPct)}%; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);
+          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` top: ${stringify(quoteYPosPct)}%; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);
         } else {
           $$renderer2.push("<!--[!-->");
         }
