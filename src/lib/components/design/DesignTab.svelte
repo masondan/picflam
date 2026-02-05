@@ -256,23 +256,27 @@
 					{@const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5}
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
 					{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4)}
+					{@const textYPosPct = $slideState.text1YPosition * 10}
+					{@const estimatedTextHeightPct = 8}
+					{@const quoteYPosPct = textYPosPct - estimatedTextHeightPct - (gapPx / canvasHeight * 100)}
+					
+					{#if $slideState.text1QuoteStyle !== 'none'}
+						<div 
+							class="canvas-quote"
+							style="
+								top: {quoteYPosPct}%;
+								font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
+								font-size: {canvasMinDim * 0.08 * $slideState.text1QuoteSize}px;
+								font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
+								color: {$slideState.text1Color};
+							"
+						>&#8220;</div>
+					{/if}
 					
 					<div 
 						class="text1-wrapper"
-						style="top: {$slideState.text1YPosition * 10}%;"
+						style="top: {textYPosPct}%;"
 					>
-						{#if $slideState.text1QuoteStyle !== 'none'}
-							<div 
-								class="canvas-quote"
-								style="
-									bottom: {gapPx}px;
-									font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
-									font-size: {canvasMinDim * 0.08 * $slideState.text1QuoteSize}px;
-									font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
-									color: {$slideState.text1Color};
-								"
-							>&#8220;</div>
-						{/if}
 						<div 
 							class="canvas-text text1"
 							style="
@@ -523,6 +527,8 @@
 		width: 90%;
 		text-align: center;
 		line-height: 1;
+		transform: translateY(-50%);
+		z-index: 5;
 	}
 
 	.canvas-text {

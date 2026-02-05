@@ -2156,6 +2156,7 @@ function DesignTab($$renderer, $$props) {
     var $$store_subs;
     let overlayDimensions;
     let canvasMinDim = 300;
+    let canvasHeight = 300;
     onDestroy(() => {
     });
     const subMenuTabs = [
@@ -2261,14 +2262,16 @@ function DesignTab($$renderer, $$props) {
         const textFontSizePx = canvasMinDim * 0.1 * store_get($$store_subs ??= {}, "$slideState", slideState).text1Size / 5;
         const textLineHeightPx = textFontSizePx * (1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1);
         const gapPx = textLineHeightPx * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? 0.35 : 0.4);
-        $$renderer2.push(`<div class="text1-wrapper svelte-fxk5n4"${attr_style(`top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10)}%;`)}>`);
+        const textYPosPct = store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10;
+        const estimatedTextHeightPct = 8;
+        const quoteYPosPct = textYPosPct - estimatedTextHeightPct - gapPx / canvasHeight * 100;
         if (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle !== "none") {
           $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` bottom: ${stringify(gapPx)}px; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);
+          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` top: ${stringify(quoteYPosPct)}%; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);
         } else {
           $$renderer2.push("<!--[!-->");
         }
-        $$renderer2.push(`<!--]--> <div class="canvas-text text1 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Size * 0.5)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1)}; `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text1.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor};">$1</span>`).replace(/\n/g, "<br>"))}</div></div>`);
+        $$renderer2.push(`<!--]--> <div class="text1-wrapper svelte-fxk5n4"${attr_style(`top: ${stringify(textYPosPct)}%;`)}><div class="canvas-text text1 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Size * 0.5)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1)}; `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text1.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor};">$1</span>`).replace(/\n/g, "<br>"))}</div></div>`);
       } else {
         $$renderer2.push("<!--[!-->");
       }
