@@ -515,6 +515,7 @@
 		width: 90%;
 		transform: translateY(-50%);
 		z-index: 5;
+		overflow: visible;
 	}
 
 	.canvas-quote {
