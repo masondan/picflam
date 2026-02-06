@@ -474,23 +474,24 @@
 		gap: var(--space-3);
 	}
 
-	.nudge-row {
-		display: flex;
-		justify-content: center;
-		gap: var(--space-2);
-		padding-top: var(--space-2);
-	}
+        .nudge-row {
+                display: flex;
+                justify-content: center;
+                gap: var(--space-2);
+                padding-top: var(--space-2);
+                width: 100%;
+        }
 
-	.nudge-btn {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		height: 36px;
-		border-radius: var(--radius-md);
-		background-color: var(--color-surface);
-		border: 1px solid var(--color-border);
-		cursor: pointer;
+        .nudge-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 38px;
+                height: 38px;
+                border-radius: var(--radius-md);
+                background-color: var(--color-surface);
+                border: 1px solid var(--color-border);
+                cursor: pointer;
 		transition: background-color var(--transition-fast);
 	}
 
@@ -498,8 +499,8 @@
 		background-color: var(--color-border-light);
 	}
 
-	.nudge-btn img {
-		width: 16px;
-		height: 16px;
-	}
+        .nudge-btn img {
+                width: 22px;
+                height: 22px;
+        }
 </style>

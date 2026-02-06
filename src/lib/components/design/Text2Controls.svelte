@@ -20,9 +20,9 @@
 	const ALIGNMENTS = ['left', 'center', 'right'];
 
 	const DEFAULTS = {
-		text2Size: 3,
+		text2Size: 2,
 		text2YPosition: 8,
-		text2LineSpacing: 5
+		text2LineSpacing: 3
 	};
 
 	let showFontDropdown = false;
@@ -48,6 +48,8 @@
 
 	function selectFont(font) {
 		onChange('text2Font', font);
+		// Inter defaults to bold, all other fonts default to normal weight
+		onChange('text2IsBold', font === 'Inter');
 		showFontDropdown = false;
 	}
 
@@ -70,6 +72,7 @@
 	}
 
 	let colorMode = 'text'; // 'text' or 'highlight'
+	let sliderMode = 'size'; // 'size', 'position', or 'linespacing'
 
 	function toggleColorMode(mode) {
 		colorMode = mode;
@@ -135,53 +138,70 @@
 		</button>
 	</div>
 
-	<div class="slider-row">
-		<span class="row-label">Size</span>
-		<div class="slider-wrapper">
-			<input 
-				type="range"
-				class="inline-slider"
-				min={1}
-				max={10}
-				value={text2Size}
-				on:input={(e) => onChange('text2Size', Number(e.target.value))}
-			/>
-		</div>
-		<button class="reset-btn" on:click={() => resetSlider('text2Size')} aria-label="Reset size">
-			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+	<div class="slider-tabs">
+		<button 
+			class="slider-tab"
+			class:active={sliderMode === 'size'}
+			on:click={() => sliderMode = 'size'}
+		>
+			Size
+		</button>
+		<button 
+			class="slider-tab"
+			class:active={sliderMode === 'position'}
+			on:click={() => sliderMode = 'position'}
+		>
+			Position
+		</button>
+		<button 
+			class="slider-tab"
+			class:active={sliderMode === 'linespacing'}
+			on:click={() => sliderMode = 'linespacing'}
+		>
+			Line spacing
 		</button>
 	</div>
 
 	<div class="slider-row">
-		<span class="row-label">Position</span>
 		<div class="slider-wrapper">
-			<input 
-				type="range"
-				class="inline-slider"
-				min={0}
-				max={10}
-				value={text2YPosition}
-				on:input={(e) => onChange('text2YPosition', Number(e.target.value))}
-			/>
+			{#if sliderMode === 'size'}
+				<input 
+					type="range"
+					class="inline-slider"
+					min={1}
+					max={10}
+					value={text2Size}
+					on:input={(e) => onChange('text2Size', Number(e.target.value))}
+				/>
+			{:else if sliderMode === 'position'}
+				<input 
+					type="range"
+					class="inline-slider"
+					min={0}
+					max={10}
+					value={text2YPosition}
+					on:input={(e) => onChange('text2YPosition', Number(e.target.value))}
+				/>
+			{:else if sliderMode === 'linespacing'}
+				<input 
+					type="range"
+					class="inline-slider"
+					min={1}
+					max={10}
+					value={text2LineSpacing}
+					on:input={(e) => onChange('text2LineSpacing', Number(e.target.value))}
+				/>
+			{/if}
 		</div>
-		<button class="reset-btn" on:click={() => resetSlider('text2YPosition')} aria-label="Reset position">
-			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
-		</button>
-	</div>
-
-	<div class="slider-row">
-		<span class="row-label">Line spacing</span>
-		<div class="slider-wrapper">
-			<input 
-				type="range"
-				class="inline-slider"
-				min={1}
-				max={10}
-				value={text2LineSpacing}
-				on:input={(e) => onChange('text2LineSpacing', Number(e.target.value))}
-			/>
-		</div>
-		<button class="reset-btn" on:click={() => resetSlider('text2LineSpacing')} aria-label="Reset line spacing">
+		<button 
+			class="reset-btn" 
+			on:click={() => {
+				if (sliderMode === 'size') resetSlider('text2Size');
+				else if (sliderMode === 'position') resetSlider('text2YPosition');
+				else if (sliderMode === 'linespacing') resetSlider('text2LineSpacing');
+			}}
+			aria-label="Reset slider"
+		>
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
@@ -380,6 +400,31 @@
 	.section-label {
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
+	}
+
+	.slider-tabs {
+		display: flex;
+		gap: var(--space-4);
+		margin-bottom: 0;
+	}
+
+	.slider-tab {
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: #777777;
+		transition: color var(--transition-fast);
+	}
+
+	.slider-tab:hover {
+		color: #666666;
+	}
+
+	.slider-tab.active {
+		color: var(--color-primary);
 	}
 
 	.slider-row {

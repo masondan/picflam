@@ -27,13 +27,14 @@
 	];
 
 	const DEFAULTS = {
-		text1Size: 5,
-		text1YPosition: 3,
-		text1LineSpacing: 5,
+		text1Size: 4,
+		text1YPosition: 5,
+		text1LineSpacing: 3,
 		text1QuoteSize: 5
 	};
 
 	let colorMode = 'text'; // 'text' or 'highlight'
+	let sliderMode = 'size'; // 'size', 'position', or 'linespacing'
 
 	let showFontDropdown = false;
 	let fontDropdownRef;
@@ -58,6 +59,8 @@
 
 	function selectFont(font) {
 		onChange('text1Font', font);
+		// Inter defaults to bold, all other fonts default to normal weight
+		onChange('text1IsBold', font === 'Inter');
 		showFontDropdown = false;
 	}
 
@@ -147,89 +150,72 @@
 		</button>
 	</div>
 
-	<div class="slider-row">
-		<span class="row-label">Size</span>
-		<div class="slider-wrapper">
-			<input 
-				type="range"
-				class="inline-slider"
-				min={1}
-				max={10}
-				value={text1Size}
-				on:input={(e) => onChange('text1Size', Number(e.target.value))}
-			/>
-		</div>
-		<button class="reset-btn" on:click={() => resetSlider('text1Size')} aria-label="Reset size">
-			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+	<div class="slider-tabs">
+		<button 
+			class="slider-tab"
+			class:active={sliderMode === 'size'}
+			on:click={() => sliderMode = 'size'}
+		>
+			Size
+		</button>
+		<button 
+			class="slider-tab"
+			class:active={sliderMode === 'position'}
+			on:click={() => sliderMode = 'position'}
+		>
+			Position
+		</button>
+		<button 
+			class="slider-tab"
+			class:active={sliderMode === 'linespacing'}
+			on:click={() => sliderMode = 'linespacing'}
+		>
+			Line spacing
 		</button>
 	</div>
 
 	<div class="slider-row">
-		<span class="row-label">Position</span>
 		<div class="slider-wrapper">
-			<input 
-				type="range"
-				class="inline-slider"
-				min={0}
-				max={10}
-				value={text1YPosition}
-				on:input={(e) => onChange('text1YPosition', Number(e.target.value))}
-			/>
-		</div>
-		<button class="reset-btn" on:click={() => resetSlider('text1YPosition')} aria-label="Reset position">
-			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
-		</button>
-	</div>
-
-	<div class="slider-row">
-		<span class="row-label">Line spacing</span>
-		<div class="slider-wrapper">
-			<input 
-				type="range"
-				class="inline-slider"
-				min={1}
-				max={10}
-				value={text1LineSpacing}
-				on:input={(e) => onChange('text1LineSpacing', Number(e.target.value))}
-			/>
-		</div>
-		<button class="reset-btn" on:click={() => resetSlider('text1LineSpacing')} aria-label="Reset line spacing">
-			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
-		</button>
-	</div>
-
-	<div class="quote-section">
-		<span class="section-label">Quotes</span>
-		<div class="style-row">
-			{#each QUOTE_STYLES as style}
-				<button
-					class="style-btn"
-					class:active={text1QuoteStyle === style.id}
-					class:is-none={style.id === 'none'}
-					on:click={() => selectQuoteStyle(style.id)}
-					aria-label={style.label}
-				>
-					<img src={style.icon} alt="" class="style-icon" />
-				</button>
-			{/each}
-		</div>
-		<div class="slider-row quote-slider-row" class:disabled={text1QuoteStyle === 'none'}>
-			<span class="row-label">Size</span>
-			<div class="slider-wrapper">
+			{#if sliderMode === 'size'}
 				<input 
 					type="range"
 					class="inline-slider"
 					min={1}
 					max={10}
-					value={text1QuoteSize}
-					on:input={(e) => text1QuoteStyle !== 'none' && onChange('text1QuoteSize', Number(e.target.value))}
-					disabled={text1QuoteStyle === 'none'}
+					value={text1Size}
+					on:input={(e) => onChange('text1Size', Number(e.target.value))}
 				/>
-			</div>
-			<button class="reset-btn" on:click={() => resetSlider('text1QuoteSize')} aria-label="Reset quote size" disabled={text1QuoteStyle === 'none'}>
-				<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
-			</button>
+			{:else if sliderMode === 'position'}
+				<input 
+					type="range"
+					class="inline-slider"
+					min={0}
+					max={10}
+					value={text1YPosition}
+					on:input={(e) => onChange('text1YPosition', Number(e.target.value))}
+				/>
+			{:else if sliderMode === 'linespacing'}
+				<input 
+					type="range"
+					class="inline-slider"
+					min={1}
+					max={10}
+					value={text1LineSpacing}
+					on:input={(e) => onChange('text1LineSpacing', Number(e.target.value))}
+				/>
+			{/if}
 		</div>
+		<button 
+			class="reset-btn" 
+			on:click={() => {
+				if (sliderMode === 'size') resetSlider('text1Size');
+				else if (sliderMode === 'position') resetSlider('text1YPosition');
+				else if (sliderMode === 'linespacing') resetSlider('text1LineSpacing');
+			}}
+			aria-label="Reset slider"
+		>
+			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+		</button>
 	</div>
 
 	<div class="color-section">
@@ -265,6 +251,42 @@
 			/>
 		{/if}
 	</div>
+
+	<div class="quote-row">
+		<span class="row-label">Quotes</span>
+		<div class="style-row">
+			{#each QUOTE_STYLES as style}
+				<button
+					class="style-btn"
+					class:active={text1QuoteStyle === style.id}
+					class:is-none={style.id === 'none'}
+					on:click={() => selectQuoteStyle(style.id)}
+					aria-label={style.label}
+				>
+					<img src={style.icon} alt="" class="style-icon" />
+				</button>
+			{/each}
+		</div>
+	</div>
+
+	{#if text1QuoteStyle !== 'none'}
+		<div class="slider-row quote-slider-row">
+			<span class="row-label">Size</span>
+			<div class="slider-wrapper">
+				<input 
+					type="range"
+					class="inline-slider"
+					min={1}
+					max={10}
+					value={text1QuoteSize}
+					on:input={(e) => onChange('text1QuoteSize', Number(e.target.value))}
+				/>
+			</div>
+			<button class="reset-btn" on:click={() => resetSlider('text1QuoteSize')} aria-label="Reset quote size">
+				<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+			</button>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -421,6 +443,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-2);
+		margin-top: calc(var(--space-4) * -0.5);
+		margin-bottom: var(--space-4);
 	}
 
 	.section-label {
@@ -428,11 +452,37 @@
 		color: var(--color-text-secondary);
 	}
 
+	.slider-tabs {
+		display: flex;
+		gap: var(--space-4);
+		margin-bottom: 0;
+	}
+
+	.slider-tab {
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: #777777;
+		transition: color var(--transition-fast);
+	}
+
+	.slider-tab:hover {
+		color: #666666;
+	}
+
+	.slider-tab.active {
+		color: var(--color-primary);
+	}
+
 	.slider-row {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
 		padding-bottom: 0;
+		margin-top: calc(var(--space-2) * -1);
 	}
 
 	.slider-wrapper {
@@ -507,10 +557,11 @@
 		opacity: 1;
 	}
 
-	.quote-section {
+	.quote-row {
 		display: flex;
-		flex-direction: column;
+		align-items: center;
 		gap: var(--space-2);
+		justify-content: space-between;
 	}
 
 	.style-row {

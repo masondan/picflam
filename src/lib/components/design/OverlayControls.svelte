@@ -162,55 +162,45 @@
 	{:else}
 		<div class="control-row fit-fill-row">
 			<div class="button-group">
-				<div class="button-with-label">
-					<button 
-						class="icon-btn"
-						on:click={() => onChange('overlaySize', calculateFitSize())}
-						title="Fit image to canvas"
-						aria-label="Fit"
-					>
-						<img src="/icons/icon-fit.svg" alt="Fit" class="control-icon" />
-					</button>
-					<span class="label-below">Fit</span>
-				</div>
-				<div class="button-with-label">
-					<button 
-						class="icon-btn"
-						on:click={() => onChange('overlaySize', calculateFillSize())}
-						title="Fill canvas with image"
-						aria-label="Fill"
-					>
-						<img src="/icons/icon-fill.svg" alt="Fill" class="control-icon" />
-					</button>
-					<span class="label-below">Fill</span>
-				</div>
+				<span class="row-label">Fit & Fill</span>
+				<button 
+					class="icon-btn"
+					on:click={() => onChange('overlaySize', calculateFitSize())}
+					title="Fit image to canvas"
+					aria-label="Fit"
+				>
+					<img src="/icons/icon-fit.svg" alt="Fit" class="control-icon" />
+				</button>
+				<button 
+					class="icon-btn"
+					on:click={() => onChange('overlaySize', calculateFillSize())}
+					title="Fill canvas with image"
+					aria-label="Fill"
+				>
+					<img src="/icons/icon-fill.svg" alt="Fill" class="control-icon" />
+				</button>
 			</div>
 			
 			<div class="button-group right-group">
-				<div class="button-with-label">
-					<button 
-						class="layer-btn"
-						class:active={overlayLayer === 'above'}
-						on:click={() => onChange('overlayLayer', 'above')}
-						title="Image on front layer"
-						aria-label="Front"
-					>
-						<img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon" />
-					</button>
-					<span class="label-below">Front</span>
-				</div>
-				<div class="button-with-label">
-					<button 
-						class="layer-btn"
-						class:active={overlayLayer === 'below'}
-						on:click={() => onChange('overlayLayer', 'below')}
-						title="Image on back layer"
-						aria-label="Back"
-					>
-						<img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon" />
-					</button>
-					<span class="label-below">Back</span>
-				</div>
+				<span class="row-label">Layers</span>
+				<button 
+					class="layer-btn"
+					class:active={overlayLayer === 'above'}
+					on:click={() => onChange('overlayLayer', 'above')}
+					title="Image on front layer"
+					aria-label="Front"
+				>
+					<img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon" />
+				</button>
+				<button 
+					class="layer-btn"
+					class:active={overlayLayer === 'below'}
+					on:click={() => onChange('overlayLayer', 'below')}
+					title="Image on back layer"
+					aria-label="Back"
+				>
+					<img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon" />
+				</button>
 			</div>
 		</div>
 
@@ -249,14 +239,16 @@
 			</button>
 		</div>
 
-		<div class="color-section">
-			<span class="section-label">Colour</span>
-			<ColorSwatch 
-				colors={BORDER_COLORS}
-				value={overlayBorderColor}
-				onChange={(color) => onChange('overlayBorderColor', color)}
-				showRainbow={true}
-			/>
+		<div class="color-row">
+			<span class="row-label">Colour</span>
+			<div class="color-buttons">
+				<ColorSwatch 
+					colors={BORDER_COLORS}
+					value={overlayBorderColor}
+					onChange={(color) => onChange('overlayBorderColor', color)}
+					showRainbow={true}
+				/>
+			</div>
 		</div>
 
 		<div class="mask-row">
@@ -420,19 +412,13 @@
 
 	.button-group {
 		display: flex;
-		gap: var(--space-3);
-		align-items: flex-start;
+		gap: var(--space-2);
+		align-items: center;
 	}
 
 	.right-group {
 		margin-left: auto;
-	}
-
-	.button-with-label {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--space-1);
+		justify-content: space-between;
 	}
 
 	.icon-btn,
@@ -485,13 +471,6 @@
 
 	.layer-btn.active .layer-icon {
 		filter: brightness(0) invert(1);
-	}
-
-	.label-below {
-		font-size: var(--font-size-xs);
-		font-weight: var(--font-weight-medium);
-		color: var(--color-text-secondary);
-		text-align: center;
 	}
 
 	.slider-row {
@@ -567,27 +546,28 @@
 		opacity: 1;
 	}
 
-	.color-section {
+	.color-row {
 		display: flex;
-		flex-direction: column;
+		align-items: center;
 		gap: var(--space-2);
+		justify-content: space-between;
 	}
 
-	.section-label {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-secondary);
+	.color-buttons {
+		display: flex;
+		gap: var(--space-1);
 	}
 
 	.mask-row {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
-		flex-wrap: wrap;
+		justify-content: space-between;
 	}
 
 	.mask-buttons {
 		display: flex;
-		gap: var(--space-1);
+		gap: var(--space-2);
 	}
 
 	.mask-btn {
@@ -657,8 +637,8 @@
 	}
 
 	.nudge-row {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		display: flex;
+		justify-content: center;
 		gap: var(--space-2);
 	}
 
@@ -666,8 +646,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 100%;
-		aspect-ratio: 1;
+		width: 38px;
+		height: 38px;
+		padding: 0;
 		border: 1px solid #777777;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
@@ -676,17 +657,16 @@
 	}
 
 	.nudge-btn:hover {
-		background: var(--color-surface-hover);
-		border-color: var(--color-primary);
+		background: #f0f0f0;
 	}
 
 	.nudge-icon {
-		width: 18px;
-		height: 18px;
+		width: 22px;
+		height: 22px;
 		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
 	}
 
 	.nudge-btn:hover .nudge-icon {
-		filter: brightness(0) saturate(100%) invert(20%) sepia(92%) saturate(2000%) brightness(97%) contrast(97%);
+		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
 	}
 </style>

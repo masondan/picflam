@@ -73,6 +73,7 @@
 			}
 		}
 		showTemplatePicker.set(false);
+		activeDesignMenu.set('size');
 	}
 
 	function handleSaveTemplate() {
@@ -762,7 +763,7 @@
 	}
 
 	.overlay-bounding-box.mask-rounded {
-		border-radius: calc(var(--radius-lg) + 4px);
+		border-radius: var(--radius-lg);
 	}
 
 	.overlay-bounding-box.mask-circle {
@@ -807,8 +808,8 @@
 	}
 
 	.delete-icon {
-		width: 12px;
-		height: 12px;
+		width: 14px;
+		height: 14px;
 		filter: brightness(0) invert(1);
 	}
 
@@ -832,8 +833,8 @@
 	}
 
 	.resize-icon {
-		width: 12px;
-		height: 12px;
+		width: 10px;
+		height: 10px;
 		filter: brightness(0) invert(1);
 	}
 
