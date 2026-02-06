@@ -1,5 +1,4 @@
 <script>
-	import Slider from '$lib/components/ui/Slider.svelte';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
 	import { CANVAS_COLORS } from '$lib/stores/designStore.js';
 
@@ -10,10 +9,53 @@
 	export let overlayLayer = 'above';
 	export let overlayBorderWidth = 0;
 	export let overlayBorderColor = '#FFFFFF';
+	export let overlayZoom = 100;
+	export let overlayImageOffsetX = 0;
+	export let overlayImageOffsetY = 0;
+	export let overlayNaturalWidth = 0;
+	export let overlayNaturalHeight = 0;
+	export let getCanvasDimensions = () => ({ width: 300, height: 300 });
 	export let onChange = (key, value) => {};
 
 	const BORDER_COLORS = CANVAS_COLORS.solids;
 	const BORDER_STOPS = [0, 1, 2, 3];
+	const NUDGE_AMOUNT = 2;
+
+	function calculateFitSize() {
+		if (!overlayNaturalWidth || !overlayNaturalHeight) return 50;
+		const { width: cw, height: ch } = getCanvasDimensions();
+		const imageAspectRatio = overlayNaturalWidth / overlayNaturalHeight;
+		const canvasAspectRatio = cw / ch;
+		
+		// Fit means the image fits within the canvas maintaining aspect ratio
+		if (imageAspectRatio > canvasAspectRatio) {
+			// Image is wider, fit to width
+			return 100;
+		} else {
+			// Image is taller, fit to height
+			return Math.min(100, (ch / cw) * 100);
+		}
+	}
+
+	function calculateFillSize() {
+		if (!overlayNaturalWidth || !overlayNaturalHeight) return 100;
+		
+		const { width: cw, height: ch } = getCanvasDimensions();
+		const imageAR = overlayNaturalWidth / overlayNaturalHeight;
+		
+		// Calculate what the overlay renders to (in px) when overlaySize = 100,
+		// given how calculateOverlayDimensions() + template work:
+		// - Template only sets width%, height is auto from image AR
+		// - If imageAR >= 1: width = 100% of canvas width, height = cw / imageAR
+		// - If imageAR < 1:  height = cw (as maxWidth), width = cw * imageAR
+		const baseW = imageAR >= 1 ? cw : cw * imageAR;
+		const baseH = imageAR >= 1 ? cw / imageAR : cw;
+		
+		// Cover scale: image must cover both canvas width and height
+		const scale = Math.max(cw / baseW, ch / baseH);
+		
+		return 100 * scale + 0.5;
+	}
 
 	function handleFileSelect(e) {
 		const file = e.target.files?.[0];
@@ -69,6 +111,29 @@
 		);
 		onChange('overlayBorderWidth', snapped);
 	}
+
+	function handleNudge(direction) {
+		let newOffsetX = overlayImageOffsetX;
+		let newOffsetY = overlayImageOffsetY;
+
+		switch (direction) {
+			case 'up':
+				newOffsetY = overlayImageOffsetY - NUDGE_AMOUNT;
+				break;
+			case 'down':
+				newOffsetY = overlayImageOffsetY + NUDGE_AMOUNT;
+				break;
+			case 'left':
+				newOffsetX = overlayImageOffsetX - NUDGE_AMOUNT;
+				break;
+			case 'right':
+				newOffsetX = overlayImageOffsetX + NUDGE_AMOUNT;
+				break;
+		}
+
+		onChange('overlayImageOffsetX', newOffsetX);
+		onChange('overlayImageOffsetY', newOffsetY);
+	}
 </script>
 
 <div class="overlay-controls">
@@ -95,23 +160,102 @@
 			</button>
 		</div>
 	{:else}
-		<div class="slider-row">
-			<Slider 
-				label="Size"
-				min={10}
-				max={100}
-				value={overlaySize}
-				onChange={(val) => onChange('overlaySize', val)}
-			/>
+		<div class="control-row fit-fill-row">
+			<div class="button-group">
+				<div class="button-with-label">
+					<button 
+						class="icon-btn"
+						on:click={() => onChange('overlaySize', calculateFitSize())}
+						title="Fit image to canvas"
+						aria-label="Fit"
+					>
+						<img src="/icons/icon-fit.svg" alt="Fit" class="control-icon" />
+					</button>
+					<span class="label-below">Fit</span>
+				</div>
+				<div class="button-with-label">
+					<button 
+						class="icon-btn"
+						on:click={() => onChange('overlaySize', calculateFillSize())}
+						title="Fill canvas with image"
+						aria-label="Fill"
+					>
+						<img src="/icons/icon-fill.svg" alt="Fill" class="control-icon" />
+					</button>
+					<span class="label-below">Fill</span>
+				</div>
+			</div>
+			
+			<div class="button-group right-group">
+				<div class="button-with-label">
+					<button 
+						class="layer-btn"
+						class:active={overlayLayer === 'above'}
+						on:click={() => onChange('overlayLayer', 'above')}
+						title="Image on front layer"
+						aria-label="Front"
+					>
+						<img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon" />
+					</button>
+					<span class="label-below">Front</span>
+				</div>
+				<div class="button-with-label">
+					<button 
+						class="layer-btn"
+						class:active={overlayLayer === 'below'}
+						on:click={() => onChange('overlayLayer', 'below')}
+						title="Image on back layer"
+						aria-label="Back"
+					>
+						<img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon" />
+					</button>
+					<span class="label-below">Back</span>
+				</div>
+			</div>
 		</div>
 
 		<div class="slider-row">
-			<Slider 
-				label="Opacity"
-				min={0}
-				max={100}
-				value={overlayOpacity}
-				onChange={(val) => onChange('overlayOpacity', val)}
+			<span class="row-label">Opacity</span>
+			<div class="slider-wrapper">
+				<input 
+					type="range"
+					class="inline-slider"
+					min={0}
+					max={100}
+					value={overlayOpacity}
+					on:input={(e) => onChange('overlayOpacity', Number(e.target.value))}
+				/>
+			</div>
+			<button class="reset-btn" on:click={() => onChange('overlayOpacity', 100)} aria-label="Reset opacity">
+				<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+			</button>
+		</div>
+
+		<div class="slider-row">
+			<span class="row-label">Border</span>
+			<div class="slider-wrapper">
+				<input 
+					type="range"
+					class="inline-slider"
+					min={0}
+					max={3}
+					step={1}
+					value={overlayBorderWidth}
+					on:input={(e) => handleBorderWidthChange(Number(e.target.value))}
+				/>
+			</div>
+			<button class="reset-btn" on:click={() => onChange('overlayBorderWidth', 0)} aria-label="Reset border">
+				<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+			</button>
+		</div>
+
+		<div class="color-section">
+			<span class="section-label">Colour</span>
+			<ColorSwatch 
+				colors={BORDER_COLORS}
+				value={overlayBorderColor}
+				onChange={(color) => onChange('overlayBorderColor', color)}
+				showRainbow={true}
 			/>
 		</div>
 
@@ -142,48 +286,66 @@
 				>
 					<div class="circle-icon"></div>
 				</button>
-			</div>
-			<span class="row-label layer-label">Layers</span>
-			<div class="layer-buttons">
 				<button 
-					class="layer-btn"
-					class:active={overlayLayer === 'above'}
-					on:click={() => onChange('overlayLayer', 'above')}
-					aria-label="Overlay above text"
+					class="mask-btn"
+					class:active={overlayMask === 'diamond'}
+					on:click={() => onChange('overlayMask', 'diamond')}
+					aria-label="Diamond mask"
 				>
-					<img src="/icons/icon-layer-above.svg" alt="" class="layer-icon" />
-				</button>
-				<button 
-					class="layer-btn"
-					class:active={overlayLayer === 'below'}
-					on:click={() => onChange('overlayLayer', 'below')}
-					aria-label="Overlay below text"
-				>
-					<img src="/icons/icon-layer-below.svg" alt="" class="layer-icon" />
+					<div class="diamond-icon"></div>
 				</button>
 			</div>
 		</div>
 
-		<div class="slider-row">
-			<Slider 
-				label="Border width"
-				min={0}
-				max={3}
-				step={1}
-				value={overlayBorderWidth}
-				onChange={handleBorderWidthChange}
-			/>
-		</div>
+		{#if overlayMask !== 'none'}
+			<div class="slider-row">
+				<span class="row-label">Zoom</span>
+				<div class="slider-wrapper">
+					<input 
+						type="range"
+						class="inline-slider"
+						min={100}
+						max={300}
+						value={overlayZoom}
+						on:input={(e) => onChange('overlayZoom', Number(e.target.value))}
+					/>
+				</div>
+				<button class="reset-btn" on:click={() => onChange('overlayZoom', 100)} aria-label="Reset zoom">
+					<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+				</button>
+			</div>
 
-		<div class="color-section">
-			<span class="section-label">Border colour</span>
-			<ColorSwatch 
-				colors={BORDER_COLORS}
-				value={overlayBorderColor}
-				onChange={(color) => onChange('overlayBorderColor', color)}
-				showRainbow={true}
-			/>
-		</div>
+			<div class="nudge-row">
+				<button 
+					class="nudge-btn"
+					on:click={() => handleNudge('up')}
+					aria-label="Nudge up"
+				>
+					<img src="/icons/icon-nudge-up.svg" alt="" class="nudge-icon" />
+				</button>
+				<button 
+					class="nudge-btn"
+					on:click={() => handleNudge('down')}
+					aria-label="Nudge down"
+				>
+					<img src="/icons/icon-nudge-down.svg" alt="" class="nudge-icon" />
+				</button>
+				<button 
+					class="nudge-btn"
+					on:click={() => handleNudge('left')}
+					aria-label="Nudge left"
+				>
+					<img src="/icons/icon-nudge-left.svg" alt="" class="nudge-icon" />
+				</button>
+				<button 
+					class="nudge-btn"
+					on:click={() => handleNudge('right')}
+					aria-label="Nudge right"
+				>
+					<img src="/icons/icon-nudge-right.svg" alt="" class="nudge-icon" />
+				</button>
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -246,21 +408,96 @@
 		background: var(--color-primary-light);
 	}
 
-	.slider-row {
+	.control-row {
 		display: flex;
-		align-items: flex-end;
+		align-items: center;
 		gap: var(--space-3);
 	}
 
-	.slider-row :global(.slider-container) {
-		flex: 1;
+	.fit-fill-row {
+		justify-content: space-between;
 	}
 
-	.mask-row {
+	.button-group {
+		display: flex;
+		gap: var(--space-3);
+		align-items: flex-start;
+	}
+
+	.right-group {
+		margin-left: auto;
+	}
+
+	.button-with-label {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-1);
+	}
+
+	.icon-btn,
+	.layer-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		padding: 0;
+		border: 1px solid #777777;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.icon-btn:hover:not(.active),
+	.layer-btn:hover:not(.active) {
+		background: var(--color-surface);
+	}
+
+	.icon-btn.active,
+	.layer-btn.active {
+		background: #777777;
+		border-color: #777777;
+	}
+
+	.control-icon {
+		width: 22px;
+		height: 22px;
+	}
+
+	.icon-btn:not(.active) .control-icon {
+		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+	}
+
+	.icon-btn.active .control-icon {
+		filter: brightness(0) invert(1);
+	}
+
+	.layer-icon {
+		width: 22px;
+		height: 22px;
+	}
+
+	.layer-btn:not(.active) .layer-icon {
+		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+	}
+
+	.layer-btn.active .layer-icon {
+		filter: brightness(0) invert(1);
+	}
+
+	.label-below {
+		font-size: var(--font-size-xs);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-secondary);
+		text-align: center;
+	}
+
+	.slider-row {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
-		flex-wrap: wrap;
 	}
 
 	.row-label {
@@ -269,70 +506,65 @@
 		flex-shrink: 0;
 	}
 
-	.layer-label {
-		margin-left: auto;
-	}
-
-	.mask-buttons,
-	.layer-buttons {
+	.slider-wrapper {
+		flex: 1;
 		display: flex;
-		gap: var(--space-1);
+		align-items: center;
 	}
 
-	.mask-btn,
-	.layer-btn {
+	.inline-slider {
+		width: 100%;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--color-border);
+		appearance: none;
+		cursor: pointer;
+	}
+
+	.inline-slider::-webkit-slider-thumb {
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-text-secondary);
+		cursor: pointer;
+		transition: transform var(--transition-fast);
+	}
+
+	.inline-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.15);
+	}
+
+	.inline-slider::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-text-secondary);
+		border: none;
+		cursor: pointer;
+	}
+
+	.reset-btn {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 44px;
-		height: 44px;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-sm);
-		background: var(--color-surface);
+		width: 32px;
+		height: 32px;
+		border: none;
+		background: transparent;
 		cursor: pointer;
-		transition: all var(--transition-fast);
+		padding: 0;
+		flex-shrink: 0;
 	}
 
-	.mask-btn:hover:not(.active),
-	.layer-btn:hover:not(.active) {
-		background: var(--color-border-light);
-	}
-
-	.mask-btn.active,
-	.layer-btn.active {
-		background: var(--color-text-primary);
-		border-color: var(--color-text-primary);
-	}
-
-	.mask-icon,
-	.layer-icon {
+	.reset-icon {
 		width: 20px;
 		height: 20px;
+		opacity: 0.5;
 	}
 
-	.mask-btn:not(.active) .mask-icon,
-	.layer-btn:not(.active) .layer-icon {
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
-	}
-
-	.mask-btn.active .mask-icon,
-	.layer-btn.active .layer-icon {
-		filter: brightness(0) invert(1);
-	}
-
-	.circle-icon {
-		width: 18px;
-		height: 18px;
-		border: 2px solid currentColor;
-		border-radius: 50%;
-	}
-
-	.mask-btn:not(.active) .circle-icon {
-		border-color: #777;
-	}
-
-	.mask-btn.active .circle-icon {
-		border-color: white;
+	.reset-btn:hover .reset-icon {
+		opacity: 1;
 	}
 
 	.color-section {
@@ -344,5 +576,117 @@
 	.section-label {
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
+	}
+
+	.mask-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.mask-buttons {
+		display: flex;
+		gap: var(--space-1);
+	}
+
+	.mask-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		border: 1px solid #777777;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.mask-btn:hover:not(.active) {
+		background: var(--color-surface);
+	}
+
+	.mask-btn.active {
+		background: #777777;
+		border-color: #777777;
+	}
+
+	.mask-icon {
+		width: 22px;
+		height: 22px;
+	}
+
+	.mask-btn:not(.active) .mask-icon {
+		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+	}
+
+	.mask-btn.active .mask-icon {
+		filter: brightness(0) invert(1);
+	}
+
+	.circle-icon {
+		width: 18px;
+		height: 18px;
+		border: 2px solid currentColor;
+		border-radius: 50%;
+	}
+
+	.mask-btn:not(.active) .circle-icon {
+		border-color: #777777;
+	}
+
+	.mask-btn.active .circle-icon {
+		border-color: white;
+	}
+
+	.diamond-icon {
+		width: 18px;
+		height: 18px;
+		border: 2px solid currentColor;
+		border-radius: var(--radius-sm);
+		transform: rotate(45deg);
+	}
+
+	.mask-btn:not(.active) .diamond-icon {
+		border-color: #777777;
+	}
+
+	.mask-btn.active .diamond-icon {
+		border-color: white;
+	}
+
+	.nudge-row {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: var(--space-2);
+	}
+
+	.nudge-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		aspect-ratio: 1;
+		border: 1px solid #777777;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.nudge-btn:hover {
+		background: var(--color-surface-hover);
+		border-color: var(--color-primary);
+	}
+
+	.nudge-icon {
+		width: 18px;
+		height: 18px;
+		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+	}
+
+	.nudge-btn:hover .nudge-icon {
+		filter: brightness(0) saturate(100%) invert(20%) sepia(92%) saturate(2000%) brightness(97%) contrast(97%);
 	}
 </style>

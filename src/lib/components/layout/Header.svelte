@@ -71,7 +71,7 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: var(--radius-full);
-		border: 1px solid #777777;
+		border: 1px solid #5422b0;
 		background: transparent;
 		transition: all var(--transition-fast);
 	}
@@ -81,8 +81,8 @@
 	}
 	
 	.nav-btn.active {
-		background-color: var(--color-primary);
-		border-color: var(--color-primary);
+		background-color: #5422b0;
+		border-color: #5422b0;
 	}
 	
 	.nav-icon {
@@ -91,7 +91,7 @@
 	}
 	
 	.nav-btn:not(.active) .nav-icon {
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(90%);
+		filter: invert(15%) sepia(70%) saturate(2500%) hue-rotate(250deg) brightness(90%) contrast(115%);
 	}
 	
 	.nav-btn.active .nav-icon {

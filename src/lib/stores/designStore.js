@@ -54,7 +54,10 @@ const initialSlideState = {
 	overlayBorderWidth: 0,
 	overlayBorderColor: '#FFFFFF',
 	overlayNaturalWidth: 0,
-	overlayNaturalHeight: 0
+	overlayNaturalHeight: 0,
+	overlayZoom: 100,
+	overlayImageOffsetX: 0,
+	overlayImageOffsetY: 0
 };
 
 function createHistoryStore(initialState) {

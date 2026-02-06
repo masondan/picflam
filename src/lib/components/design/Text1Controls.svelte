@@ -13,17 +13,27 @@
 	export let text1HighlightColor = 'transparent';
 	export let text1IsBold = true;
 	export let text1Align = 'center';
+	export let text1QuoteStyle = 'none';
+	export let text1QuoteSize = 5;
 	export let onChange = (key, value) => {};
 
 	const TEXT_COLORS = CANVAS_COLORS.solids;
 	const HIGHLIGHT_COLORS = ['#FFD700', '#000000', '#007C1F', '#00679D', '#B20715'];
 	const ALIGNMENTS = ['left', 'center', 'right'];
+	const QUOTE_STYLES = [
+		{ id: 'none', icon: '/icons/icon-none.svg', label: 'No quote' },
+		{ id: 'serif', icon: '/icons/icon-quote-serif.svg', label: 'Serif quote' },
+		{ id: 'slab', icon: '/icons/icon-quote-slab.svg', label: 'Slab quote' }
+	];
 
 	const DEFAULTS = {
 		text1Size: 5,
 		text1YPosition: 3,
-		text1LineSpacing: 5
+		text1LineSpacing: 5,
+		text1QuoteSize: 5
 	};
+
+	let colorMode = 'text'; // 'text' or 'highlight'
 
 	let showFontDropdown = false;
 	let fontDropdownRef;
@@ -69,6 +79,14 @@
 		onChange('text1HighlightColor', color === text1HighlightColor ? 'transparent' : color);
 	}
 
+	function selectQuoteStyle(style) {
+		onChange('text1QuoteStyle', style);
+	}
+
+	function toggleColorMode(mode) {
+		colorMode = mode;
+	}
+
 	function resetSlider(key) {
 		onChange(key, DEFAULTS[key]);
 	}
@@ -78,11 +96,10 @@
 	<div class="text-input-container">
 		<textarea 
 			class="text-input"
-			placeholder="How to ==highlight== text"
+			placeholder="Add text (with ==highlights==)"
 			value={text1}
 			on:input={handleTextChange}
 		></textarea>
-		<div class="resize-handle"></div>
 	</div>
 
 	<div class="font-row">
@@ -131,62 +148,122 @@
 	</div>
 
 	<div class="slider-row">
-		<Slider 
-			label="Size"
-			min={1}
-			max={10}
-			value={text1Size}
-			onChange={(val) => onChange('text1Size', val)}
-		/>
+		<span class="row-label">Size</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={1}
+				max={10}
+				value={text1Size}
+				on:input={(e) => onChange('text1Size', Number(e.target.value))}
+			/>
+		</div>
 		<button class="reset-btn" on:click={() => resetSlider('text1Size')} aria-label="Reset size">
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
 
 	<div class="slider-row">
-		<Slider 
-			label="Position"
-			min={0}
-			max={10}
-			value={text1YPosition}
-			onChange={(val) => onChange('text1YPosition', val)}
-		/>
+		<span class="row-label">Position</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={0}
+				max={10}
+				value={text1YPosition}
+				on:input={(e) => onChange('text1YPosition', Number(e.target.value))}
+			/>
+		</div>
 		<button class="reset-btn" on:click={() => resetSlider('text1YPosition')} aria-label="Reset position">
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
 
 	<div class="slider-row">
-		<Slider 
-			label="Line spacing"
-			min={1}
-			max={10}
-			value={text1LineSpacing}
-			onChange={(val) => onChange('text1LineSpacing', val)}
-		/>
+		<span class="row-label">Line spacing</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={1}
+				max={10}
+				value={text1LineSpacing}
+				on:input={(e) => onChange('text1LineSpacing', Number(e.target.value))}
+			/>
+		</div>
 		<button class="reset-btn" on:click={() => resetSlider('text1LineSpacing')} aria-label="Reset line spacing">
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
 
-	<div class="color-section">
-		<span class="section-label">Text colour</span>
-		<ColorSwatch 
-			colors={TEXT_COLORS}
-			value={text1Color}
-			onChange={handleColorChange}
-			showRainbow={true}
-		/>
+	<div class="quote-section">
+		<span class="section-label">Quotes</span>
+		<div class="style-row">
+			{#each QUOTE_STYLES as style}
+				<button
+					class="style-btn"
+					class:active={text1QuoteStyle === style.id}
+					class:is-none={style.id === 'none'}
+					on:click={() => selectQuoteStyle(style.id)}
+					aria-label={style.label}
+				>
+					<img src={style.icon} alt="" class="style-icon" />
+				</button>
+			{/each}
+		</div>
+		<div class="slider-row quote-slider-row" class:disabled={text1QuoteStyle === 'none'}>
+			<span class="row-label">Size</span>
+			<div class="slider-wrapper">
+				<input 
+					type="range"
+					class="inline-slider"
+					min={1}
+					max={10}
+					value={text1QuoteSize}
+					on:input={(e) => text1QuoteStyle !== 'none' && onChange('text1QuoteSize', Number(e.target.value))}
+					disabled={text1QuoteStyle === 'none'}
+				/>
+			</div>
+			<button class="reset-btn" on:click={() => resetSlider('text1QuoteSize')} aria-label="Reset quote size" disabled={text1QuoteStyle === 'none'}>
+				<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+			</button>
+		</div>
 	</div>
 
 	<div class="color-section">
-		<span class="section-label">Highlight colour</span>
-		<ColorSwatch 
-			colors={HIGHLIGHT_COLORS}
-			value={text1HighlightColor}
-			onChange={handleHighlightChange}
-			showRainbow={true}
-		/>
+		<div class="color-mode-tabs">
+			<button 
+				class="color-tab"
+				class:active={colorMode === 'text'}
+				on:click={() => toggleColorMode('text')}
+			>
+				Text colour
+			</button>
+			<button 
+				class="color-tab"
+				class:active={colorMode === 'highlight'}
+				on:click={() => toggleColorMode('highlight')}
+			>
+				Highlight colour
+			</button>
+		</div>
+		{#if colorMode === 'text'}
+			<ColorSwatch 
+				colors={TEXT_COLORS}
+				value={text1Color}
+				onChange={handleColorChange}
+				showRainbow={true}
+			/>
+		{:else}
+			<ColorSwatch 
+				colors={HIGHLIGHT_COLORS}
+				value={text1HighlightColor}
+				onChange={handleHighlightChange}
+				showRainbow={true}
+			/>
+		{/if}
 	</div>
 </div>
 
@@ -223,16 +300,6 @@
 		border-color: var(--color-primary);
 	}
 
-	.resize-handle {
-		position: absolute;
-		bottom: 4px;
-		right: 4px;
-		width: 12px;
-		height: 12px;
-		background: linear-gradient(135deg, transparent 50%, var(--color-border) 50%);
-		pointer-events: none;
-	}
-
 	.font-row {
 		display: flex;
 		align-items: center;
@@ -252,7 +319,7 @@
 
 	.font-dropdown-trigger {
 		width: 100%;
-		height: 44px;
+		height: 38px;
 		padding: var(--space-2) var(--space-3);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
@@ -315,14 +382,15 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 44px;
-		height: 44px;
-		border: 1px solid var(--color-border);
+		width: 38px;
+		height: 38px;
+		border: 1px solid #777777;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		cursor: pointer;
 		transition: all var(--transition-fast);
 		flex-shrink: 0;
+		color: #777777;
 	}
 
 	.icon-btn:hover:not(.active) {
@@ -330,16 +398,23 @@
 	}
 
 	.icon-btn.active {
-		border-color: var(--color-primary);
+		border-color: #777777;
+		background: #777777;
+		color: white;
 	}
 
 	.btn-icon {
-		width: 20px;
-		height: 20px;
+		width: 22px;
+		height: 22px;
+		filter: currentColor;
 	}
 
 	.icon-btn:not(.active) .btn-icon {
 		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+	}
+
+	.icon-btn.active .btn-icon {
+		filter: brightness(0) invert(1);
 	}
 
 	.color-section {
@@ -355,13 +430,52 @@
 
 	.slider-row {
 		display: flex;
-		align-items: flex-end;
-		gap: var(--space-3);
-		padding-bottom: var(--space-1);
+		align-items: center;
+		gap: var(--space-2);
+		padding-bottom: 0;
 	}
 
-	.slider-row :global(.slider-container) {
+	.slider-wrapper {
 		flex: 1;
+		display: flex;
+		align-items: center;
+	}
+
+	.inline-slider {
+		width: 100%;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--color-border);
+		appearance: none;
+		cursor: pointer;
+	}
+
+	.inline-slider::-webkit-slider-thumb {
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-text-secondary);
+		cursor: pointer;
+		transition: transform var(--transition-fast);
+	}
+
+	.inline-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.15);
+	}
+
+	.inline-slider::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-text-secondary);
+		border: none;
+		cursor: pointer;
+	}
+
+	.inline-slider:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
 	.reset-btn {
@@ -375,7 +489,12 @@
 		cursor: pointer;
 		padding: 0;
 		flex-shrink: 0;
-		margin-bottom: -6px;
+		margin-bottom: 0;
+	}
+
+	.reset-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
 	.reset-icon {
@@ -384,7 +503,95 @@
 		opacity: 0.5;
 	}
 
-	.reset-btn:hover .reset-icon {
+	.reset-btn:hover:not(:disabled) .reset-icon {
 		opacity: 1;
+	}
+
+	.quote-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.style-row {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.style-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		border: 1px solid #777777;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+		color: #777777;
+	}
+
+	.style-btn:hover:not(.active) {
+		background-color: var(--color-border-light);
+	}
+
+	.style-btn.active {
+		border-color: #777777;
+		background: #777777;
+		color: white;
+	}
+
+	.style-icon {
+		width: 22px;
+		height: 22px;
+	}
+
+	.style-btn:not(.active) .style-icon {
+		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+	}
+
+	.style-btn.active .style-icon {
+		filter: brightness(0) invert(1);
+	}
+
+	.quote-slider-row {
+		padding-bottom: 0;
+	}
+
+	.quote-slider-row.disabled {
+		opacity: 0.4;
+		pointer-events: none;
+	}
+
+	.color-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.color-mode-tabs {
+		display: flex;
+		gap: var(--space-4);
+		margin-bottom: var(--space-1);
+	}
+
+	.color-tab {
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: #777777;
+		transition: color var(--transition-fast);
+	}
+
+	.color-tab:hover {
+		color: #666666;
+	}
+
+	.color-tab.active {
+		color: var(--color-primary);
 	}
 </style>

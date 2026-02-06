@@ -69,6 +69,12 @@
 		onChange('text2LabelColor', color === text2LabelColor ? 'transparent' : color);
 	}
 
+	let colorMode = 'text'; // 'text' or 'highlight'
+
+	function toggleColorMode(mode) {
+		colorMode = mode;
+	}
+
 	function resetSlider(key) {
 		onChange(key, DEFAULTS[key]);
 	}
@@ -78,11 +84,10 @@
 	<div class="text-input-container">
 		<textarea 
 			class="text-input"
-			placeholder="How to ==highlight== text"
+			placeholder="Add text (with ==highlights==)"
 			value={text2}
 			on:input={handleTextChange}
 		></textarea>
-		<div class="resize-handle"></div>
 	</div>
 
 	<div class="font-row">
@@ -131,62 +136,88 @@
 	</div>
 
 	<div class="slider-row">
-		<Slider 
-			label="Size"
-			min={1}
-			max={10}
-			value={text2Size}
-			onChange={(val) => onChange('text2Size', val)}
-		/>
+		<span class="row-label">Size</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={1}
+				max={10}
+				value={text2Size}
+				on:input={(e) => onChange('text2Size', Number(e.target.value))}
+			/>
+		</div>
 		<button class="reset-btn" on:click={() => resetSlider('text2Size')} aria-label="Reset size">
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
 
 	<div class="slider-row">
-		<Slider 
-			label="Position"
-			min={0}
-			max={10}
-			value={text2YPosition}
-			onChange={(val) => onChange('text2YPosition', val)}
-		/>
+		<span class="row-label">Position</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={0}
+				max={10}
+				value={text2YPosition}
+				on:input={(e) => onChange('text2YPosition', Number(e.target.value))}
+			/>
+		</div>
 		<button class="reset-btn" on:click={() => resetSlider('text2YPosition')} aria-label="Reset position">
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
 
 	<div class="slider-row">
-		<Slider 
-			label="Line spacing"
-			min={1}
-			max={10}
-			value={text2LineSpacing}
-			onChange={(val) => onChange('text2LineSpacing', val)}
-		/>
+		<span class="row-label">Line spacing</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={1}
+				max={10}
+				value={text2LineSpacing}
+				on:input={(e) => onChange('text2LineSpacing', Number(e.target.value))}
+			/>
+		</div>
 		<button class="reset-btn" on:click={() => resetSlider('text2LineSpacing')} aria-label="Reset line spacing">
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
 
 	<div class="color-section">
-		<span class="section-label">Text colour</span>
-		<ColorSwatch 
-			colors={TEXT_COLORS}
-			value={text2Color}
-			onChange={handleColorChange}
-			showRainbow={true}
-		/>
-	</div>
-
-	<div class="color-section">
-		<span class="section-label">Highlight colour</span>
-		<ColorSwatch 
-			colors={HIGHLIGHT_COLORS}
-			value={text2LabelColor}
-			onChange={handleHighlightChange}
-			showRainbow={true}
-		/>
+		<div class="color-mode-tabs">
+			<button 
+				class="color-tab"
+				class:active={colorMode === 'text'}
+				on:click={() => toggleColorMode('text')}
+			>
+				Text colour
+			</button>
+			<button 
+				class="color-tab"
+				class:active={colorMode === 'highlight'}
+				on:click={() => toggleColorMode('highlight')}
+			>
+				Highlight colour
+			</button>
+		</div>
+		{#if colorMode === 'text'}
+			<ColorSwatch 
+				colors={TEXT_COLORS}
+				value={text2Color}
+				onChange={handleColorChange}
+				showRainbow={true}
+			/>
+		{:else}
+			<ColorSwatch 
+				colors={HIGHLIGHT_COLORS}
+				value={text2LabelColor}
+				onChange={handleHighlightChange}
+				showRainbow={true}
+			/>
+		{/if}
 	</div>
 </div>
 
@@ -223,16 +254,6 @@
 		border-color: var(--color-primary);
 	}
 
-	.resize-handle {
-		position: absolute;
-		bottom: 4px;
-		right: 4px;
-		width: 12px;
-		height: 12px;
-		background: linear-gradient(135deg, transparent 50%, var(--color-border) 50%);
-		pointer-events: none;
-	}
-
 	.font-row {
 		display: flex;
 		align-items: center;
@@ -252,7 +273,7 @@
 
 	.font-dropdown-trigger {
 		width: 100%;
-		height: 44px;
+		height: 38px;
 		padding: var(--space-2) var(--space-3);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
@@ -315,14 +336,15 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 44px;
-		height: 44px;
-		border: 1px solid var(--color-border);
+		width: 38px;
+		height: 38px;
+		border: 1px solid #777777;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		cursor: pointer;
 		transition: all var(--transition-fast);
 		flex-shrink: 0;
+		color: #777777;
 	}
 
 	.icon-btn:hover:not(.active) {
@@ -330,16 +352,23 @@
 	}
 
 	.icon-btn.active {
-		border-color: var(--color-primary);
+		border-color: #777777;
+		background: #777777;
+		color: white;
 	}
 
 	.btn-icon {
-		width: 20px;
-		height: 20px;
+		width: 22px;
+		height: 22px;
+		filter: currentColor;
 	}
 
 	.icon-btn:not(.active) .btn-icon {
 		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+	}
+
+	.icon-btn.active .btn-icon {
+		filter: brightness(0) invert(1);
 	}
 
 	.color-section {
@@ -355,13 +384,47 @@
 
 	.slider-row {
 		display: flex;
-		align-items: flex-end;
-		gap: var(--space-3);
-		padding-bottom: var(--space-1);
+		align-items: center;
+		gap: var(--space-2);
+		padding-bottom: 0;
 	}
 
-	.slider-row :global(.slider-container) {
+	.slider-wrapper {
 		flex: 1;
+		display: flex;
+		align-items: center;
+	}
+
+	.inline-slider {
+		width: 100%;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--color-border);
+		appearance: none;
+		cursor: pointer;
+	}
+
+	.inline-slider::-webkit-slider-thumb {
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-text-secondary);
+		cursor: pointer;
+		transition: transform var(--transition-fast);
+	}
+
+	.inline-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.15);
+	}
+
+	.inline-slider::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-text-secondary);
+		border: none;
+		cursor: pointer;
 	}
 
 	.reset-btn {
@@ -375,7 +438,7 @@
 		cursor: pointer;
 		padding: 0;
 		flex-shrink: 0;
-		margin-bottom: -6px;
+		margin-bottom: 0;
 	}
 
 	.reset-icon {
@@ -386,5 +449,30 @@
 
 	.reset-btn:hover .reset-icon {
 		opacity: 1;
+	}
+
+	.color-mode-tabs {
+		display: flex;
+		gap: var(--space-4);
+		margin-bottom: var(--space-1);
+	}
+
+	.color-tab {
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: #777777;
+		transition: color var(--transition-fast);
+	}
+
+	.color-tab:hover {
+		color: #666666;
+	}
+
+	.color-tab.active {
+		color: var(--color-primary);
 	}
 </style>

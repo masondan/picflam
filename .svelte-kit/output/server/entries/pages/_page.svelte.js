@@ -186,12 +186,20 @@ async function renderFinalImage(dataUrl, editFilterCss, blurMask) {
 function ImportArea($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let title = fallback($$props["title"], "Import an image");
+    let subtitle = fallback($$props["subtitle"], "");
     let hint = fallback($$props["hint"], "Import, drag or paste an image");
     let onImageImport = fallback($$props["onImageImport"], (dataUrl) => {
     });
     let isDragging = false;
-    $$renderer2.push(`<div${attr_class("import-area svelte-f1bndr", void 0, { "dragging": isDragging })} role="button" tabindex="0"><p class="import-title svelte-f1bndr">${escape_html(title)}</p> <img src="/icons/icon-upload.svg" alt="" class="import-icon svelte-f1bndr"/> <p class="import-hint svelte-f1bndr">${escape_html(hint)}</p> <button class="btn-paste svelte-f1bndr">Paste</button> <input type="file" accept="image/*" class="sr-only"/></div>`);
-    bind_props($$props, { title, hint, onImageImport });
+    $$renderer2.push(`<div${attr_class("import-area svelte-f1bndr", void 0, { "dragging": isDragging })} role="button" tabindex="0"><p class="import-title svelte-f1bndr">${escape_html(title)}`);
+    if (subtitle) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<br/>${escape_html(subtitle)}`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></p> <img src="/icons/icon-upload.svg" alt="" class="import-icon svelte-f1bndr"/> <p class="import-hint svelte-f1bndr">${escape_html(hint)}</p> <button class="btn-paste svelte-f1bndr">Paste</button> <input type="file" accept="image/*" class="sr-only"/></div>`);
+    bind_props($$props, { title, subtitle, hint, onImageImport });
   });
 }
 function ActionBar($$renderer, $$props) {
@@ -243,7 +251,7 @@ function ConfirmModal($$renderer, $$props) {
     });
     let onCancel = fallback($$props["onCancel"], () => {
     });
-    $$renderer2.push(`<div class="modal-overlay svelte-qik81a" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-qik81a" role="document"><p class="modal-message svelte-qik81a">${escape_html(message)}</p> <div class="modal-actions svelte-qik81a"><button class="btn-text svelte-qik81a">${escape_html(cancelText)}</button> <button class="btn-text btn-confirm svelte-qik81a">${escape_html(confirmText)}</button></div></div></div>`);
+    $$renderer2.push(`<div class="modal-overlay svelte-qik81a" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-qik81a" role="document"><p class="modal-message svelte-qik81a"><span class="modal-message-first svelte-qik81a">Start again?</span><br/><span class="modal-message-second svelte-qik81a">Your changes will be lost.</span></p> <div class="modal-actions svelte-qik81a"><button class="btn-text svelte-qik81a">${escape_html(cancelText)}</button> <button class="btn-text btn-confirm svelte-qik81a">${escape_html(confirmText)}</button></div></div></div>`);
     bind_props($$props, { message, confirmText, cancelText, onConfirm, onCancel });
   });
 }
@@ -460,7 +468,8 @@ function CropControls($$renderer, $$props) {
       options: ratioOptions,
       value: aspectRatio,
       onChange: onRatioChange,
-      showLabels: true
+      showLabels: true,
+      centered: true
     });
     $$renderer2.push(`<!----> <div class="dimensions-row svelte-17iy3mz"><div class="dimension-input svelte-17iy3mz">`);
     InputField($$renderer2, {
@@ -1304,7 +1313,8 @@ function CropTab($$renderer, $$props) {
     if (!store_get($$store_subs ??= {}, "$hasImage", hasImage)) {
       $$renderer2.push("<!--[-->");
       ImportArea($$renderer2, {
-        title: "Crop, edit and add filters to photos",
+        title: "Crop, edit and add",
+        subtitle: "filters to photos",
         hint: "Import, drag or paste an image",
         onImageImport: handleImageImport
       });
@@ -1529,16 +1539,16 @@ function UpscaleControls($$renderer, $$props) {
       updateOutputDimensions();
     }
     $$renderer2.push(`<div class="upscale-controls svelte-1rgvkgu"><div class="controls-content svelte-1rgvkgu">`);
-    if (outputDimensions) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="size-display svelte-1rgvkgu">Output: ${escape_html(outputDimensions)}</div>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--> `);
     {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<button class="upscale-btn svelte-1rgvkgu"><img src="/icons/icon-ai.svg" alt="" class="btn-icon svelte-1rgvkgu"/> Upscale image</button> <p class="hint svelte-1rgvkgu">Upscales, sharpens and enhances images</p>`);
+      $$renderer2.push(`<button class="upscale-btn svelte-1rgvkgu"><img src="/icons/icon-ai.svg" alt="" class="btn-icon svelte-1rgvkgu"/> Upscale image</button> `);
+      if (outputDimensions) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<div class="size-display svelte-1rgvkgu">Output: ${escape_html(outputDimensions)}</div>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]-->`);
     }
     $$renderer2.push(`<!--]--> `);
     {
@@ -1556,9 +1566,9 @@ function RemoveBackgroundControls($$renderer, $$props) {
     $$renderer2.push(`<div class="background-controls svelte-1wdmsm1"><div class="controls-content svelte-1wdmsm1">`);
     {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<button class="remove-btn svelte-1wdmsm1"><img src="/icons/icon-ai.svg" alt="" class="btn-icon svelte-1wdmsm1"/> Remove background</button> <p class="hint svelte-1wdmsm1">Remove image background with AI</p> <button class="erase-btn svelte-1wdmsm1"${attr("disabled", !hasProcessedImage, true)}><img src="/icons/icon-erase.svg" alt="" class="btn-icon svelte-1wdmsm1"/> Erase and restore</button> <p class="hint svelte-1wdmsm1">Manually clean up background</p>`);
+      $$renderer2.push(`<button class="remove-btn svelte-1wdmsm1"><img src="/icons/icon-ai.svg" alt="" class="btn-icon svelte-1wdmsm1"/> Remove background</button>`);
     }
-    $$renderer2.push(`<!--]--> `);
+    $$renderer2.push(`<!--]--> <button class="erase-btn svelte-1wdmsm1"${attr("disabled", !hasProcessedImage, true)}><img src="/icons/icon-erase.svg" alt="" class="btn-icon svelte-1wdmsm1"/> Erase and restore</button> `);
     {
       $$renderer2.push("<!--[!-->");
     }
@@ -1602,7 +1612,8 @@ function AiTab($$renderer, $$props) {
     if (!store_get($$store_subs ??= {}, "$hasAiImage", hasAiImage)) {
       $$renderer2.push("<!--[-->");
       ImportArea($$renderer2, {
-        title: "Upscale and remove backgrounds using AI power",
+        title: "Remove backgrounds,",
+        subtitle: "upscale images with AI",
         hint: "Import, drag or paste an image",
         onImageImport: handleImageImport
       });
@@ -1690,20 +1701,19 @@ function ColorSwatch($$renderer, $$props) {
     let onChange = fallback($$props["onChange"], (color) => {
     });
     let showRainbow = fallback($$props["showRainbow"], true);
+    let customColor = "#5422b0";
     $$renderer2.push(`<div class="color-swatches svelte-x97jji"><!--[-->`);
     const each_array = ensure_array_like(colors);
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
       let color = each_array[$$index];
-      $$renderer2.push(`<button${attr_class("swatch svelte-x97jji", void 0, { "active": value === color, "white": color === "#FFFFFF" })}${attr_style(`background-color: ${stringify(color)};`)}${attr("aria-label", `Select color ${stringify(color)}`)}></button>`);
+      $$renderer2.push(`<button${attr_class("swatch svelte-x97jji", void 0, { "active": value === color, "white": color === "#FFFFFF" })}${attr_style(`background-color: ${stringify(color)}; ${stringify(value === color && color !== "#FFFFFF" ? `box-shadow: 0 0 0 3px ${color};` : "")}`)}${attr("aria-label", `Select color ${stringify(color)}`)}></button>`);
     }
     $$renderer2.push(`<!--]--> `);
     if (showRainbow) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button${attr_class("swatch rainbow svelte-x97jji", void 0, { "active": !colors.includes(value) && value !== "transparent" })} aria-label="Custom color"></button> `);
-      {
-        $$renderer2.push("<!--[!-->");
-      }
-      $$renderer2.push(`<!--]-->`);
+      $$renderer2.push(`<button${attr_class("swatch rainbow svelte-x97jji", void 0, {
+        "active": value && !colors.includes(value) && value !== "transparent"
+      })}${attr_style(`border-color: ${stringify(value && !colors.includes(value) && value !== "transparent" ? customColor : "#999999")}; ${stringify(value && !colors.includes(value) && value !== "transparent" ? `box-shadow: inset 0 0 0 2px white;` : "")}`)} aria-label="Custom color"></button> <input type="color"${attr("value", customColor)} style="display: none;"/>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }
@@ -1761,7 +1771,10 @@ const initialSlideState = {
   overlayBorderWidth: 0,
   overlayBorderColor: "#FFFFFF",
   overlayNaturalWidth: 0,
-  overlayNaturalHeight: 0
+  overlayNaturalHeight: 0,
+  overlayZoom: 100,
+  overlayImageOffsetX: 0,
+  overlayImageOffsetY: 0
 };
 function createHistoryStore(initialState) {
   const history = [JSON.parse(JSON.stringify(initialState))];
@@ -1857,9 +1870,8 @@ function BackgroundControls($$renderer, $$props) {
     const each_array = ensure_array_like(gradientPresets);
     for (let index = 0, $$length = each_array.length; index < $$length; index++) {
       let colors = each_array[index];
-      $$renderer2.push(`<button${attr_class("gradient-swatch svelte-18tfgkp", void 0, {
-        "active": background.type === "gradient" && background.gradientColors?.[0] === colors[0] && background.gradientColors?.[1] === colors[1]
-      })}${attr_style(`background: linear-gradient(135deg, ${stringify(colors[0])} 0%, ${stringify(colors[1])} 100%);`)} aria-label="Select gradient"></button>`);
+      const isActive = background.type === "gradient" && background.gradientColors?.[0] === colors[0] && background.gradientColors?.[1] === colors[1];
+      $$renderer2.push(`<button${attr_class("gradient-swatch svelte-18tfgkp", void 0, { "active": isActive })}${attr_style(`background: linear-gradient(135deg, ${stringify(colors[0])} 0%, ${stringify(colors[1])} 100%); border-color: ${stringify(colors[0])}; ${stringify(isActive ? `box-shadow: inset 0 0 0 2px white;` : "")}`)} aria-label="Select gradient"></button>`);
     }
     $$renderer2.push(`<!--]--></div></div> <div class="section svelte-18tfgkp"><div class="gradient-preview-row svelte-18tfgkp"><button class="gradient-endpoint svelte-18tfgkp"${attr_style(`background-color: ${stringify(background.gradientColors?.[0] || "#5422b0")};`)} aria-label="Edit start color"></button> <div class="gradient-preview svelte-18tfgkp"${attr_style(`background: ${stringify(currentGradientValue)};`)}></div> <button class="gradient-endpoint svelte-18tfgkp"${attr_style(`background-color: ${stringify(background.gradientColors?.[1] || "#4B0082")};`)} aria-label="Edit end color"></button></div></div> <div class="section svelte-18tfgkp"><div${attr_class("direction-row svelte-18tfgkp", void 0, { "inactive": background.type !== "gradient" })}><button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "up" })} aria-label="Gradient direction up"><img src="/icons/icon-nudge-up.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "down" })} aria-label="Gradient direction down"><img src="/icons/icon-nudge-down.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "left" })} aria-label="Gradient direction left"><img src="/icons/icon-nudge-left.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "right" })} aria-label="Gradient direction right"><img src="/icons/icon-nudge-right.svg" alt="" class="direction-icon svelte-18tfgkp"/></button></div></div></div>`);
     bind_props($$props, { background, onBackgroundChange });
@@ -1876,10 +1888,25 @@ function Text1Controls($$renderer, $$props) {
     let text1HighlightColor = fallback($$props["text1HighlightColor"], "transparent");
     let text1IsBold = fallback($$props["text1IsBold"], true);
     let text1Align = fallback($$props["text1Align"], "center");
+    let text1QuoteStyle = fallback($$props["text1QuoteStyle"], "none");
+    let text1QuoteSize = fallback($$props["text1QuoteSize"], 5);
     let onChange = fallback($$props["onChange"], (key, value) => {
     });
     const TEXT_COLORS = CANVAS_COLORS.solids;
-    const HIGHLIGHT_COLORS = ["#FFD700", "#000000", "#007C1F", "#00679D", "#B20715"];
+    const QUOTE_STYLES = [
+      { id: "none", icon: "/icons/icon-none.svg", label: "No quote" },
+      {
+        id: "serif",
+        icon: "/icons/icon-quote-serif.svg",
+        label: "Serif quote"
+      },
+      {
+        id: "slab",
+        icon: "/icons/icon-quote-slab.svg",
+        label: "Slab quote"
+      }
+    ];
+    let colorMode = "text";
     function handleClickOutside(event) {
     }
     onDestroy(() => {
@@ -1888,57 +1915,35 @@ function Text1Controls($$renderer, $$props) {
     function handleColorChange(color) {
       onChange("text1Color", color);
     }
-    function handleHighlightChange(color) {
-      onChange("text1HighlightColor", color === text1HighlightColor ? "transparent" : color);
-    }
-    $$renderer2.push(`<div class="text1-controls svelte-fspusj"><div class="text-input-container svelte-fspusj"><textarea class="text-input svelte-fspusj" placeholder="How to ==highlight== text">`);
+    $$renderer2.push(`<div class="text1-controls svelte-fspusj"><div class="text-input-container svelte-fspusj"><textarea class="text-input svelte-fspusj" placeholder="Add text (with ==highlights==)">`);
     const $$body = escape_html(text1);
     if ($$body) {
       $$renderer2.push(`${$$body}`);
     }
-    $$renderer2.push(`</textarea> <div class="resize-handle svelte-fspusj"></div></div> <div class="font-row svelte-fspusj"><span class="row-label svelte-fspusj">Font</span> <div class="font-dropdown-wrapper svelte-fspusj"><button class="font-dropdown-trigger svelte-fspusj"${attr_style(`font-family: '${stringify(text1Font)}'`)}>${escape_html(text1Font === "Inter" ? "Inter (Default)" : text1Font)} <span class="dropdown-arrow svelte-fspusj">▾</span></button> `);
+    $$renderer2.push(`</textarea></div> <div class="font-row svelte-fspusj"><span class="row-label svelte-fspusj">Font</span> <div class="font-dropdown-wrapper svelte-fspusj"><button class="font-dropdown-trigger svelte-fspusj"${attr_style(`font-family: '${stringify(text1Font)}'`)}>${escape_html(text1Font === "Inter" ? "Inter (Default)" : text1Font)} <span class="dropdown-arrow svelte-fspusj">▾</span></button> `);
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-fspusj", void 0, { "active": text1IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-fspusj"/></button> <button class="icon-btn svelte-fspusj"${attr("aria-label", `Align ${stringify(text1Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text1Align)}.svg`)} alt="" class="btn-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj">`);
-    Slider($$renderer2, {
-      label: "Size",
-      min: 1,
-      max: 10,
-      value: text1Size,
-      onChange: (val) => onChange("text1Size", val)
-    });
-    $$renderer2.push(`<!----> <button class="reset-btn svelte-fspusj" aria-label="Reset size"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj">`);
-    Slider($$renderer2, {
-      label: "Position",
-      min: 0,
-      max: 10,
-      value: text1YPosition,
-      onChange: (val) => onChange("text1YPosition", val)
-    });
-    $$renderer2.push(`<!----> <button class="reset-btn svelte-fspusj" aria-label="Reset position"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj">`);
-    Slider($$renderer2, {
-      label: "Line spacing",
-      min: 1,
-      max: 10,
-      value: text1LineSpacing,
-      onChange: (val) => onChange("text1LineSpacing", val)
-    });
-    $$renderer2.push(`<!----> <button class="reset-btn svelte-fspusj" aria-label="Reset line spacing"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="color-section svelte-fspusj"><span class="section-label svelte-fspusj">Text colour</span> `);
-    ColorSwatch($$renderer2, {
-      colors: TEXT_COLORS,
-      value: text1Color,
-      onChange: handleColorChange,
-      showRainbow: true
-    });
-    $$renderer2.push(`<!----></div> <div class="color-section svelte-fspusj"><span class="section-label svelte-fspusj">Highlight colour</span> `);
-    ColorSwatch($$renderer2, {
-      colors: HIGHLIGHT_COLORS,
-      value: text1HighlightColor,
-      onChange: handleHighlightChange,
-      showRainbow: true
-    });
-    $$renderer2.push(`<!----></div></div>`);
+    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-fspusj", void 0, { "active": text1IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-fspusj"/></button> <button class="icon-btn svelte-fspusj"${attr("aria-label", `Align ${stringify(text1Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text1Align)}.svg`)} alt="" class="btn-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj"><span class="row-label svelte-fspusj">Size</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 10)}${attr("value", text1Size)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset size"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj"><span class="row-label svelte-fspusj">Position</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 0)}${attr("max", 10)}${attr("value", text1YPosition)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset position"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj"><span class="row-label svelte-fspusj">Line spacing</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 10)}${attr("value", text1LineSpacing)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset line spacing"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="quote-section svelte-fspusj"><span class="section-label svelte-fspusj">Quotes</span> <div class="style-row svelte-fspusj"><!--[-->`);
+    const each_array_1 = ensure_array_like(QUOTE_STYLES);
+    for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
+      let style = each_array_1[$$index_1];
+      $$renderer2.push(`<button${attr_class("style-btn svelte-fspusj", void 0, {
+        "active": text1QuoteStyle === style.id,
+        "is-none": style.id === "none"
+      })}${attr("aria-label", style.label)}><img${attr("src", style.icon)} alt="" class="style-icon svelte-fspusj"/></button>`);
+    }
+    $$renderer2.push(`<!--]--></div> <div${attr_class("slider-row quote-slider-row svelte-fspusj", void 0, { "disabled": text1QuoteStyle === "none" })}><span class="row-label svelte-fspusj">Size</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 10)}${attr("value", text1QuoteSize)}${attr("disabled", text1QuoteStyle === "none", true)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset quote size"${attr("disabled", text1QuoteStyle === "none", true)}><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div></div> <div class="color-section svelte-fspusj"><div class="color-mode-tabs svelte-fspusj"><button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
+    {
+      $$renderer2.push("<!--[-->");
+      ColorSwatch($$renderer2, {
+        colors: TEXT_COLORS,
+        value: text1Color,
+        onChange: handleColorChange,
+        showRainbow: true
+      });
+    }
+    $$renderer2.push(`<!--]--></div></div>`);
     bind_props($$props, {
       text1,
       text1Font,
@@ -1949,6 +1954,8 @@ function Text1Controls($$renderer, $$props) {
       text1HighlightColor,
       text1IsBold,
       text1Align,
+      text1QuoteStyle,
+      text1QuoteSize,
       onChange
     });
   });
@@ -1967,7 +1974,6 @@ function Text2Controls($$renderer, $$props) {
     let onChange = fallback($$props["onChange"], (key, value) => {
     });
     const TEXT_COLORS = CANVAS_COLORS.solids;
-    const HIGHLIGHT_COLORS = ["#FFD700", "#000000", "#007C1F", "#00679D", "#B20715"];
     function handleClickOutside(event) {
     }
     onDestroy(() => {
@@ -1976,57 +1982,27 @@ function Text2Controls($$renderer, $$props) {
     function handleColorChange(color) {
       onChange("text2Color", color);
     }
-    function handleHighlightChange(color) {
-      onChange("text2LabelColor", color === text2LabelColor ? "transparent" : color);
-    }
-    $$renderer2.push(`<div class="text2-controls svelte-n6z268"><div class="text-input-container svelte-n6z268"><textarea class="text-input svelte-n6z268" placeholder="How to ==highlight== text">`);
+    let colorMode = "text";
+    $$renderer2.push(`<div class="text2-controls svelte-n6z268"><div class="text-input-container svelte-n6z268"><textarea class="text-input svelte-n6z268" placeholder="Add text (with ==highlights==)">`);
     const $$body = escape_html(text2);
     if ($$body) {
       $$renderer2.push(`${$$body}`);
     }
-    $$renderer2.push(`</textarea> <div class="resize-handle svelte-n6z268"></div></div> <div class="font-row svelte-n6z268"><span class="row-label svelte-n6z268">Font</span> <div class="font-dropdown-wrapper svelte-n6z268"><button class="font-dropdown-trigger svelte-n6z268"${attr_style(`font-family: '${stringify(text2Font)}'`)}>${escape_html(text2Font === "Inter" ? "Inter (Default)" : text2Font)} <span class="dropdown-arrow svelte-n6z268">▾</span></button> `);
+    $$renderer2.push(`</textarea></div> <div class="font-row svelte-n6z268"><span class="row-label svelte-n6z268">Font</span> <div class="font-dropdown-wrapper svelte-n6z268"><button class="font-dropdown-trigger svelte-n6z268"${attr_style(`font-family: '${stringify(text2Font)}'`)}>${escape_html(text2Font === "Inter" ? "Inter (Default)" : text2Font)} <span class="dropdown-arrow svelte-n6z268">▾</span></button> `);
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-n6z268", void 0, { "active": text2IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-n6z268"/></button> <button class="icon-btn svelte-n6z268"${attr("aria-label", `Align ${stringify(text2Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text2Align)}.svg`)} alt="" class="btn-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268">`);
-    Slider($$renderer2, {
-      label: "Size",
-      min: 1,
-      max: 10,
-      value: text2Size,
-      onChange: (val) => onChange("text2Size", val)
-    });
-    $$renderer2.push(`<!----> <button class="reset-btn svelte-n6z268" aria-label="Reset size"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268">`);
-    Slider($$renderer2, {
-      label: "Position",
-      min: 0,
-      max: 10,
-      value: text2YPosition,
-      onChange: (val) => onChange("text2YPosition", val)
-    });
-    $$renderer2.push(`<!----> <button class="reset-btn svelte-n6z268" aria-label="Reset position"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268">`);
-    Slider($$renderer2, {
-      label: "Line spacing",
-      min: 1,
-      max: 10,
-      value: text2LineSpacing,
-      onChange: (val) => onChange("text2LineSpacing", val)
-    });
-    $$renderer2.push(`<!----> <button class="reset-btn svelte-n6z268" aria-label="Reset line spacing"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="color-section svelte-n6z268"><span class="section-label svelte-n6z268">Text colour</span> `);
-    ColorSwatch($$renderer2, {
-      colors: TEXT_COLORS,
-      value: text2Color,
-      onChange: handleColorChange,
-      showRainbow: true
-    });
-    $$renderer2.push(`<!----></div> <div class="color-section svelte-n6z268"><span class="section-label svelte-n6z268">Highlight colour</span> `);
-    ColorSwatch($$renderer2, {
-      colors: HIGHLIGHT_COLORS,
-      value: text2LabelColor,
-      onChange: handleHighlightChange,
-      showRainbow: true
-    });
-    $$renderer2.push(`<!----></div></div>`);
+    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-n6z268", void 0, { "active": text2IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-n6z268"/></button> <button class="icon-btn svelte-n6z268"${attr("aria-label", `Align ${stringify(text2Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text2Align)}.svg`)} alt="" class="btn-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268"><span class="row-label svelte-n6z268">Size</span> <div class="slider-wrapper svelte-n6z268"><input type="range" class="inline-slider svelte-n6z268"${attr("min", 1)}${attr("max", 10)}${attr("value", text2Size)}/></div> <button class="reset-btn svelte-n6z268" aria-label="Reset size"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268"><span class="row-label svelte-n6z268">Position</span> <div class="slider-wrapper svelte-n6z268"><input type="range" class="inline-slider svelte-n6z268"${attr("min", 0)}${attr("max", 10)}${attr("value", text2YPosition)}/></div> <button class="reset-btn svelte-n6z268" aria-label="Reset position"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268"><span class="row-label svelte-n6z268">Line spacing</span> <div class="slider-wrapper svelte-n6z268"><input type="range" class="inline-slider svelte-n6z268"${attr("min", 1)}${attr("max", 10)}${attr("value", text2LineSpacing)}/></div> <button class="reset-btn svelte-n6z268" aria-label="Reset line spacing"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="color-section svelte-n6z268"><div class="color-mode-tabs svelte-n6z268"><button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
+    {
+      $$renderer2.push("<!--[-->");
+      ColorSwatch($$renderer2, {
+        colors: TEXT_COLORS,
+        value: text2Color,
+        onChange: handleColorChange,
+        showRainbow: true
+      });
+    }
+    $$renderer2.push(`<!--]--></div></div>`);
     bind_props($$props, {
       text2,
       text2Font,
@@ -2041,46 +2017,6 @@ function Text2Controls($$renderer, $$props) {
     });
   });
 }
-function QuoteControls($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let quoteStyle = fallback($$props["quoteStyle"], "none");
-    let quoteSize = fallback($$props["quoteSize"], 5);
-    let onChange = fallback($$props["onChange"], (key, value) => {
-    });
-    const QUOTE_STYLES = [
-      { id: "none", icon: "/icons/icon-none.svg", label: "No quote" },
-      {
-        id: "serif",
-        icon: "/icons/icon-quote-serif.svg",
-        label: "Serif quote"
-      },
-      {
-        id: "slab",
-        icon: "/icons/icon-quote-slab.svg",
-        label: "Slab quote"
-      }
-    ];
-    $$renderer2.push(`<div class="quote-controls svelte-4vqdnp"><div class="style-row svelte-4vqdnp"><!--[-->`);
-    const each_array = ensure_array_like(QUOTE_STYLES);
-    for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-      let style = each_array[$$index];
-      $$renderer2.push(`<button${attr_class("style-btn svelte-4vqdnp", void 0, {
-        "active": quoteStyle === style.id,
-        "is-none": style.id === "none"
-      })}${attr("aria-label", style.label)}><img${attr("src", style.icon)} alt="" class="style-icon svelte-4vqdnp"/></button>`);
-    }
-    $$renderer2.push(`<!--]--></div> <div${attr_class("slider-row svelte-4vqdnp", void 0, { "disabled": quoteStyle === "none" })}>`);
-    Slider($$renderer2, {
-      label: "Size",
-      min: 1,
-      max: 10,
-      value: quoteSize,
-      onChange: (val) => quoteStyle !== "none" && onChange("text1QuoteSize", val)
-    });
-    $$renderer2.push(`<!----> <button class="reset-btn svelte-4vqdnp" aria-label="Reset size"${attr("disabled", quoteStyle === "none", true)}><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-4vqdnp"/></button></div></div>`);
-    bind_props($$props, { quoteStyle, quoteSize, onChange });
-  });
-}
 function OverlayControls($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let overlay = fallback($$props["overlay"], null);
@@ -2090,53 +2026,36 @@ function OverlayControls($$renderer, $$props) {
     let overlayLayer = fallback($$props["overlayLayer"], "above");
     let overlayBorderWidth = fallback($$props["overlayBorderWidth"], 0);
     let overlayBorderColor = fallback($$props["overlayBorderColor"], "#FFFFFF");
+    let overlayZoom = fallback($$props["overlayZoom"], 100);
+    let overlayImageOffsetX = fallback($$props["overlayImageOffsetX"], 0);
+    let overlayImageOffsetY = fallback($$props["overlayImageOffsetY"], 0);
+    let overlayNaturalWidth = fallback($$props["overlayNaturalWidth"], 0);
+    let overlayNaturalHeight = fallback($$props["overlayNaturalHeight"], 0);
+    let getCanvasDimensions = fallback($$props["getCanvasDimensions"], () => ({ width: 300, height: 300 }));
     let onChange = fallback($$props["onChange"], (key, value) => {
     });
     const BORDER_COLORS = CANVAS_COLORS.solids;
-    const BORDER_STOPS = [0, 1, 2, 3];
-    function handleBorderWidthChange(val) {
-      const snapped = BORDER_STOPS.reduce((prev, curr) => Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev);
-      onChange("overlayBorderWidth", snapped);
-    }
     $$renderer2.push(`<div class="overlay-controls svelte-qirtgp">`);
     if (!overlay) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<div class="import-box svelte-qirtgp" role="button" tabindex="0"><label class="import-area svelte-qirtgp"><input type="file" accept="image/*" class="file-input svelte-qirtgp"/> <img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-qirtgp"/> <span class="import-text svelte-qirtgp">Import, drag or<br/>paste an image</span></label> <button class="paste-btn svelte-qirtgp">Paste</button></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<div class="slider-row svelte-qirtgp">`);
-      Slider($$renderer2, {
-        label: "Size",
-        min: 10,
-        max: 100,
-        value: overlaySize,
-        onChange: (val) => onChange("overlaySize", val)
-      });
-      $$renderer2.push(`<!----></div> <div class="slider-row svelte-qirtgp">`);
-      Slider($$renderer2, {
-        label: "Opacity",
-        min: 0,
-        max: 100,
-        value: overlayOpacity,
-        onChange: (val) => onChange("overlayOpacity", val)
-      });
-      $$renderer2.push(`<!----></div> <div class="mask-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Mask</span> <div class="mask-buttons svelte-qirtgp"><button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "none" })} aria-label="No mask"><img src="/icons/icon-none.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "rounded" })} aria-label="Rounded mask"><img src="/icons/icon-square.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "circle" })} aria-label="Circle mask"><div class="circle-icon svelte-qirtgp"></div></button></div> <span class="row-label layer-label svelte-qirtgp">Layers</span> <div class="layer-buttons svelte-qirtgp"><button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} aria-label="Overlay above text"><img src="/icons/icon-layer-above.svg" alt="" class="layer-icon svelte-qirtgp"/></button> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} aria-label="Overlay below text"><img src="/icons/icon-layer-below.svg" alt="" class="layer-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp">`);
-      Slider($$renderer2, {
-        label: "Border width",
-        min: 0,
-        max: 3,
-        step: 1,
-        value: overlayBorderWidth,
-        onChange: handleBorderWidthChange
-      });
-      $$renderer2.push(`<!----></div> <div class="color-section svelte-qirtgp"><span class="section-label svelte-qirtgp">Border colour</span> `);
+      $$renderer2.push(`<div class="control-row fit-fill-row svelte-qirtgp"><div class="button-group svelte-qirtgp"><div class="button-with-label svelte-qirtgp"><button class="icon-btn svelte-qirtgp" title="Fit image to canvas" aria-label="Fit"><img src="/icons/icon-fit.svg" alt="Fit" class="control-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Fit</span></div> <div class="button-with-label svelte-qirtgp"><button class="icon-btn svelte-qirtgp" title="Fill canvas with image" aria-label="Fill"><img src="/icons/icon-fill.svg" alt="Fill" class="control-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Fill</span></div></div> <div class="button-group right-group svelte-qirtgp"><div class="button-with-label svelte-qirtgp"><button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} title="Image on front layer" aria-label="Front"><img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Front</span></div> <div class="button-with-label svelte-qirtgp"><button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} title="Image on back layer" aria-label="Back"><img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Back</span></div></div></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Opacity</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 100)}${attr("value", overlayOpacity)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset opacity"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 3)}${attr("step", 1)}${attr("value", overlayBorderWidth)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset border"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="color-section svelte-qirtgp"><span class="section-label svelte-qirtgp">Colour</span> `);
       ColorSwatch($$renderer2, {
         colors: BORDER_COLORS,
         value: overlayBorderColor,
         onChange: (color) => onChange("overlayBorderColor", color),
         showRainbow: true
       });
-      $$renderer2.push(`<!----></div>`);
+      $$renderer2.push(`<!----></div> <div class="mask-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Mask</span> <div class="mask-buttons svelte-qirtgp"><button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "none" })} aria-label="No mask"><img src="/icons/icon-none.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "rounded" })} aria-label="Rounded mask"><img src="/icons/icon-square.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "circle" })} aria-label="Circle mask"><div class="circle-icon svelte-qirtgp"></div></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "diamond" })} aria-label="Diamond mask"><div class="diamond-icon svelte-qirtgp"></div></button></div></div> `);
+      if (overlayMask !== "none") {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Zoom</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 100)}${attr("max", 300)}${attr("value", overlayZoom)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset zoom"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="nudge-row svelte-qirtgp"><button class="nudge-btn svelte-qirtgp" aria-label="Nudge up"><img src="/icons/icon-nudge-up.svg" alt="" class="nudge-icon svelte-qirtgp"/></button> <button class="nudge-btn svelte-qirtgp" aria-label="Nudge down"><img src="/icons/icon-nudge-down.svg" alt="" class="nudge-icon svelte-qirtgp"/></button> <button class="nudge-btn svelte-qirtgp" aria-label="Nudge left"><img src="/icons/icon-nudge-left.svg" alt="" class="nudge-icon svelte-qirtgp"/></button> <button class="nudge-btn svelte-qirtgp" aria-label="Nudge right"><img src="/icons/icon-nudge-right.svg" alt="" class="nudge-icon svelte-qirtgp"/></button></div>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]-->`);
     }
     $$renderer2.push(`<!--]--></div>`);
     bind_props($$props, {
@@ -2147,15 +2066,26 @@ function OverlayControls($$renderer, $$props) {
       overlayLayer,
       overlayBorderWidth,
       overlayBorderColor,
+      overlayZoom,
+      overlayImageOffsetX,
+      overlayImageOffsetY,
+      overlayNaturalWidth,
+      overlayNaturalHeight,
+      getCanvasDimensions,
       onChange
     });
   });
 }
+const templates = [{ "id": 1, "name": "Quote Card", "state": { "canvasSize": "1/1", "background": { "type": "solid", "value": "#FFFFFF", "direction": "down", "gradientColors": ["#5422b0", "#4B0082"] }, "text1": "Add your quote here", "text1Font": "Playfair Display", "text1Size": 7, "text1YPosition": 4, "text1LineSpacing": 5, "text1Color": "#000000", "text1HighlightColor": "transparent", "text1IsBold": true, "text1Align": "center", "text1QuoteStyle": "serif", "text1QuoteSize": 5, "text2": "Attribution", "text2Font": "Inter", "text2Size": 3, "text2YPosition": 85, "text2LineSpacing": 5, "text2Color": "#555555", "text2LabelColor": "transparent", "text2IsBold": false, "text2Align": "center", "overlay": null, "overlaySize": 50, "overlayOpacity": 100, "overlayX": 50, "overlayY": 50, "overlayMask": "none", "overlayLayer": "above", "overlayBorderWidth": 0, "overlayBorderColor": "#FFFFFF", "overlayNaturalWidth": 0, "overlayNaturalHeight": 0 } }, { "id": 2, "name": "News Banner", "state": { "canvasSize": "16/9", "background": { "type": "solid", "value": "#5422b0", "direction": "down", "gradientColors": ["#5422b0", "#4B0082"] }, "text1": "Headline Goes Here", "text1Font": "Saira Condensed", "text1Size": 8, "text1YPosition": 3, "text1LineSpacing": 5, "text1Color": "#FFFFFF", "text1HighlightColor": "#FFD700", "text1IsBold": true, "text1Align": "left", "text1QuoteStyle": "none", "text1QuoteSize": 5, "text2": "Publication Name", "text2Font": "Inter", "text2Size": 2, "text2YPosition": 92, "text2LineSpacing": 5, "text2Color": "#FFFFFF", "text2LabelColor": "transparent", "text2IsBold": false, "text2Align": "left", "overlay": null, "overlaySize": 50, "overlayOpacity": 100, "overlayX": 50, "overlayY": 50, "overlayMask": "none", "overlayLayer": "above", "overlayBorderWidth": 0, "overlayBorderColor": "#FFFFFF", "overlayNaturalWidth": 0, "overlayNaturalHeight": 0 } }, { "id": 3, "name": "Simple quote", "state": { "canvasSize": "1/1", "background": { "type": "gradient", "value": "linear-gradient(to bottom, #5422b0 0%, #4B0082 100%)", "direction": "down", "gradientColors": ["#5422b0", "#4B0082"] }, "text1": "Judge a man by \nhis ==questions== rather than by \nhis ==answers==", "text1Font": "Inter", "text1Size": 5, "text1YPosition": 5, "text1LineSpacing": 2, "text1Color": "#FFFFFF", "text1HighlightColor": "#FFD700", "text1IsBold": true, "text1Align": "center", "text1QuoteStyle": "serif", "text1QuoteSize": 5, "text2": "Voltaire", "text2Font": "Roboto Slab", "text2Size": 2, "text2YPosition": 8, "text2LineSpacing": 5, "text2Color": "#FFFFFF", "text2LabelColor": "transparent", "text2IsBold": false, "text2Align": "center", "overlay": null, "overlaySize": 50, "overlayOpacity": 100, "overlayX": 50, "overlayY": 50, "overlayMask": "none", "overlayLayer": "above", "overlayBorderWidth": 0, "overlayBorderColor": "#FFFFFF", "overlayNaturalWidth": 0, "overlayNaturalHeight": 0 } }, { "id": 4, "name": "template-4", "state": { "canvasSize": "1/1", "background": { "type": "gradient", "value": "linear-gradient(to bottom, #5422b0 0%, #4B0082 100%)", "direction": "down", "gradientColors": ["#5422b0", "#4B0082"] }, "text1": "Judge a man by \nhis ==questions== rather than by \nhis ==answers==", "text1Font": "Inter", "text1Size": 5, "text1YPosition": 5, "text1LineSpacing": 2, "text1Color": "#FFFFFF", "text1HighlightColor": "#FFD700", "text1IsBold": true, "text1Align": "center", "text1QuoteStyle": "serif", "text1QuoteSize": 5, "text2": "Voltaire", "text2Font": "Roboto Slab", "text2Size": 2, "text2YPosition": 8, "text2LineSpacing": 5, "text2Color": "#FFFFFF", "text2LabelColor": "transparent", "text2IsBold": false, "text2Align": "center", "overlay": null, "overlaySize": 50, "overlayOpacity": 100, "overlayX": 50, "overlayY": 50, "overlayMask": "none", "overlayLayer": "above", "overlayBorderWidth": 0, "overlayBorderColor": "#FFFFFF", "overlayNaturalWidth": 0, "overlayNaturalHeight": 0 } }];
+const templatesData = {
+  templates
+};
 function DesignTab($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     var $$store_subs;
     let overlayDimensions;
     let canvasMinDim = 300;
+    let canvasWidth = 300;
     let canvasHeight = 300;
     let text1HeightPx = 0;
     onDestroy(() => {
@@ -2165,8 +2095,7 @@ function DesignTab($$renderer, $$props) {
       { id: "background", label: "Background" },
       { id: "text1", label: "Text 1" },
       { id: "text2", label: "Text 2" },
-      { id: "quote", label: "Quote" },
-      { id: "overlay", label: "Overlay" }
+      { id: "image", label: "Image" }
     ];
     function handleSubMenuChange(tab) {
       activeDesignMenu.set(store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === tab ? "none" : tab);
@@ -2187,10 +2116,10 @@ function DesignTab($$renderer, $$props) {
     function handleText2Change(key, value) {
       slideState.update((state) => ({ ...state, [key]: value }));
     }
-    function handleQuoteChange(key, value) {
-      slideState.update((state) => ({ ...state, [key]: value }));
+    function getCanvasDimensions() {
+      return { width: canvasWidth, height: canvasHeight };
     }
-    function handleOverlayChange(key, value) {
+    function handleImageChange(key, value) {
       if (key === "overlay" && value) {
         const img = new Image();
         img.onload = () => {
@@ -2202,7 +2131,7 @@ function DesignTab($$renderer, $$props) {
             overlayX: 50,
             overlayY: 50
           }));
-          activeDesignMenu.set("overlay");
+          activeDesignMenu.set("image");
         };
         img.src = value;
       } else if (key === "overlayLayer") {
@@ -2212,7 +2141,7 @@ function DesignTab($$renderer, $$props) {
         slideState.update((state) => ({ ...state, [key]: value }));
       }
     }
-    function handleDeleteOverlay() {
+    function handleDeleteImage() {
       slideState.update((state) => ({
         ...state,
         overlay: null,
@@ -2239,11 +2168,11 @@ function DesignTab($$renderer, $$props) {
     $$renderer2.push(`<div class="design-tab svelte-fxk5n4">`);
     if (store_get($$store_subs ??= {}, "$showTemplatePicker", showTemplatePicker)) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="template-picker svelte-fxk5n4"><p class="picker-title svelte-fxk5n4">Create quotes and cards. Start with a template or blank canvas</p> <button class="blank-canvas-btn svelte-fxk5n4"><img src="/icons/icon-add.svg" alt="" class="add-icon svelte-fxk5n4"/></button> <div class="template-grid svelte-fxk5n4"><!--[-->`);
-      const each_array = ensure_array_like([1, 2, 3, 4, 5, 6]);
+      $$renderer2.push(`<div class="template-picker svelte-fxk5n4"><p class="picker-title svelte-fxk5n4">Create quotes &amp; cards with<br/>a template or blank canvas</p> <button class="blank-canvas-btn svelte-fxk5n4"><img src="/icons/icon-add.svg" alt="" class="add-icon svelte-fxk5n4"/></button> <div class="template-grid svelte-fxk5n4"><!--[-->`);
+      const each_array = ensure_array_like(templatesData.templates);
       for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-        let templateNum = each_array[$$index];
-        $$renderer2.push(`<button class="template-card svelte-fxk5n4"><div class="template-placeholder svelte-fxk5n4">Template ${escape_html(templateNum)}</div></button>`);
+        let template = each_array[$$index];
+        $$renderer2.push(`<button class="template-card svelte-fxk5n4"><div class="template-placeholder svelte-fxk5n4">${escape_html(template.name)}</div></button>`);
       }
       $$renderer2.push(`<!--]--></div></div>`);
     } else {
@@ -2262,7 +2191,7 @@ function DesignTab($$renderer, $$props) {
         $$renderer2.push("<!--[-->");
         const textFontSizePx = canvasMinDim * 0.1 * store_get($$store_subs ??= {}, "$slideState", slideState).text1Size / 5;
         const textLineHeightPx = textFontSizePx * (1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1);
-        const gapPx = textLineHeightPx * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? 0.35 : 0.4);
+        const gapPx = textLineHeightPx * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? -0.25 : 0.1);
         const textYPosPct = store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10;
         const textHeightPct = text1HeightPx / canvasHeight * 100;
         const quoteYPosPct = textYPosPct - textHeightPct / 2 - gapPx / canvasHeight * 100;
@@ -2287,15 +2216,17 @@ function DesignTab($$renderer, $$props) {
       if (store_get($$store_subs ??= {}, "$slideState", slideState).overlay && overlayDimensions) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<div${attr_class("overlay-wrapper svelte-fxk5n4", void 0, {
-          "active": store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "overlay"
-        })}${attr_style(` left: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayX)}%; top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayY)}%; width: ${stringify(overlayDimensions.width)}%; opacity: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayOpacity / 100)}; z-index: ${stringify(store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "overlay" ? 11 : store_get($$store_subs ??= {}, "$slideState", slideState).overlayLayer === "below" ? 1 : 10)}; `)} role="button" tabindex="0"><div${attr_class("overlay-bounding-box svelte-fxk5n4", void 0, {
+          "active": store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "image"
+        })}${attr_style(` left: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayX)}%; top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayY)}%; width: ${stringify(overlayDimensions.width)}%; opacity: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayOpacity / 100)}; z-index: ${stringify(store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "image" ? 11 : store_get($$store_subs ??= {}, "$slideState", slideState).overlayLayer === "below" ? 1 : 10)}; `)} role="button" tabindex="0"><div${attr_class("overlay-bounding-box svelte-fxk5n4", void 0, {
           "mask-none": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "none",
           "mask-rounded": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "rounded",
-          "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle"
-        })}${attr_style(` border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; `)}><button class="delete-btn svelte-fxk5n4" aria-label="Delete overlay"><img src="/icons/icon-close.svg" alt="" class="delete-icon svelte-fxk5n4"/></button> <div${attr_class("overlay-image-container svelte-fxk5n4", void 0, {
+          "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle",
+          "mask-diamond": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond"
+        })}${attr_style(` border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; `)}><button class="delete-btn svelte-fxk5n4" aria-label="Delete image"><img src="/icons/icon-close.svg" alt="" class="delete-icon svelte-fxk5n4"/></button> <button class="resize-handle svelte-fxk5n4" aria-label="Resize image"><img src="/icons/icon-resize.svg" alt="" class="resize-icon svelte-fxk5n4"/></button> <div${attr_class("overlay-image-container svelte-fxk5n4", void 0, {
           "mask-rounded": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "rounded",
-          "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle"
-        })}><img${attr("src", store_get($$store_subs ??= {}, "$slideState", slideState).overlay)} alt="Overlay" class="overlay-image svelte-fxk5n4" draggable="false"/></div></div></div>`);
+          "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle",
+          "mask-diamond": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond"
+        })} style="overflow: hidden;"><img${attr("src", store_get($$store_subs ??= {}, "$slideState", slideState).overlay)} alt="Overlay" class="overlay-image svelte-fxk5n4" draggable="false"${attr_style(` transform: translate(${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetX)}%, ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetY)}%) scale(${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayZoom / 100)}); transform-origin: center; `)}/></div></div></div>`);
       } else {
         $$renderer2.push("<!--[!-->");
       }
@@ -2306,7 +2237,7 @@ function DesignTab($$renderer, $$props) {
         onTabChange: handleSubMenuChange
       });
       $$renderer2.push(`<!----> <div class="controls-panel svelte-fxk5n4">`);
-      if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "overlay" || store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "none" && store_get($$store_subs ??= {}, "$slideState", slideState).overlay) {
+      if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "image" || store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "none" && store_get($$store_subs ??= {}, "$slideState", slideState).overlay) {
         $$renderer2.push("<!--[-->");
         OverlayControls($$renderer2, {
           overlay: store_get($$store_subs ??= {}, "$slideState", slideState).overlay,
@@ -2316,8 +2247,14 @@ function DesignTab($$renderer, $$props) {
           overlayLayer: store_get($$store_subs ??= {}, "$slideState", slideState).overlayLayer,
           overlayBorderWidth: store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth,
           overlayBorderColor: store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor,
-          onChange: handleOverlayChange,
-          onDelete: handleDeleteOverlay
+          overlayZoom: store_get($$store_subs ??= {}, "$slideState", slideState).overlayZoom,
+          overlayImageOffsetX: store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetX,
+          overlayImageOffsetY: store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetY,
+          overlayNaturalWidth: store_get($$store_subs ??= {}, "$slideState", slideState).overlayNaturalWidth,
+          overlayNaturalHeight: store_get($$store_subs ??= {}, "$slideState", slideState).overlayNaturalHeight,
+          getCanvasDimensions,
+          onChange: handleImageChange,
+          onDelete: handleDeleteImage
         });
       } else {
         $$renderer2.push("<!--[!-->");
@@ -2349,6 +2286,8 @@ function DesignTab($$renderer, $$props) {
                 text1HighlightColor: store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor,
                 text1IsBold: store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold,
                 text1Align: store_get($$store_subs ??= {}, "$slideState", slideState).text1Align,
+                text1QuoteStyle: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle,
+                text1QuoteSize: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize,
                 onChange: handleText1Change
               });
             } else {
@@ -2369,17 +2308,6 @@ function DesignTab($$renderer, $$props) {
                 });
               } else {
                 $$renderer2.push("<!--[!-->");
-                if (store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "quote") {
-                  $$renderer2.push("<!--[-->");
-                  QuoteControls($$renderer2, {
-                    quoteStyle: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle,
-                    quoteSize: store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize,
-                    onChange: handleQuoteChange
-                  });
-                } else {
-                  $$renderer2.push("<!--[!-->");
-                }
-                $$renderer2.push(`<!--]-->`);
               }
               $$renderer2.push(`<!--]-->`);
             }
@@ -2389,7 +2317,11 @@ function DesignTab($$renderer, $$props) {
         }
         $$renderer2.push(`<!--]-->`);
       }
-      $$renderer2.push(`<!--]--></div>`);
+      $$renderer2.push(`<!--]--></div> `);
+      {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]-->`);
     }
     $$renderer2.push(`<!--]--></div>`);
     if ($$store_subs) unsubscribe_stores($$store_subs);

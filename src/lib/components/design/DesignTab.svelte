@@ -6,7 +6,6 @@
 	import BackgroundControls from './BackgroundControls.svelte';
 	import Text1Controls from './Text1Controls.svelte';
 	import Text2Controls from './Text2Controls.svelte';
-	import QuoteControls from './QuoteControls.svelte';
 	import OverlayControls from './OverlayControls.svelte';
 	import { slideState, showTemplatePicker, activeDesignMenu, resetDesignState } from '$lib/stores/designStore.js';
 	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
@@ -24,6 +23,11 @@
 	let dragStartY = 0;
 	let overlayStartX = 0;
 	let overlayStartY = 0;
+	let isResizingOverlay = false;
+	let resizeStartX = 0;
+	let resizeStartY = 0;
+	let resizeStartSize = 0;
+	let lastTouchDistance = 0;
 	
 	onMount(() => {
 		if (canvasEl) {
@@ -32,6 +36,7 @@
 				canvasWidth = width;
 				canvasHeight = height;
 				canvasMinDim = Math.min(width, height);
+
 			});
 			resizeObserver.observe(canvasEl);
 		}
@@ -53,10 +58,9 @@
 	const subMenuTabs = [
 		{ id: 'size', label: 'Size' },
 		{ id: 'background', label: 'Background' },
-		{ id: 'text1', label: 'T1' },
-		{ id: 'text2', label: 'T2' },
-		{ id: 'quote', label: 'Quote' },
-		{ id: 'overlay', label: 'Overlay' }
+		{ id: 'text1', label: 'Text 1' },
+		{ id: 'text2', label: 'Text 2' },
+		{ id: 'image', label: 'Image' }
 	];
 	
 	function selectTemplate(templateId) {
@@ -130,11 +134,15 @@
 		slideState.update(state => ({ ...state, [key]: value }));
 	}
 	
-	function handleQuoteChange(key, value) {
-		slideState.update(state => ({ ...state, [key]: value }));
+	function getCanvasDimensions() {
+		if (canvasEl) {
+			const rect = canvasEl.getBoundingClientRect();
+			return { width: rect.width, height: rect.height };
+		}
+		return { width: canvasWidth, height: canvasHeight };
 	}
-
-	function handleOverlayChange(key, value) {
+	
+	function handleImageChange(key, value) {
 		if (key === 'overlay' && value) {
 			const img = new Image();
 			img.onload = () => {
@@ -146,29 +154,54 @@
 					overlayX: 50,
 					overlayY: 50
 				}));
-				activeDesignMenu.set('overlay');
+				activeDesignMenu.set('image');
 			};
 			img.src = value;
 		} else if (key === 'overlayLayer') {
 			slideState.update(state => ({ ...state, [key]: value }));
 			activeDesignMenu.set('none');
+		} else if (key === 'overlayMask') {
+			slideState.update(state => {
+				const newState = { ...state, [key]: value };
+				
+				// Reset zoom/nudge when switching to 'none'
+				if (value === 'none') {
+					newState.overlayZoom = 100;
+					newState.overlayImageOffsetX = 0;
+					newState.overlayImageOffsetY = 0;
+				}
+				
+				return newState;
+			});
 		} else {
 			slideState.update(state => ({ ...state, [key]: value }));
 		}
 	}
 
-	function handleDeleteOverlay() {
+	function handleDeleteImage() {
 		slideState.update(state => ({
 			...state,
 			overlay: null,
 			overlayNaturalWidth: 0,
-			overlayNaturalHeight: 0
+			overlayNaturalHeight: 0,
+			overlaySize: 50,
+			overlayOpacity: 100,
+			overlayX: 50,
+			overlayY: 50,
+			overlayMask: 'none',
+			overlayLayer: 'above',
+			overlayBorderWidth: 0,
+			overlayBorderColor: '#FFFFFF',
+			overlayZoom: 100,
+			overlayImageOffsetX: 0,
+			overlayImageOffsetY: 0
 		}));
 		activeDesignMenu.set('none');
 	}
 
 	function handleOverlayDragStart(e) {
-		if (e.target.closest('.delete-btn')) return;
+		if (e.target.closest('.delete-btn') || e.target.closest('.resize-handle')) return;
+		if (e.touches && e.touches.length > 1) return;
 		e.preventDefault();
 		isDraggingOverlay = true;
 		const touch = e.touches?.[0] || e;
@@ -211,16 +244,93 @@
 		window.removeEventListener('touchend', handleOverlayDragEnd);
 	}
 
+	function handleResizeStart(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		isResizingOverlay = true;
+		resizeStartX = e.touches?.[0].clientX || e.clientX;
+		resizeStartY = e.touches?.[0].clientY || e.clientY;
+		resizeStartSize = $slideState.overlaySize;
+		
+		window.addEventListener('mousemove', handleResizeMove);
+		window.addEventListener('mouseup', handleResizeEnd);
+		window.addEventListener('touchmove', handleResizeMove, { passive: false });
+		window.addEventListener('touchend', handleResizeEnd);
+	}
+
+	function handleResizeMove(e) {
+		if (!isResizingOverlay) return;
+		e.preventDefault();
+		const currentX = e.touches?.[0].clientX || e.clientX;
+		const currentY = e.touches?.[0].clientY || e.clientY;
+		const deltaX = currentX - resizeStartX;
+		const deltaY = currentY - resizeStartY;
+		const delta = Math.max(deltaX, deltaY);
+		const deltaPercent = (delta / canvasMinDim) * 100;
+		const newSize = Math.max(10, Math.min(200, resizeStartSize + deltaPercent));
+		slideState.update(state => ({ ...state, overlaySize: newSize }));
+	}
+
+	function handleResizeEnd() {
+		isResizingOverlay = false;
+		window.removeEventListener('mousemove', handleResizeMove);
+		window.removeEventListener('mouseup', handleResizeEnd);
+		window.removeEventListener('touchmove', handleResizeMove);
+		window.removeEventListener('touchend', handleResizeEnd);
+	}
+
+	function getTouchDistance(touches) {
+		if (touches.length < 2) return 0;
+		const dx = touches[0].clientX - touches[1].clientX;
+		const dy = touches[0].clientY - touches[1].clientY;
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+
+	function handleOverlayTouchStart(e) {
+		if (e.touches.length === 2) {
+			e.preventDefault();
+			lastTouchDistance = getTouchDistance(e.touches);
+		}
+	}
+
+	function handleOverlayTouchMove(e) {
+		if (e.touches.length === 2 && lastTouchDistance > 0) {
+			e.preventDefault();
+			const currentDistance = getTouchDistance(e.touches);
+			const delta = currentDistance - lastTouchDistance;
+			const percentChange = (delta / canvasMinDim) * 50;
+			const newSize = Math.max(10, Math.min(200, $slideState.overlaySize + percentChange));
+			slideState.update(state => ({ ...state, overlaySize: newSize }));
+			lastTouchDistance = currentDistance;
+		}
+	}
+
+	function handleOverlayTouchEnd(e) {
+		if (e.touches.length < 2) {
+			lastTouchDistance = 0;
+		}
+	}
+
+	function handleOverlayWheel(e) {
+		// Trackpad pinch gestures fire as wheel events with ctrlKey
+		if (e.ctrlKey) {
+			e.preventDefault();
+			const delta = -e.deltaY * 0.5;
+			const newSize = Math.max(10, Math.min(200, $slideState.overlaySize + delta));
+			slideState.update(state => ({ ...state, overlaySize: newSize }));
+		}
+	}
+
 	function handleCanvasClick(e) {
 		const target = e.target;
 		if (target.closest('.overlay-wrapper')) {
-			activeDesignMenu.set('overlay');
+			activeDesignMenu.set('image');
 		} else if (target.closest('.text1-wrapper')) {
 			activeDesignMenu.set('text1');
 		} else if (target.closest('.canvas-text.text2')) {
 			activeDesignMenu.set('text2');
 		} else if (target.closest('.canvas-quote')) {
-			activeDesignMenu.set('quote');
+			activeDesignMenu.set('text1');
 		} else {
 			activeDesignMenu.set('none');
 		}
@@ -231,8 +341,14 @@
 	function calculateOverlayDimensions(state) {
 		if (!state.overlay || !state.overlayNaturalWidth) return null;
 		
-		const aspectRatio = state.overlayNaturalWidth / state.overlayNaturalHeight;
 		const maxWidth = (state.overlaySize / 100) * 100;
+		
+		// For circle and diamond masks, force square dimensions; otherwise respect aspect ratio
+		if (state.overlayMask === 'circle' || state.overlayMask === 'diamond') {
+			return { width: maxWidth, height: maxWidth };
+		}
+		
+		const aspectRatio = state.overlayNaturalWidth / state.overlayNaturalHeight;
 		
 		let width, height;
 		if (aspectRatio >= 1) {
@@ -361,16 +477,19 @@
 				{#if $slideState.overlay && overlayDimensions}
 					<div 
 						class="overlay-wrapper"
-						class:active={$activeDesignMenu === 'overlay'}
+						class:active={$activeDesignMenu === 'image'}
 						style="
 							left: {$slideState.overlayX}%;
 							top: {$slideState.overlayY}%;
 							width: {overlayDimensions.width}%;
 							opacity: {$slideState.overlayOpacity / 100};
-							z-index: {$activeDesignMenu === 'overlay' ? 11 : ($slideState.overlayLayer === 'below' ? 1 : 10)};
+							z-index: {$activeDesignMenu === 'image' ? 11 : ($slideState.overlayLayer === 'below' ? 1 : 10)};
 						"
 						on:mousedown={handleOverlayDragStart}
-						on:touchstart={handleOverlayDragStart}
+						on:touchstart={handleOverlayTouchStart}
+						on:touchmove={handleOverlayTouchMove}
+						on:touchend={handleOverlayTouchEnd}
+						on:wheel={handleOverlayWheel}
 						role="button"
 						tabindex="0"
 					>
@@ -379,6 +498,7 @@
 							class:mask-none={$slideState.overlayMask === 'none'}
 							class:mask-rounded={$slideState.overlayMask === 'rounded'}
 							class:mask-circle={$slideState.overlayMask === 'circle'}
+							class:mask-diamond={$slideState.overlayMask === 'diamond'}
 							style="
 								border-width: {$slideState.overlayBorderWidth * 2}px;
 								border-color: {$slideState.overlayBorderColor};
@@ -386,21 +506,38 @@
 						>
 							<button 
 								class="delete-btn"
-								on:click={handleDeleteOverlay}
-								aria-label="Delete overlay"
+								on:click={handleDeleteImage}
+								aria-label="Delete image"
 							>
 								<img src="/icons/icon-close.svg" alt="" class="delete-icon" />
+							</button>
+							<button
+								class="resize-handle"
+								on:mousedown={handleResizeStart}
+								on:touchstart={handleResizeStart}
+								aria-label="Resize image"
+							>
+								<img src="/icons/icon-resize.svg" alt="" class="resize-icon" />
 							</button>
 							<div 
 								class="overlay-image-container"
 								class:mask-rounded={$slideState.overlayMask === 'rounded'}
 								class:mask-circle={$slideState.overlayMask === 'circle'}
+								class:mask-diamond={$slideState.overlayMask === 'diamond'}
+								style="
+									overflow: hidden;
+									{$slideState.overlayMask === 'diamond' ? `border: ${$slideState.overlayBorderWidth * 2}px solid ${$slideState.overlayBorderColor};` : ''}
+								"
 							>
 								<img 
 									src={$slideState.overlay} 
 									alt="Overlay" 
 									class="overlay-image"
 									draggable="false"
+									style="
+										transform: {$slideState.overlayMask === 'diamond' ? 'rotate(-45deg) scale(1.414)' : ''} translate({$slideState.overlayImageOffsetX}%, {$slideState.overlayImageOffsetY}%) scale({$slideState.overlayZoom / 100});
+										transform-origin: center;
+									"
 								/>
 							</div>
 						</div>
@@ -416,7 +553,7 @@
 		/>
 		
 		<div class="controls-panel">
-			{#if $activeDesignMenu === 'overlay' || ($activeDesignMenu === 'none' && $slideState.overlay)}
+			{#if $activeDesignMenu === 'image' || ($activeDesignMenu === 'none' && $slideState.overlay)}
 				<OverlayControls 
 					overlay={$slideState.overlay}
 					overlaySize={$slideState.overlaySize}
@@ -425,8 +562,14 @@
 					overlayLayer={$slideState.overlayLayer}
 					overlayBorderWidth={$slideState.overlayBorderWidth}
 					overlayBorderColor={$slideState.overlayBorderColor}
-					onChange={handleOverlayChange}
-					onDelete={handleDeleteOverlay}
+					overlayZoom={$slideState.overlayZoom}
+					overlayImageOffsetX={$slideState.overlayImageOffsetX}
+					overlayImageOffsetY={$slideState.overlayImageOffsetY}
+					overlayNaturalWidth={$slideState.overlayNaturalWidth}
+					overlayNaturalHeight={$slideState.overlayNaturalHeight}
+					getCanvasDimensions={getCanvasDimensions}
+					onChange={handleImageChange}
+					onDelete={handleDeleteImage}
 				/>
 			{:else if $activeDesignMenu === 'size'}
 				<SizeControls 
@@ -449,6 +592,8 @@
 					text1HighlightColor={$slideState.text1HighlightColor}
 					text1IsBold={$slideState.text1IsBold}
 					text1Align={$slideState.text1Align}
+					text1QuoteStyle={$slideState.text1QuoteStyle}
+					text1QuoteSize={$slideState.text1QuoteSize}
 					onChange={handleText1Change}
 				/>
 			{:else if $activeDesignMenu === 'text2'}
@@ -463,12 +608,6 @@
 					text2IsBold={$slideState.text2IsBold}
 					text2Align={$slideState.text2Align}
 					onChange={handleText2Change}
-				/>
-			{:else if $activeDesignMenu === 'quote'}
-				<QuoteControls 
-					quoteStyle={$slideState.text1QuoteStyle}
-					quoteSize={$slideState.text1QuoteSize}
-					onChange={handleQuoteChange}
 				/>
 			{/if}
 		</div>
@@ -619,15 +758,21 @@
 	}
 
 	.overlay-bounding-box.mask-none {
-		border-radius: var(--radius-sm);
+		border-radius: 0;
 	}
 
 	.overlay-bounding-box.mask-rounded {
-		border-radius: var(--radius-lg);
+		border-radius: calc(var(--radius-lg) + 4px);
 	}
 
 	.overlay-bounding-box.mask-circle {
 		border-radius: 50%;
+		aspect-ratio: 1 / 1;
+	}
+
+	.overlay-bounding-box.mask-diamond {
+		aspect-ratio: 1 / 1;
+		border-color: transparent !important;
 	}
 
 	.overlay-wrapper.active .overlay-bounding-box {
@@ -667,6 +812,39 @@
 		filter: brightness(0) invert(1);
 	}
 
+	.resize-handle {
+		position: absolute;
+		bottom: -12px;
+		right: -12px;
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		border: none;
+		background: #777777;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: nwse-resize;
+		z-index: 11;
+		opacity: 0;
+		transition: opacity var(--transition-fast);
+		padding: 0;
+	}
+
+	.resize-icon {
+		width: 12px;
+		height: 12px;
+		filter: brightness(0) invert(1);
+	}
+
+	.overlay-wrapper.active .resize-handle {
+		opacity: 1;
+	}
+
+	.resize-handle:hover {
+		background: var(--color-text-primary);
+	}
+
 	.overlay-image-container {
 		width: 100%;
 		overflow: hidden;
@@ -678,13 +856,35 @@
 
 	.overlay-image-container.mask-circle {
 		border-radius: 50%;
+		aspect-ratio: 1 / 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.overlay-image-container.mask-diamond {
+		aspect-ratio: 1 / 1;
+		transform: rotate(45deg) scale(0.707);
+		border-radius: var(--radius-lg);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.overlay-image {
 		width: 100%;
-		height: auto;
+		height: 100%;
 		display: block;
 		pointer-events: none;
+		object-fit: cover;
+		object-position: center;
+	}
+
+	.overlay-image-container.mask-circle .overlay-image,
+	.overlay-image-container.mask-diamond .overlay-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 	
 	.controls-panel {
