@@ -77,7 +77,7 @@
 				<button 
 					class="gradient-swatch"
 					class:active={isActive}
-					style="background: linear-gradient(135deg, {colors[0]} 0%, {colors[1]} 100%); {isActive ? `box-shadow: 0 0 0 3px ${colors[0]};` : ''}"
+					style="background: linear-gradient(135deg, {colors[0]} 0%, {colors[1]} 100%); border-color: {colors[0]}; {isActive ? `box-shadow: inset 0 0 0 2px white;` : ''}"
 					on:click={() => selectGradient(index)}
 					aria-label="Select gradient"
 				></button>

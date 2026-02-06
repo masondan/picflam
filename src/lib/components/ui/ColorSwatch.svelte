@@ -4,8 +4,19 @@
 	export let onChange = (color) => {};
 	export let showRainbow = true;
 	
-	let showPicker = false;
 	let customColor = '#5422b0';
+	let colorInput;
+	
+	function openColorPicker() {
+		if (colorInput) {
+			colorInput.click();
+		}
+	}
+	
+	function handleColorChange(e) {
+		customColor = e.target.value;
+		onChange(customColor);
+	}
 </script>
 
 <div class="color-swatches">
@@ -24,20 +35,18 @@
 		<button 
 			class="swatch rainbow"
 			class:active={value && !colors.includes(value) && value !== 'transparent'}
-			style="{value && !colors.includes(value) && value !== 'transparent' ? `box-shadow: 0 0 0 3px ${customColor};` : ''}"
-			on:click={() => showPicker = !showPicker}
+			style="border-color: {value && !colors.includes(value) && value !== 'transparent' ? customColor : '#999999'}; {value && !colors.includes(value) && value !== 'transparent' ? `box-shadow: inset 0 0 0 2px white;` : ''}"
+			on:click={openColorPicker}
 			aria-label="Custom color"
 		/>
 		
-		{#if showPicker}
-			<div class="color-picker-popover">
-				<input 
-					type="color" 
-					bind:value={customColor}
-					on:change={() => onChange(customColor)}
-				/>
-			</div>
-		{/if}
+		<input 
+			bind:this={colorInput}
+			type="color" 
+			value={customColor}
+			on:input={handleColorChange}
+			style="display: none;"
+		/>
 	{/if}
 </div>
 
@@ -84,23 +93,5 @@
 		padding: 0;
 	}
 	
-	.color-picker-popover {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 100;
-		background: var(--color-surface);
-		padding: var(--space-3);
-		border-radius: var(--radius-md);
-		box-shadow: var(--shadow-lg);
-	}
-	
-	.color-picker-popover input[type="color"] {
-		width: 200px;
-		height: 200px;
-		border: none;
-		padding: 0;
-		cursor: pointer;
-	}
+
 </style>
