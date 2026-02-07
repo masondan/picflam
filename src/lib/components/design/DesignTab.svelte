@@ -1,5 +1,6 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
+	import html2canvas from 'html2canvas';
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
 	import SizeControls from './SizeControls.svelte';
@@ -112,11 +113,48 @@
 	}
 	
 	async function handleCopy() {
-		// TODO: Export canvas to image and copy
+		if (!canvasEl) return;
+		try {
+			const canvas = await html2canvas(canvasEl, {
+				backgroundColor: null,
+				scale: 2,
+				logging: false
+			});
+			const dataUrl = canvas.toDataURL('image/png');
+			await copyImageToClipboard(dataUrl);
+		} catch (err) {
+			console.error('Failed to copy canvas:', err);
+		}
 	}
 	
-	function handleExport() {
-		// TODO: Export canvas to image and download
+	async function handleExport() {
+		if (!canvasEl) return;
+		try {
+			// Hide interactive elements during export
+			const deleteButtons = canvasEl.querySelectorAll('.delete-btn');
+			const resizeHandles = canvasEl.querySelectorAll('.resize-handle');
+			const boundingBoxes = canvasEl.querySelectorAll('.overlay-wrapper.active .overlay-bounding-box');
+			
+			deleteButtons.forEach(btn => btn.style.display = 'none');
+			resizeHandles.forEach(handle => handle.style.display = 'none');
+			boundingBoxes.forEach(box => box.style.outline = 'none');
+			
+			const canvas = await html2canvas(canvasEl, {
+				backgroundColor: null,
+				scale: 2,
+				logging: false
+			});
+			
+			// Restore interactive elements
+			deleteButtons.forEach(btn => btn.style.display = '');
+			resizeHandles.forEach(handle => handle.style.display = '');
+			boundingBoxes.forEach(box => box.style.outline = '');
+			
+			const dataUrl = canvas.toDataURL('image/png');
+			downloadImage(dataUrl, 'picflam-design.png');
+		} catch (err) {
+			console.error('Failed to export canvas:', err);
+		}
 	}
 	
 	function handleSizeChange(size) {
@@ -420,8 +458,8 @@
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
 					{@const quoteFontSizePx = canvasMinDim * 0.133 * $slideState.text1QuoteSize}
 					{@const isSlab = $slideState.text1QuoteStyle === 'slab'}
-					{@const baseGapPx = textLineHeightPx * (isSlab ? -0.0 : 0.5)}
-					{@const leadingCompensation = quoteFontSizePx * (isSlab ? 0.6 : 0.5)}
+					{@const baseGapPx = textLineHeightPx * (isSlab ? -0.2 : 0.0)}
+					{@const leadingCompensation = quoteFontSizePx * (isSlab ? 0.6 : 0.45)}
 					{@const gapPx = baseGapPx - leadingCompensation}
 					{@const textYPosPct = $slideState.text1YPosition * 10}
 					
@@ -524,10 +562,7 @@
 								class:mask-rounded={$slideState.overlayMask === 'rounded'}
 								class:mask-circle={$slideState.overlayMask === 'circle'}
 								class:mask-diamond={$slideState.overlayMask === 'diamond'}
-								style="
-									overflow: hidden;
-									{$slideState.overlayMask === 'diamond' ? `border: ${$slideState.overlayBorderWidth * 2}px solid ${$slideState.overlayBorderColor};` : ''}
-								"
+								style="overflow: hidden;"
 							>
 								<img 
 									src={$slideState.overlay} 
@@ -535,7 +570,7 @@
 									class="overlay-image"
 									draggable="false"
 									style="
-										transform: {$slideState.overlayMask === 'diamond' ? 'rotate(-45deg) scale(1.414)' : ''} translate({$slideState.overlayImageOffsetX}%, {$slideState.overlayImageOffsetY}%) scale({$slideState.overlayZoom / 100});
+										transform: translate({$slideState.overlayImageOffsetX}%, {$slideState.overlayImageOffsetY}%) scale({$slideState.overlayZoom / 100});
 										transform-origin: center;
 									"
 								/>
@@ -844,6 +879,7 @@
 	.overlay-image-container {
 		width: 100%;
 		overflow: hidden;
+		height: 100%;
 	}
 
 	.overlay-image-container.mask-rounded {
@@ -860,11 +896,10 @@
 
 	.overlay-image-container.mask-diamond {
 		aspect-ratio: 1 / 1;
-		transform: rotate(45deg) scale(0.707);
-		border-radius: var(--radius-lg);
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 	}
 
 	.overlay-image {

@@ -1,15 +1,13 @@
 <script>
   export let message = '';
-  export let confirmText = 'Yes';
-  export let cancelText = 'Cancel';
-  export let onConfirm = () => {};
-  export let onCancel = () => {};
+  export let actionText = 'Got it';
+  export let onAction = () => {};
 </script>
 
 <div 
   class="modal-overlay" 
-  on:click={onCancel}
-  on:keydown={(e) => e.key === 'Escape' && onCancel()}
+  on:click={onAction}
+  on:keydown={(e) => e.key === 'Escape' && onAction()}
   role="dialog"
   aria-modal="true"
   tabindex="-1"
@@ -17,8 +15,7 @@
   <div class="modal" on:click|stopPropagation on:keydown|stopPropagation role="document">
     <p class="modal-message">{@html message}</p>
     <div class="modal-actions">
-      <button class="btn-text" on:click={onCancel}>{cancelText}</button>
-      <button class="btn-text btn-confirm" on:click={onConfirm}>{confirmText}</button>
+      <button class="btn-action" on:click={onAction}>{actionText}</button>
     </div>
   </div>
 </div>
@@ -51,32 +48,35 @@
     font-size: var(--font-size-base);
     margin: 0 0 var(--space-4) 0;
     line-height: var(--line-height-normal);
+    color: var(--color-text-primary);
   }
-  
-  .modal-message-first {
+
+  :global(.modal-message-first) {
+    font-weight: var(--font-weight-bold);
     color: #333333;
   }
-  
-  .modal-message-second {
+
+  :global(.modal-message-second) {
     color: var(--color-text-primary);
   }
   
   .modal-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
   }
   
-  .btn-text {
+  .btn-action {
     background: none;
     border: none;
     padding: var(--space-2) var(--space-3);
-    color: var(--color-text-secondary);
+    color: var(--color-primary);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
     cursor: pointer;
   }
   
-  .btn-text:hover {
-    color: var(--color-text-primary);
+  .btn-action:hover {
+    color: var(--color-primary);
+    opacity: 0.8;
   }
 </style>

@@ -3,6 +3,7 @@
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
 	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
+	import AlertModal from '$lib/components/ui/AlertModal.svelte';
 	import CropCanvas from './CropCanvas.svelte';
 	import CropControls from './CropControls.svelte';
 	import EditControls from './EditControls.svelte';
@@ -20,6 +21,7 @@
 	
 	let modalType = null;
 	let pendingAction = null;
+	let modalAction = null;
 	
 	$: cropWidth = Math.round($cropState.imageWidth * $cropState.cropBox.width / 100);
 	$: cropHeight = Math.round($cropState.imageHeight * $cropState.cropBox.height / 100);
@@ -80,11 +82,8 @@
 	
 	async function handleCopy() {
 		if ($cropState.cropPending) {
-			pendingAction = async () => {
-				const finalImage = await getFinalImage();
-				await copyImageToClipboard(finalImage);
-			};
-			modalType = 'save';
+			modalType = 'alert';
+			modalAction = 'copy';
 			return;
 		}
 		if ($cropState.currentImage) {
@@ -95,11 +94,8 @@
 	
 	async function handleExport() {
 		if ($cropState.cropPending) {
-			pendingAction = async () => {
-				const finalImage = await getFinalImage();
-				downloadImage(finalImage, 'picflam-export.png');
-			};
-			modalType = 'save';
+			modalType = 'alert';
+			modalAction = 'download';
 			return;
 		}
 		if ($cropState.currentImage) {
@@ -141,6 +137,11 @@
 	
 	function handleStartAgainCancel() {
 		modalType = null;
+	}
+
+	function handleAlertClose() {
+		modalType = null;
+		modalAction = null;
 	}
 	
 	async function applyPendingCrop() {
@@ -631,7 +632,7 @@
 	
 	{#if modalType === 'save'}
 		<ConfirmModal
-			message="Save changes?"
+			message="<span class='modal-message-first'>Apply changes?</span><br /><span class='modal-message-second'>Before downloading</span>"
 			confirmText="Yes"
 			cancelText="Cancel"
 			onConfirm={handleSaveConfirm}
@@ -641,11 +642,27 @@
 	
 	{#if modalType === 'startAgain'}
 		<ConfirmModal
-			message="Start again? Your changes will be lost."
+			message="<span class='modal-message-first'>Start again?</span><br /><span class='modal-message-second'>Your changes will be lost.</span>"
 			confirmText="Yes"
 			cancelText="Cancel"
 			onConfirm={handleStartAgainConfirm}
 			onCancel={handleStartAgainCancel}
+		/>
+	{/if}
+
+	{#if modalType === 'alert' && modalAction === 'download'}
+		<AlertModal
+			message="<span class='modal-message-first'>Apply changes</span><br /><span class='modal-message-second'>before downloading</span>"
+			actionText="Got it"
+			onAction={handleAlertClose}
+		/>
+	{/if}
+
+	{#if modalType === 'alert' && modalAction === 'copy'}
+		<AlertModal
+			message="<span class='modal-message-first'>Apply changes</span><br /><span class='modal-message-second'>before copying</span>"
+			actionText="Got it"
+			onAction={handleAlertClose}
 		/>
 	{/if}
 </div>
