@@ -1744,19 +1744,19 @@ const initialSlideState = {
   text1: "",
   text1Font: "Inter",
   text1Size: 5,
-  text1YPosition: 3,
-  text1LineSpacing: 5,
+  text1YPosition: 5,
+  text1LineSpacing: 3,
   text1Color: "#000000",
   text1HighlightColor: "transparent",
   text1IsBold: true,
   text1Align: "center",
   text1QuoteStyle: "none",
-  text1QuoteSize: 5,
+  text1QuoteSize: 3,
   text2: "",
   text2Font: "Inter",
-  text2Size: 3,
+  text2Size: 2,
   text2YPosition: 8,
-  text2LineSpacing: 5,
+  text2LineSpacing: 3,
   text2Color: "#000000",
   text2LabelColor: "transparent",
   text2IsBold: false,
@@ -1907,6 +1907,7 @@ function Text1Controls($$renderer, $$props) {
       }
     ];
     let colorMode = "text";
+    let sliderMode = "size";
     function handleClickOutside(event) {
     }
     onDestroy(() => {
@@ -1924,16 +1925,12 @@ function Text1Controls($$renderer, $$props) {
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-fspusj", void 0, { "active": text1IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-fspusj"/></button> <button class="icon-btn svelte-fspusj"${attr("aria-label", `Align ${stringify(text1Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text1Align)}.svg`)} alt="" class="btn-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj"><span class="row-label svelte-fspusj">Size</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 10)}${attr("value", text1Size)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset size"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj"><span class="row-label svelte-fspusj">Position</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 0)}${attr("max", 10)}${attr("value", text1YPosition)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset position"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="slider-row svelte-fspusj"><span class="row-label svelte-fspusj">Line spacing</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 10)}${attr("value", text1LineSpacing)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset line spacing"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="quote-section svelte-fspusj"><span class="section-label svelte-fspusj">Quotes</span> <div class="style-row svelte-fspusj"><!--[-->`);
-    const each_array_1 = ensure_array_like(QUOTE_STYLES);
-    for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
-      let style = each_array_1[$$index_1];
-      $$renderer2.push(`<button${attr_class("style-btn svelte-fspusj", void 0, {
-        "active": text1QuoteStyle === style.id,
-        "is-none": style.id === "none"
-      })}${attr("aria-label", style.label)}><img${attr("src", style.icon)} alt="" class="style-icon svelte-fspusj"/></button>`);
+    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-fspusj", void 0, { "active": text1IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-fspusj"/></button> <button class="icon-btn svelte-fspusj"${attr("aria-label", `Align ${stringify(text1Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text1Align)}.svg`)} alt="" class="btn-icon svelte-fspusj"/></button></div> <div class="slider-tabs svelte-fspusj"><button${attr_class("slider-tab svelte-fspusj", void 0, { "active": sliderMode === "size" })}>Size</button> <button${attr_class("slider-tab svelte-fspusj", void 0, { "active": sliderMode === "position" })}>Position</button> <button${attr_class("slider-tab svelte-fspusj", void 0, { "active": sliderMode === "linespacing" })}>Line spacing</button></div> <div class="slider-row svelte-fspusj"><div class="slider-wrapper svelte-fspusj">`);
+    {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 9)}${attr("value", text1Size)}/>`);
     }
-    $$renderer2.push(`<!--]--></div> <div${attr_class("slider-row quote-slider-row svelte-fspusj", void 0, { "disabled": text1QuoteStyle === "none" })}><span class="row-label svelte-fspusj">Size</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 10)}${attr("value", text1QuoteSize)}${attr("disabled", text1QuoteStyle === "none", true)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset quote size"${attr("disabled", text1QuoteStyle === "none", true)}><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div></div> <div class="color-section svelte-fspusj"><div class="color-mode-tabs svelte-fspusj"><button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
+    $$renderer2.push(`<!--]--></div> <button class="reset-btn svelte-fspusj" aria-label="Reset slider"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="color-section svelte-fspusj"><div class="color-mode-tabs svelte-fspusj"><button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
     {
       $$renderer2.push("<!--[-->");
       ColorSwatch($$renderer2, {
@@ -1943,7 +1940,23 @@ function Text1Controls($$renderer, $$props) {
         showRainbow: true
       });
     }
-    $$renderer2.push(`<!--]--></div></div>`);
+    $$renderer2.push(`<!--]--></div> <div class="quote-row svelte-fspusj"><span class="row-label svelte-fspusj">Quotes</span> <div class="style-row svelte-fspusj"><!--[-->`);
+    const each_array_1 = ensure_array_like(QUOTE_STYLES);
+    for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
+      let style = each_array_1[$$index_1];
+      $$renderer2.push(`<button${attr_class("style-btn svelte-fspusj", void 0, {
+        "active": text1QuoteStyle === style.id,
+        "is-none": style.id === "none"
+      })}${attr("aria-label", style.label)}><img${attr("src", style.icon)} alt="" class="style-icon svelte-fspusj"/></button>`);
+    }
+    $$renderer2.push(`<!--]--></div></div> `);
+    if (text1QuoteStyle !== "none") {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="slider-row quote-slider-row svelte-fspusj"><span class="row-label svelte-fspusj">Size</span> <div class="slider-wrapper svelte-fspusj"><input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 5)}${attr("value", text1QuoteSize)}/></div> <button class="reset-btn svelte-fspusj" aria-label="Reset quote size"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div>`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></div>`);
     bind_props($$props, {
       text1,
       text1Font,
@@ -1983,6 +1996,7 @@ function Text2Controls($$renderer, $$props) {
       onChange("text2Color", color);
     }
     let colorMode = "text";
+    let sliderMode = "size";
     $$renderer2.push(`<div class="text2-controls svelte-n6z268"><div class="text-input-container svelte-n6z268"><textarea class="text-input svelte-n6z268" placeholder="Add text (with ==highlights==)">`);
     const $$body = escape_html(text2);
     if ($$body) {
@@ -1992,7 +2006,12 @@ function Text2Controls($$renderer, $$props) {
     {
       $$renderer2.push("<!--[!-->");
     }
-    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-n6z268", void 0, { "active": text2IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-n6z268"/></button> <button class="icon-btn svelte-n6z268"${attr("aria-label", `Align ${stringify(text2Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text2Align)}.svg`)} alt="" class="btn-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268"><span class="row-label svelte-n6z268">Size</span> <div class="slider-wrapper svelte-n6z268"><input type="range" class="inline-slider svelte-n6z268"${attr("min", 1)}${attr("max", 10)}${attr("value", text2Size)}/></div> <button class="reset-btn svelte-n6z268" aria-label="Reset size"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268"><span class="row-label svelte-n6z268">Position</span> <div class="slider-wrapper svelte-n6z268"><input type="range" class="inline-slider svelte-n6z268"${attr("min", 0)}${attr("max", 10)}${attr("value", text2YPosition)}/></div> <button class="reset-btn svelte-n6z268" aria-label="Reset position"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="slider-row svelte-n6z268"><span class="row-label svelte-n6z268">Line spacing</span> <div class="slider-wrapper svelte-n6z268"><input type="range" class="inline-slider svelte-n6z268"${attr("min", 1)}${attr("max", 10)}${attr("value", text2LineSpacing)}/></div> <button class="reset-btn svelte-n6z268" aria-label="Reset line spacing"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="color-section svelte-n6z268"><div class="color-mode-tabs svelte-n6z268"><button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
+    $$renderer2.push(`<!--]--></div> <button${attr_class("icon-btn svelte-n6z268", void 0, { "active": text2IsBold })} aria-label="Bold"><img src="/icons/icon-bold.svg" alt="" class="btn-icon svelte-n6z268"/></button> <button class="icon-btn svelte-n6z268"${attr("aria-label", `Align ${stringify(text2Align)}`)}><img${attr("src", `/icons/icon-align-${stringify(text2Align)}.svg`)} alt="" class="btn-icon svelte-n6z268"/></button></div> <div class="slider-tabs svelte-n6z268"><button${attr_class("slider-tab svelte-n6z268", void 0, { "active": sliderMode === "size" })}>Size</button> <button${attr_class("slider-tab svelte-n6z268", void 0, { "active": sliderMode === "position" })}>Position</button> <button${attr_class("slider-tab svelte-n6z268", void 0, { "active": sliderMode === "linespacing" })}>Line spacing</button></div> <div class="slider-row svelte-n6z268"><div class="slider-wrapper svelte-n6z268">`);
+    {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<input type="range" class="inline-slider svelte-n6z268"${attr("min", 1)}${attr("max", 10)}${attr("value", text2Size)}/>`);
+    }
+    $$renderer2.push(`<!--]--></div> <button class="reset-btn svelte-n6z268" aria-label="Reset slider"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="color-section svelte-n6z268"><div class="color-mode-tabs svelte-n6z268"><button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
     {
       $$renderer2.push("<!--[-->");
       ColorSwatch($$renderer2, {
@@ -2041,14 +2060,14 @@ function OverlayControls($$renderer, $$props) {
       $$renderer2.push(`<div class="import-box svelte-qirtgp" role="button" tabindex="0"><label class="import-area svelte-qirtgp"><input type="file" accept="image/*" class="file-input svelte-qirtgp"/> <img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-qirtgp"/> <span class="import-text svelte-qirtgp">Import, drag or<br/>paste an image</span></label> <button class="paste-btn svelte-qirtgp">Paste</button></div>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<div class="control-row fit-fill-row svelte-qirtgp"><div class="button-group svelte-qirtgp"><div class="button-with-label svelte-qirtgp"><button class="icon-btn svelte-qirtgp" title="Fit image to canvas" aria-label="Fit"><img src="/icons/icon-fit.svg" alt="Fit" class="control-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Fit</span></div> <div class="button-with-label svelte-qirtgp"><button class="icon-btn svelte-qirtgp" title="Fill canvas with image" aria-label="Fill"><img src="/icons/icon-fill.svg" alt="Fill" class="control-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Fill</span></div></div> <div class="button-group right-group svelte-qirtgp"><div class="button-with-label svelte-qirtgp"><button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} title="Image on front layer" aria-label="Front"><img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Front</span></div> <div class="button-with-label svelte-qirtgp"><button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} title="Image on back layer" aria-label="Back"><img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon svelte-qirtgp"/></button> <span class="label-below svelte-qirtgp">Back</span></div></div></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Opacity</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 100)}${attr("value", overlayOpacity)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset opacity"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 3)}${attr("step", 1)}${attr("value", overlayBorderWidth)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset border"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="color-section svelte-qirtgp"><span class="section-label svelte-qirtgp">Colour</span> `);
+      $$renderer2.push(`<div class="control-row fit-fill-row svelte-qirtgp"><div class="button-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Fit &amp; Fill</span> <button class="icon-btn svelte-qirtgp" title="Fit image to canvas" aria-label="Fit"><img src="/icons/icon-fit.svg" alt="Fit" class="control-icon svelte-qirtgp"/></button> <button class="icon-btn svelte-qirtgp" title="Fill canvas with image" aria-label="Fill"><img src="/icons/icon-fill.svg" alt="Fill" class="control-icon svelte-qirtgp"/></button></div> <div class="button-group right-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Layers</span> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} title="Image on front layer" aria-label="Front"><img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon svelte-qirtgp"/></button> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} title="Image on back layer" aria-label="Back"><img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Opacity</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 100)}${attr("value", overlayOpacity)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset opacity"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 3)}${attr("step", 1)}${attr("value", overlayBorderWidth)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset border"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="color-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Colour</span> <div class="color-buttons svelte-qirtgp">`);
       ColorSwatch($$renderer2, {
         colors: BORDER_COLORS,
         value: overlayBorderColor,
         onChange: (color) => onChange("overlayBorderColor", color),
         showRainbow: true
       });
-      $$renderer2.push(`<!----></div> <div class="mask-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Mask</span> <div class="mask-buttons svelte-qirtgp"><button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "none" })} aria-label="No mask"><img src="/icons/icon-none.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "rounded" })} aria-label="Rounded mask"><img src="/icons/icon-square.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "circle" })} aria-label="Circle mask"><div class="circle-icon svelte-qirtgp"></div></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "diamond" })} aria-label="Diamond mask"><div class="diamond-icon svelte-qirtgp"></div></button></div></div> `);
+      $$renderer2.push(`<!----></div></div> <div class="mask-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Mask</span> <div class="mask-buttons svelte-qirtgp"><button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "none" })} aria-label="No mask"><img src="/icons/icon-none.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "rounded" })} aria-label="Rounded mask"><img src="/icons/icon-square.svg" alt="" class="mask-icon svelte-qirtgp"/></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "circle" })} aria-label="Circle mask"><div class="circle-icon svelte-qirtgp"></div></button> <button${attr_class("mask-btn svelte-qirtgp", void 0, { "active": overlayMask === "diamond" })} aria-label="Diamond mask"><div class="diamond-icon svelte-qirtgp"></div></button></div></div> `);
       if (overlayMask !== "none") {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Zoom</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 100)}${attr("max", 300)}${attr("value", overlayZoom)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset zoom"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="nudge-row svelte-qirtgp"><button class="nudge-btn svelte-qirtgp" aria-label="Nudge up"><img src="/icons/icon-nudge-up.svg" alt="" class="nudge-icon svelte-qirtgp"/></button> <button class="nudge-btn svelte-qirtgp" aria-label="Nudge down"><img src="/icons/icon-nudge-down.svg" alt="" class="nudge-icon svelte-qirtgp"/></button> <button class="nudge-btn svelte-qirtgp" aria-label="Nudge left"><img src="/icons/icon-nudge-left.svg" alt="" class="nudge-icon svelte-qirtgp"/></button> <button class="nudge-btn svelte-qirtgp" aria-label="Nudge right"><img src="/icons/icon-nudge-right.svg" alt="" class="nudge-icon svelte-qirtgp"/></button></div>`);
@@ -2087,7 +2106,6 @@ function DesignTab($$renderer, $$props) {
     let canvasMinDim = 300;
     let canvasWidth = 300;
     let canvasHeight = 300;
-    let text1HeightPx = 0;
     onDestroy(() => {
     });
     const subMenuTabs = [
@@ -2098,7 +2116,7 @@ function DesignTab($$renderer, $$props) {
       { id: "image", label: "Image" }
     ];
     function handleSubMenuChange(tab) {
-      activeDesignMenu.set(store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === tab ? "none" : tab);
+      activeDesignMenu.set(tab);
     }
     async function handleCopy() {
     }
@@ -2137,6 +2155,16 @@ function DesignTab($$renderer, $$props) {
       } else if (key === "overlayLayer") {
         slideState.update((state) => ({ ...state, [key]: value }));
         activeDesignMenu.set("none");
+      } else if (key === "overlayMask") {
+        slideState.update((state) => {
+          const newState = { ...state, [key]: value };
+          if (value === "none") {
+            newState.overlayZoom = 100;
+            newState.overlayImageOffsetX = 0;
+            newState.overlayImageOffsetY = 0;
+          }
+          return newState;
+        });
       } else {
         slideState.update((state) => ({ ...state, [key]: value }));
       }
@@ -2146,14 +2174,28 @@ function DesignTab($$renderer, $$props) {
         ...state,
         overlay: null,
         overlayNaturalWidth: 0,
-        overlayNaturalHeight: 0
+        overlayNaturalHeight: 0,
+        overlaySize: 50,
+        overlayOpacity: 100,
+        overlayX: 50,
+        overlayY: 50,
+        overlayMask: "none",
+        overlayLayer: "above",
+        overlayBorderWidth: 0,
+        overlayBorderColor: "#FFFFFF",
+        overlayZoom: 100,
+        overlayImageOffsetX: 0,
+        overlayImageOffsetY: 0
       }));
       activeDesignMenu.set("none");
     }
     function calculateOverlayDimensions(state) {
       if (!state.overlay || !state.overlayNaturalWidth) return null;
-      const aspectRatio = state.overlayNaturalWidth / state.overlayNaturalHeight;
       const maxWidth = state.overlaySize / 100 * 100;
+      if (state.overlayMask === "circle" || state.overlayMask === "diamond") {
+        return { width: maxWidth, height: maxWidth };
+      }
+      const aspectRatio = state.overlayNaturalWidth / state.overlayNaturalHeight;
       let width, height;
       if (aspectRatio >= 1) {
         width = maxWidth;
@@ -2189,19 +2231,22 @@ function DesignTab($$renderer, $$props) {
       $$renderer2.push(`<!----> <div class="canvas-container svelte-fxk5n4"><div class="design-canvas svelte-fxk5n4"${attr_style(` aspect-ratio: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).canvasSize)}; background: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).background.type === "solid" ? store_get($$store_subs ??= {}, "$slideState", slideState).background.value : store_get($$store_subs ??= {}, "$slideState", slideState).background.value)}; `)} role="button" tabindex="0">`);
       if (store_get($$store_subs ??= {}, "$slideState", slideState).text1) {
         $$renderer2.push("<!--[-->");
-        const textFontSizePx = canvasMinDim * 0.1 * store_get($$store_subs ??= {}, "$slideState", slideState).text1Size / 5;
+        const textFontSizePx = canvasMinDim * 0.072 * store_get($$store_subs ??= {}, "$slideState", slideState).text1Size / 5;
         const textLineHeightPx = textFontSizePx * (1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1);
-        const gapPx = textLineHeightPx * (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab" ? -0.25 : 0.1);
+        const quoteFontSizePx = canvasMinDim * 0.133 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize;
+        const isSlab = store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "slab";
+        const baseGapPx = textLineHeightPx * (isSlab ? -0.03 : 0.2);
+        const leadingCompensation = quoteFontSizePx * (isSlab ? 0.6 : 0.5);
+        const gapPx = baseGapPx - leadingCompensation;
         const textYPosPct = store_get($$store_subs ??= {}, "$slideState", slideState).text1YPosition * 10;
-        const textHeightPct = text1HeightPx / canvasHeight * 100;
-        const quoteYPosPct = textYPosPct - textHeightPct / 2 - gapPx / canvasHeight * 100;
+        $$renderer2.push(`<div class="text1-flow-container svelte-fxk5n4"${attr_style(`top: ${stringify(textYPosPct)}%;`)}>`);
         if (store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle !== "none") {
           $$renderer2.push("<!--[-->");
-          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` top: ${stringify(quoteYPosPct)}%; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; font-family: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? '"Playfair Display", serif' : '"Alfa Slab One", cursive')}; font-size: ${stringify(canvasMinDim * 0.08 * store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteSize)}px; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1QuoteStyle === "serif" ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; `)}>“</div>`);
+          $$renderer2.push(`<div class="canvas-quote svelte-fxk5n4"${attr_style(` text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; font-family: ${stringify(isSlab ? '"Alfa Slab One", cursive' : '"Playfair Display", serif')}; font-size: ${stringify(quoteFontSizePx)}px; font-weight: ${stringify(isSlab ? "normal" : "bold")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; margin-bottom: ${stringify(gapPx)}px; `)}>“</div>`);
         } else {
           $$renderer2.push("<!--[!-->");
         }
-        $$renderer2.push(`<!--]--> <div class="text1-wrapper svelte-fxk5n4"${attr_style(`top: ${stringify(textYPosPct)}%;`)}><div class="canvas-text text1 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Size * 0.5)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1)}; `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text1.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor};">$1</span>`).replace(/\n/g, "<br>"))}</div></div>`);
+        $$renderer2.push(`<!--]--> <div class="canvas-text text1 svelte-fxk5n4"${attr_style(` font-family: '${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Font)}'; font-size: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Size * 0.36)}em; font-weight: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1IsBold ? "bold" : "normal")}; color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Color)}; text-align: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).text1Align)}; line-height: ${stringify(1 + store_get($$store_subs ??= {}, "$slideState", slideState).text1LineSpacing * 0.1)}; `)}>${html(store_get($$store_subs ??= {}, "$slideState", slideState).text1.replace(/==(.+?)==/g, `<span style="color: ${store_get($$store_subs ??= {}, "$slideState", slideState).text1HighlightColor};">$1</span>`).replace(/\n/g, "<br>"))}</div></div>`);
       } else {
         $$renderer2.push("<!--[!-->");
       }
@@ -2226,7 +2271,7 @@ function DesignTab($$renderer, $$props) {
           "mask-rounded": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "rounded",
           "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle",
           "mask-diamond": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond"
-        })} style="overflow: hidden;"><img${attr("src", store_get($$store_subs ??= {}, "$slideState", slideState).overlay)} alt="Overlay" class="overlay-image svelte-fxk5n4" draggable="false"${attr_style(` transform: translate(${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetX)}%, ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetY)}%) scale(${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayZoom / 100)}); transform-origin: center; `)}/></div></div></div>`);
+        })}${attr_style(` overflow: hidden; ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond" ? `border: ${store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2}px solid ${store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor};` : "")} `)}><img${attr("src", store_get($$store_subs ??= {}, "$slideState", slideState).overlay)} alt="Overlay" class="overlay-image svelte-fxk5n4" draggable="false"${attr_style(` transform: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond" ? "rotate(-45deg) scale(1.414)" : "")} translate(${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetX)}%, ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayImageOffsetY)}%) scale(${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayZoom / 100)}); transform-origin: center; `)}/></div></div></div>`);
       } else {
         $$renderer2.push("<!--[!-->");
       }

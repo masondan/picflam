@@ -27,10 +27,10 @@
 	];
 
 	const DEFAULTS = {
-		text1Size: 4,
+		text1Size: 5,
 		text1YPosition: 5,
 		text1LineSpacing: 3,
-		text1QuoteSize: 5
+		text1QuoteSize: 3
 	};
 
 	let colorMode = 'text'; // 'text' or 'highlight'
@@ -181,8 +181,8 @@
 					type="range"
 					class="inline-slider"
 					min={1}
-					max={10}
-					value={text1Size}
+					max={9}
+									value={text1Size}
 					on:input={(e) => onChange('text1Size', Number(e.target.value))}
 				/>
 			{:else if sliderMode === 'position'}
@@ -191,6 +191,7 @@
 					class="inline-slider"
 					min={0}
 					max={10}
+					step={0.1}
 					value={text1YPosition}
 					on:input={(e) => onChange('text1YPosition', Number(e.target.value))}
 				/>
@@ -277,7 +278,7 @@
 					type="range"
 					class="inline-slider"
 					min={1}
-					max={10}
+					max={5}
 					value={text1QuoteSize}
 					on:input={(e) => onChange('text1QuoteSize', Number(e.target.value))}
 				/>

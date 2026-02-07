@@ -179,6 +179,7 @@
 					class="inline-slider"
 					min={0}
 					max={10}
+					step={0.1}
 					value={text2YPosition}
 					on:input={(e) => onChange('text2YPosition', Number(e.target.value))}
 				/>

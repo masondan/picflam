@@ -56,7 +56,7 @@
 	}
 	
 	const subMenuTabs = [
-		{ id: 'size', label: 'Size' },
+		{ id: 'ratio', label: 'Ratio' },
 		{ id: 'background', label: 'Background' },
 		{ id: 'text1', label: 'Text 1' },
 		{ id: 'text2', label: 'Text 2' },
@@ -73,7 +73,7 @@
 			}
 		}
 		showTemplatePicker.set(false);
-		activeDesignMenu.set('size');
+		activeDesignMenu.set('ratio');
 	}
 
 	function handleSaveTemplate() {
@@ -108,7 +108,7 @@
 	}
 	
 	function handleSubMenuChange(tab) {
-		activeDesignMenu.set($activeDesignMenu === tab ? 'none' : tab);
+		activeDesignMenu.set(tab);
 	}
 	
 	async function handleCopy() {
@@ -326,14 +326,12 @@
 		const target = e.target;
 		if (target.closest('.overlay-wrapper')) {
 			activeDesignMenu.set('image');
-		} else if (target.closest('.text1-wrapper')) {
+		} else if (target.closest('.text1-flow-container')) {
 			activeDesignMenu.set('text1');
 		} else if (target.closest('.canvas-text.text2')) {
 			activeDesignMenu.set('text2');
 		} else if (target.closest('.canvas-quote')) {
 			activeDesignMenu.set('text1');
-		} else {
-			activeDesignMenu.set('none');
 		}
 	}
 
@@ -418,37 +416,38 @@
 				tabindex="0"
 			>
 				{#if $slideState.text1}
-					{@const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5}
+					{@const textFontSizePx = (canvasMinDim * 0.072 * $slideState.text1Size) / 5}
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
-					{@const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? -0.25 : 0.1)}
+					{@const quoteFontSizePx = canvasMinDim * 0.133 * $slideState.text1QuoteSize}
+					{@const isSlab = $slideState.text1QuoteStyle === 'slab'}
+					{@const baseGapPx = textLineHeightPx * (isSlab ? -0.0 : 0.5)}
+					{@const leadingCompensation = quoteFontSizePx * (isSlab ? 0.6 : 0.5)}
+					{@const gapPx = baseGapPx - leadingCompensation}
 					{@const textYPosPct = $slideState.text1YPosition * 10}
-					{@const textHeightPct = (text1HeightPx / canvasHeight) * 100}
-					{@const quoteYPosPct = textYPosPct - (textHeightPct / 2) - (gapPx / canvasHeight * 100)}
-					
-					{#if $slideState.text1QuoteStyle !== 'none'}
-						<div 
-							class="canvas-quote"
-							style="
-								top: {quoteYPosPct}%;
-								text-align: {$slideState.text1Align};
-								font-family: {$slideState.text1QuoteStyle === 'serif' ? '\"Playfair Display\", serif' : '\"Alfa Slab One\", cursive'};
-								font-size: {canvasMinDim * 0.08 * $slideState.text1QuoteSize}px;
-								font-weight: {$slideState.text1QuoteStyle === 'serif' ? 'bold' : 'normal'};
-								color: {$slideState.text1Color};
-							"
-						>&#8220;</div>
-					{/if}
 					
 					<div 
-						class="text1-wrapper"
-						bind:this={text1WrapperEl}
+						class="text1-flow-container"
 						style="top: {textYPosPct}%;"
 					>
+						{#if $slideState.text1QuoteStyle !== 'none'}
+							<div 
+								class="canvas-quote"
+								style="
+									text-align: {$slideState.text1Align};
+									font-family: {isSlab ? '\"Alfa Slab One\", cursive' : '\"Playfair Display\", serif'};
+									font-size: {quoteFontSizePx}px;
+									font-weight: {isSlab ? 'normal' : 'bold'};
+									color: {$slideState.text1Color};
+									margin-bottom: {gapPx}px;
+								"
+							>&#8220;</div>
+						{/if}
+						
 						<div 
 							class="canvas-text text1"
 							style="
 								font-family: '{$slideState.text1Font}';
-								font-size: {$slideState.text1Size * 0.5}em;
+								font-size: {$slideState.text1Size * 0.36}em;
 								font-weight: {$slideState.text1IsBold ? 'bold' : 'normal'};
 								color: {$slideState.text1Color};
 								text-align: {$slideState.text1Align};
@@ -572,7 +571,7 @@
 					onChange={handleImageChange}
 					onDelete={handleDeleteImage}
 				/>
-			{:else if $activeDesignMenu === 'size'}
+			{:else if $activeDesignMenu === 'ratio'}
 				<SizeControls 
 					canvasSize={$slideState.canvasSize}
 					onSizeChange={handleSizeChange}
@@ -708,7 +707,7 @@
 		overflow: hidden;
 	}
 
-	.text1-wrapper {
+	.text1-flow-container {
 		position: absolute;
 		left: 7.5%;
 		right: 7.5%;
@@ -716,16 +715,12 @@
 		transform: translateY(-50%);
 		z-index: 5;
 		overflow: visible;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.canvas-quote {
-		position: absolute;
-		left: 7.5%;
-		right: 7.5%;
-		width: 85%;
 		line-height: 1;
-		transform: translateY(-50%);
-		z-index: 5;
 	}
 
 	.canvas-text {
