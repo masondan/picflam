@@ -112,49 +112,194 @@
 		activeDesignMenu.set(tab);
 	}
 	
-	async function handleCopy() {
-		if (!canvasEl) return;
-		try {
-			const canvas = await html2canvas(canvasEl, {
-				backgroundColor: null,
-				scale: 2,
-				logging: false
-			});
-			const dataUrl = canvas.toDataURL('image/png');
-			await copyImageToClipboard(dataUrl);
-		} catch (err) {
-			console.error('Failed to copy canvas:', err);
+	function drawOverlayOnCanvas(ctx, canvasW, canvasH, measurements) {
+		const { containerRelRect, borderRect, mask, opacity, borderWidth, borderColor,
+			natW, natH, zoom, offX, offY } = measurements;
+
+		const scaleX = canvasW / measurements.canvasElWidth;
+		const scaleY = canvasH / measurements.canvasElHeight;
+
+		const x = containerRelRect.x * scaleX;
+		const y = containerRelRect.y * scaleY;
+		const w = containerRelRect.w * scaleX;
+		const h = containerRelRect.h * scaleY;
+		const cx = x + w / 2;
+		const cy = y + h / 2;
+
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+		ctx.save();
+		ctx.globalAlpha = opacity / 100;
+
+		if (borderWidth > 0) {
+			const bx = borderRect.x * scaleX;
+			const by = borderRect.y * scaleY;
+			const bw = borderRect.w * scaleX;
+			const bh = borderRect.h * scaleY;
+			const bCx = bx + bw / 2;
+			const bCy = by + bh / 2;
+			const bPx = borderWidth * 2 * scaleX;
+
+			ctx.fillStyle = borderColor || '#ffffff';
+			if (mask === 'circle') {
+				ctx.beginPath();
+				ctx.arc(bCx, bCy, bw / 2, 0, Math.PI * 2);
+				ctx.fill();
+			} else if (mask === 'diamond') {
+				ctx.beginPath();
+				ctx.moveTo(bCx, by);
+				ctx.lineTo(bx + bw, bCy);
+				ctx.lineTo(bCx, by + bh);
+				ctx.lineTo(bx, bCy);
+				ctx.closePath();
+				ctx.fill();
+			} else if (mask === 'rounded') {
+				ctx.beginPath();
+				ctx.roundRect(bx, by, bw, bh, 12 * scaleX);
+				ctx.fill();
+			} else {
+				ctx.fillRect(bx, by, bw, bh);
+			}
 		}
+
+		ctx.save();
+		ctx.beginPath();
+		if (mask === 'circle') {
+			ctx.arc(cx, cy, Math.min(w, h) / 2, 0, Math.PI * 2);
+		} else if (mask === 'diamond') {
+			ctx.moveTo(cx, y);
+			ctx.lineTo(x + w, cy);
+			ctx.lineTo(cx, y + h);
+			ctx.lineTo(x, cy);
+			ctx.closePath();
+		} else if (mask === 'rounded') {
+			ctx.roundRect(x, y, w, h, 12 * scaleX);
+		} else {
+			ctx.rect(x, y, w, h);
+		}
+		ctx.clip();
+
+		const imgAspect = natW / natH;
+		const boxAspect = w / h;
+		const zoomFactor = zoom / 100;
+
+		let drawW, drawH;
+		if (imgAspect > boxAspect) {
+			drawH = h * zoomFactor;
+			drawW = drawH * imgAspect;
+		} else {
+			drawW = w * zoomFactor;
+			drawH = drawW / imgAspect;
+		}
+
+		const drawX = x + (w - drawW) / 2 + (offX / 100) * w;
+		const drawY = y + (h - drawH) / 2 + (offY / 100) * h;
+
+		const img = new Image();
+		return new Promise((resolve) => {
+			img.onload = () => {
+				ctx.drawImage(img, drawX, drawY, drawW, drawH);
+				ctx.restore();
+				ctx.restore();
+				resolve();
+			};
+			img.onerror = () => { ctx.restore(); ctx.restore(); resolve(); };
+			img.src = measurements.overlaySrc;
+		});
 	}
-	
-	async function handleExport() {
+
+	async function exportCanvas(mode) {
 		if (!canvasEl) return;
 		try {
-			// Hide interactive elements during export
+			const state = $slideState;
+			const needsManualOverlay = state.overlay && 
+				(state.overlayMask === 'circle' || state.overlayMask === 'diamond');
+
+			let measurements = null;
+			if (needsManualOverlay) {
+				const canvasRect = canvasEl.getBoundingClientRect();
+				const imageContainer = canvasEl.querySelector('.overlay-image-container');
+				const boundingBox = canvasEl.querySelector('.overlay-bounding-box');
+				const overlayImg = canvasEl.querySelector('.overlay-image');
+				if (imageContainer) {
+					const icRect = imageContainer.getBoundingClientRect();
+					const bbRect = boundingBox ? boundingBox.getBoundingClientRect() : icRect;
+					measurements = {
+						canvasElWidth: canvasRect.width,
+						canvasElHeight: canvasRect.height,
+						containerRelRect: {
+							x: icRect.left - canvasRect.left,
+							y: icRect.top - canvasRect.top,
+							w: icRect.width,
+							h: icRect.height
+						},
+						borderRect: {
+							x: bbRect.left - canvasRect.left,
+							y: bbRect.top - canvasRect.top,
+							w: bbRect.width,
+							h: bbRect.height
+						},
+						mask: state.overlayMask,
+						opacity: state.overlayOpacity,
+						borderWidth: state.overlayBorderWidth,
+						borderColor: state.overlayBorderColor,
+						natW: state.overlayNaturalWidth || (overlayImg ? overlayImg.naturalWidth : 100),
+						natH: state.overlayNaturalHeight || (overlayImg ? overlayImg.naturalHeight : 100),
+						zoom: state.overlayZoom,
+						offX: state.overlayImageOffsetX,
+						offY: state.overlayImageOffsetY,
+						overlaySrc: state.overlay
+					};
+				}
+			}
+
+			const overlayEl = canvasEl.querySelector('.overlay-wrapper');
+			if (needsManualOverlay && overlayEl) overlayEl.style.display = 'none';
+
 			const deleteButtons = canvasEl.querySelectorAll('.delete-btn');
 			const resizeHandles = canvasEl.querySelectorAll('.resize-handle');
 			const boundingBoxes = canvasEl.querySelectorAll('.overlay-wrapper.active .overlay-bounding-box');
-			
 			deleteButtons.forEach(btn => btn.style.display = 'none');
 			resizeHandles.forEach(handle => handle.style.display = 'none');
 			boundingBoxes.forEach(box => box.style.outline = 'none');
-			
+
+			if (needsManualOverlay) {
+				await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+			}
+
 			const canvas = await html2canvas(canvasEl, {
 				backgroundColor: null,
 				scale: 2,
 				logging: false
 			});
-			
-			// Restore interactive elements
+
+			if (needsManualOverlay && overlayEl) overlayEl.style.display = '';
 			deleteButtons.forEach(btn => btn.style.display = '');
 			resizeHandles.forEach(handle => handle.style.display = '');
 			boundingBoxes.forEach(box => box.style.outline = '');
-			
+
+			if (measurements) {
+				const ctx = canvas.getContext('2d');
+				await drawOverlayOnCanvas(ctx, canvas.width, canvas.height, measurements);
+			}
+
 			const dataUrl = canvas.toDataURL('image/png');
-			downloadImage(dataUrl, 'picflam-design.png');
+			if (mode === 'copy') {
+				await copyImageToClipboard(dataUrl);
+			} else {
+				downloadImage(dataUrl, 'picflam-design.png');
+			}
 		} catch (err) {
 			console.error('Failed to export canvas:', err);
 		}
+	}
+
+	async function handleCopy() {
+		await exportCanvas('copy');
+	}
+	
+	async function handleExport() {
+		await exportCanvas('download');
 	}
 	
 	function handleSizeChange(size) {
@@ -379,13 +524,12 @@
 		if (!state.overlay || !state.overlayNaturalWidth) return null;
 		
 		const maxWidth = (state.overlaySize / 100) * 100;
-		
-		// For circle and diamond masks, force square dimensions; otherwise respect aspect ratio
-		if (state.overlayMask === 'circle' || state.overlayMask === 'diamond') {
-			return { width: maxWidth, height: maxWidth };
-		}
-		
 		const aspectRatio = state.overlayNaturalWidth / state.overlayNaturalHeight;
+		
+		if (state.overlayMask === 'circle' || state.overlayMask === 'diamond') {
+			const side = aspectRatio >= 1 ? maxWidth / aspectRatio : maxWidth * aspectRatio;
+			return { width: side, height: side };
+		}
 		
 		let width, height;
 		if (aspectRatio >= 1) {
@@ -420,9 +564,17 @@
 						class="template-card"
 						on:click={() => selectTemplate(template.id)}
 					>
-						<div class="template-placeholder">
-							{template.name}
-						</div>
+						{#if template.preview}
+							<img 
+								src={template.preview} 
+								alt={template.name}
+								class="template-preview"
+							/>
+						{:else}
+							<div class="template-placeholder">
+								{template.name}
+							</div>
+						{/if}
 					</button>
 				{/each}
 			</div>
@@ -540,6 +692,8 @@
 							style="
 								border-width: {$slideState.overlayBorderWidth * 2}px;
 								border-color: {$slideState.overlayBorderColor};
+								--diamond-border-width: {$slideState.overlayBorderWidth * 2}px;
+								--diamond-border-color: {$slideState.overlayBorderColor};
 							"
 						>
 							<button 
@@ -564,16 +718,36 @@
 								class:mask-diamond={$slideState.overlayMask === 'diamond'}
 								style="overflow: hidden;"
 							>
-								<img 
-									src={$slideState.overlay} 
-									alt="Overlay" 
-									class="overlay-image"
-									draggable="false"
-									style="
-										transform: translate({$slideState.overlayImageOffsetX}%, {$slideState.overlayImageOffsetY}%) scale({$slideState.overlayZoom / 100});
-										transform-origin: center;
-									"
-								/>
+								{#if ($slideState.overlayMask === 'circle' || $slideState.overlayMask === 'diamond') && $slideState.overlayNaturalWidth && $slideState.overlayNaturalHeight}
+									{@const ar = $slideState.overlayNaturalWidth / $slideState.overlayNaturalHeight}
+									{@const imgW = ar >= 1 ? ar * 100 : 100}
+									{@const imgH = ar >= 1 ? 100 : (1 / ar) * 100}
+									{@const adjOffX = $slideState.overlayImageOffsetX * (100 / imgW)}
+									{@const adjOffY = $slideState.overlayImageOffsetY * (100 / imgH)}
+									<img 
+										src={$slideState.overlay} 
+										alt="Overlay" 
+										class="overlay-image-masked"
+										draggable="false"
+										style="
+											width: {imgW}%;
+											height: {imgH}%;
+											transform: translate(calc(-50% + {adjOffX}%), calc(-50% + {adjOffY}%)) scale({$slideState.overlayZoom / 100});
+											transform-origin: center;
+										"
+									/>
+								{:else}
+									<img 
+										src={$slideState.overlay} 
+										alt="Overlay" 
+										class="overlay-image"
+										draggable="false"
+										style="
+											transform: translate({$slideState.overlayImageOffsetX}%, {$slideState.overlayImageOffsetY}%) scale({$slideState.overlayZoom / 100});
+											transform-origin: center;
+										"
+									/>
+								{/if}
 							</div>
 						</div>
 					</div>
@@ -720,6 +894,13 @@
 		transform: scale(1.02);
 	}
 	
+	.template-preview {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
 	.template-placeholder {
 		width: 100%;
 		height: 100%;
@@ -806,6 +987,22 @@
 		border-color: transparent !important;
 	}
 
+	.overlay-bounding-box.mask-diamond::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 70.71%;
+		height: 70.71%;
+		box-sizing: border-box;
+		border-style: solid;
+		border-width: var(--diamond-border-width, 0px);
+		border-color: var(--diamond-border-color, transparent);
+		transform: translate(-50%, -50%) rotate(45deg);
+		pointer-events: none;
+		z-index: 1;
+	}
+
 	.overlay-wrapper.active .overlay-bounding-box {
 		outline: 1px dashed var(--color-text-muted);
 		outline-offset: 2px;
@@ -877,6 +1074,7 @@
 	}
 
 	.overlay-image-container {
+		position: relative;
 		width: 100%;
 		overflow: hidden;
 		height: 100%;
@@ -911,13 +1109,14 @@
 		object-position: center;
 	}
 
-	.overlay-image-container.mask-circle .overlay-image,
-	.overlay-image-container.mask-diamond .overlay-image {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
+	.overlay-image-masked {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		display: block;
+		pointer-events: none;
 	}
-	
+
 	.controls-panel {
 		padding: var(--space-4) 0;
 	}
