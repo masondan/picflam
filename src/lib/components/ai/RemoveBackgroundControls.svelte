@@ -11,7 +11,7 @@
 	$: hasProcessedImage = $aiState.showComparison && $aiState.processedImage;
 	
 	async function handleRemoveBackground() {
-		if (!$aiState.originalImage) return;
+		if (!$aiState.currentImage) return;
 		
 		try {
 			isProcessing = true;
@@ -19,7 +19,7 @@
 			progressStatus = 'Starting...';
 			aiState.startProcessing('background');
 			
-			const resultDataUrl = await removeBackground($aiState.originalImage, (status) => {
+			const resultDataUrl = await removeBackground($aiState.currentImage, (status) => {
 				progressStatus = status;
 			});
 			
