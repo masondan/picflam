@@ -551,14 +551,14 @@
 		<div class="template-picker">
 			<p class="picker-title">Create quotes & cards with<br>a template or blank canvas</p>
 			
-			<button 
-				class="blank-canvas-btn"
-				on:click={() => selectTemplate('blank')}
-			>
-				<img src="/icons/icon-add.svg" alt="" class="add-icon" />
-			</button>
-			
 			<div class="template-grid">
+				<button 
+					class="blank-canvas-btn"
+					on:click={() => selectTemplate('blank')}
+				>
+					<img src="/icons/icon-add.svg" alt="" class="add-icon" />
+				</button>
+				
 				{#each templatesData.templates as template (template.id)}
 					<button 
 						class="template-card"
@@ -857,11 +857,12 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: var(--space-6);
+		aspect-ratio: 1;
 		border: 2px dashed var(--color-border);
-		border-radius: var(--radius-lg);
+		border-radius: var(--radius-md);
 		background: var(--color-surface);
 		transition: all var(--transition-fast);
+		padding: 0;
 	}
 	
 	.blank-canvas-btn:hover {

@@ -92,15 +92,21 @@
 		</button>
 	</div>
 
-	<Slider 
-		label="Scale"
-		min={50}
-		max={200}
-		value={scale}
-		step={1}
-		showValue={true}
-		onChange={onScaleChange}
-	/>
+	<div class="scale-controls">
+		<span class="scale-label">Scale</span>
+		<div class="slider-track">
+			<Slider
+				min={50}
+				max={200}
+				value={scale}
+				step={1}
+				onChange={onScaleChange}
+			/>
+		</div>
+		<button class="reset-btn" on:click={() => onScaleChange(100)} aria-label="Reset scale to 100%">
+			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+		</button>
+	</div>
 
 	{#if cropPending}
 		<div class="apply-row">
@@ -126,6 +132,49 @@
 	.dimension-input {
 		flex: 1;
 		min-width: 0;
+	}
+
+	.scale-controls {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.scale-label {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		flex-shrink: 0;
+		min-width: 65px;
+		padding-top: 2px;
+	}
+
+	.slider-track {
+		flex: 1;
+	}
+
+	.reset-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		background: none;
+		border: none;
+		cursor: pointer;
+		opacity: 0.6;
+		transition: opacity var(--transition-fast);
+		flex-shrink: 0;
+		padding: 0;
+		padding-top: 2px;
+	}
+
+	.reset-btn:hover {
+		opacity: 1;
+	}
+
+	.reset-icon {
+		width: 20px;
+		height: 20px;
 	}
 
 	.icon-btn {

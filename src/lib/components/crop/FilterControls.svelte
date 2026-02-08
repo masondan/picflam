@@ -1,42 +1,34 @@
 <script>
 	import FilterGrid from '$lib/components/ui/FilterGrid.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
+	import { FILTER_DEFINITIONS } from '$lib/stores/cropStore.js';
 
 	export let imageUrl = '';
-	export let activeFilter = 'original';
+	export let activeFilter = 'normal';
 	export let filterStrength = 50;
 	export let onFilterChange = (filterId) => {};
 	export let onStrengthChange = (value) => {};
 	export let onReset = () => {};
 
-	const filters = [
-		{ id: 'original', label: 'Original', css: 'none' },
-		{ id: 'greyscale', label: 'Greyscale', css: 'grayscale(100%)' },
-		{ id: 'sepia', label: 'Sepia', css: 'sepia(100%)' },
-		{ id: 'sunset', label: 'Sunset', css: 'sepia(30%) saturate(140%) brightness(110%) hue-rotate(-10deg)' },
-		{ id: 'azure', label: 'Azure', css: 'saturate(120%) brightness(105%) hue-rotate(180deg)' },
-		{ id: 'teal', label: 'Teal', css: 'saturate(130%) hue-rotate(140deg)' }
-	];
-
-	$: isOriginal = activeFilter === 'original';
+	$: isNormal = activeFilter === 'normal';
 </script>
 
 <div class="filter-controls">
 	<FilterGrid 
-		{filters}
+		filters={FILTER_DEFINITIONS}
 		value={activeFilter}
 		{imageUrl}
 		onChange={onFilterChange}
 	/>
 	
-	<div class="slider-row" class:disabled={isOriginal}>
+	<div class="strength-controls" class:disabled={isNormal}>
+		<span class="strength-label">Strength</span>
 		<div class="slider-track">
 			<Slider
-				label="Strength"
 				min={0}
 				max={100}
 				value={filterStrength}
-				onChange={isOriginal ? () => {} : onStrengthChange}
+				onChange={isNormal ? () => {} : onStrengthChange}
 			/>
 		</div>
 		<button class="reset-btn" on:click={onReset} aria-label="Reset filter">
@@ -51,18 +43,26 @@
 		flex-direction: column;
 	}
 
-	.slider-row {
+	.strength-controls {
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
 		margin-top: var(--space-4);
 	}
 
+	.strength-label {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		flex-shrink: 0;
+		min-width: 65px;
+		padding-top: 2px;
+	}
+
 	.slider-track {
 		flex: 1;
 	}
 
-	.slider-row.disabled {
+	.strength-controls.disabled {
 		opacity: 0.4;
 		pointer-events: none;
 	}
@@ -78,6 +78,9 @@
 		cursor: pointer;
 		opacity: 0.6;
 		transition: opacity var(--transition-fast);
+		flex-shrink: 0;
+		padding: 0;
+		padding-top: 2px;
 	}
 
 	.reset-btn:hover {

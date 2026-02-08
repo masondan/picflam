@@ -1,12 +1,28 @@
 import { writable, derived } from 'svelte/store';
 
 export const FILTER_DEFINITIONS = [
-	{ id: 'original', label: 'Original', css: 'none' },
-	{ id: 'greyscale', label: 'Greyscale', css: 'grayscale(100%)' },
-	{ id: 'sepia', label: 'Sepia', css: 'sepia(100%)' },
-	{ id: 'sunset', label: 'Sunset', css: 'sepia(30%) saturate(140%) brightness(110%) hue-rotate(-10deg)' },
-	{ id: 'azure', label: 'Azure', css: 'saturate(120%) brightness(105%) hue-rotate(180deg)' },
-	{ id: 'teal', label: 'Teal', css: 'saturate(130%) hue-rotate(140deg)' }
+	// Normal (No filter)
+	{ id: 'normal', label: 'Normal', css: 'none', overlay: null, blendMode: null, opacity: 1, group: 'neutral' },
+	
+	// Neutral group
+	{ id: 'greyscale', label: 'Greyscale', css: 'grayscale(100%)', overlay: null, blendMode: null, opacity: 1, group: 'neutral' },
+	{ id: 'sepia', label: 'Sepia', css: 'sepia(80%) contrast(120%) brightness(90%) saturate(110%)', overlay: null, blendMode: null, opacity: 1, group: 'neutral' },
+	{ id: 'burnt-coffee', label: 'Burnt Coffee', css: 'contrast(80%) grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(100%) sepia(0%)', overlay: '#e3dca1', blendMode: 'multiply', opacity: 1, group: 'neutral' },
+	{ id: 'baseline-special', label: 'Baseline Special', css: 'grayscale(50%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(140%) sepia(0%)', overlay: '#faaa00', blendMode: 'multiply', opacity: 1, group: 'neutral' },
+	
+	// Rose group
+	{ id: 'rose-quartz', label: 'Rose Quartz', css: 'grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(100%) sepia(0%)', overlay: '#fa00cc', blendMode: 'multiply', opacity: 0.5, group: 'rose' },
+	{ id: 'rose-glass', label: 'Rose Glass', css: 'brightness(106%) grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(100%) sepia(0%)', overlay: '#fa0000', blendMode: 'multiply', opacity: 1, group: 'rose' },
+	{ id: 'red-sky', label: 'Red Sky', css: 'contrast(120%) grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(100%) sepia(0%)', overlay: '#ab0000', blendMode: 'lighten', opacity: 0.83, group: 'rose' },
+	
+	// Blue group
+	{ id: 'blue-lagoon', label: 'Blue Lagoon', css: 'brightness(104%) contrast(104%) grayscale(0%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(122%) sepia(0%)', overlay: '#00e1fa', blendMode: 'multiply', opacity: 0.5, group: 'blue' },
+	{ id: 'baby-glass', label: 'Baby Glass', css: 'grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(140%) sepia(0%)', overlay: '#00ccfa', blendMode: 'multiply', opacity: 1, group: 'blue' },
+	{ id: 'blue-haze', label: 'Blue Haze', css: 'brightness(110%) grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(100%) sepia(0%)', overlay: '#002bff', blendMode: 'multiply', opacity: 0.76, group: 'blue' },
+	
+	// Yellow/Green group
+	{ id: 'yellow-haze', label: 'Yellow Haze', css: 'brightness(106%) grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(100%) sepia(0%)', overlay: '#ffff00', blendMode: 'multiply', opacity: 1, group: 'warm' },
+	{ id: 'amazon', label: 'Amazon', css: 'grayscale(100%) hue-rotate(0deg) invert(0%) opacity(100%) saturate(100%) sepia(0%)', overlay: '#00b309', blendMode: 'multiply', opacity: 1, group: 'warm' }
 ];
 
 function createHistoryStore(initialState) {
@@ -92,8 +108,8 @@ const initialCropState = {
 	contrast: 0,
 	shadows: 0,
 	hdr: 0,
-	activeFilter: 'original',
-	filterStrength: 50,
+	activeFilter: 'normal',
+	filterStrength: 100,
 	
 	cropBox: { x: 0, y: 0, width: 0, height: 0 },
 	isCropping: false,

@@ -105,6 +105,7 @@
     {
       "id": 3,
       "name": "Explainer",
+      "preview": "/template-previews/template-3.png",
       "state": {
         "canvasSize": "1/1",
         "background": {
@@ -155,6 +156,7 @@
     {
       "id": 4,
       "name": "News",
+      "preview": "/template-previews/template-4.png",
       "state": {
         "canvasSize": "1/1",
         "background": {
@@ -205,6 +207,7 @@
     {
       "id": 5,
       "name": "Data",
+      "preview": "/template-previews/template-5.png",
       "state": {
         "canvasSize": "1/1",
         "background": {

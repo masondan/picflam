@@ -10,6 +10,9 @@
 	export let imageWidth = 0;
 	export let imageHeight = 0;
 	export let editFilters = '';
+	export let editOnlyFilters = '';
+	export let filterDefinition = null;
+	export let filterStrength = 100;
 	export let blurEnabled = false;
 	export let blurBrushSize = 50;
 	export let blurStrength = 50;
@@ -333,11 +336,30 @@
 	>
 		<img 
 			src={imageSrc} 
-			alt="Crop preview"
-			class="canvas-image"
-			style="filter: {editFilters};"
+			alt="Original with edits"
+			class="canvas-image canvas-base"
+			style="filter: {editOnlyFilters};"
 			draggable="false"
 		/>
+		{#if filterDefinition?.id !== 'normal'}
+			<img 
+				src={imageSrc} 
+				alt="Filtered image"
+				class="canvas-image canvas-filtered"
+				style="filter: {editFilters}; opacity: {filterStrength / 100};"
+				draggable="false"
+			/>
+		{/if}
+		{#if filterDefinition?.overlay && filterDefinition.id !== 'normal'}
+			<div
+				class="filter-overlay"
+				style="
+					background-color: {filterDefinition.overlay};
+					opacity: {filterDefinition.opacity * (filterStrength / 100)};
+					mix-blend-mode: {filterDefinition.blendMode || 'multiply'};
+				"
+			></div>
+		{/if}
 		{#if blurEnabled && displayWidth > 0 && displayHeight > 0}
 			<canvas 
 				bind:this={blurCanvasEl}
@@ -452,6 +474,7 @@
 	.image-wrapper {
 		position: relative;
 		transform-origin: center center;
+		background: white;
 	}
 	
 	.canvas-image {
@@ -459,6 +482,28 @@
 		height: auto;
 		display: block;
 		pointer-events: none;
+	}
+
+	.canvas-base {
+		position: relative;
+		z-index: 0;
+	}
+
+	.canvas-filtered {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 1;
+	}
+
+	.filter-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 2;
 	}
 	
 	.blur-canvas {

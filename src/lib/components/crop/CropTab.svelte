@@ -489,10 +489,10 @@
 	}
 	
 	function handleFilterReset() {
-		cropState.set({ ...$cropState, activeFilter: 'original', filterStrength: 50 });
+		cropState.set({ ...$cropState, activeFilter: 'normal', filterStrength: 100 });
 	}
 	
-	$: editFilterCss = (() => {
+	$: editOnlyFilterCss = (() => {
 		let filters = [];
 		
 		if ($cropState.brightness !== 0) {
@@ -510,18 +510,21 @@
 			const contrast = 1 + ($cropState.hdr / 100) * 0.2;
 			filters.push(`saturate(${saturation}) contrast(${contrast})`);
 		}
-		if ($cropState.activeFilter !== 'original') {
+		
+		return filters.length > 0 ? filters.join(' ') : 'none';
+	})();
+
+	$: editFilterCss = (() => {
+		let filters = [editOnlyFilterCss];
+		
+		if ($cropState.activeFilter !== 'normal') {
 			const filterDef = FILTER_DEFINITIONS.find(f => f.id === $cropState.activeFilter);
 			if (filterDef && filterDef.css !== 'none') {
-				const strength = $cropState.filterStrength / 100;
-				const adjustedCss = filterDef.css.replace(/(\d+)%/g, (match, p1) => {
-					return `${Math.round(parseInt(p1) * strength)}%`;
-				});
-				filters.push(adjustedCss);
+				filters.push(filterDef.css);
 			}
 		}
 		
-		return filters.length > 0 ? filters.join(' ') : 'none';
+		return filters.filter(f => f !== 'none').join(' ') || 'none';
 	})();
 </script>
 
@@ -554,6 +557,9 @@
 			imageWidth={$cropState.imageWidth}
 			imageHeight={$cropState.imageHeight}
 			editFilters={editFilterCss}
+			editOnlyFilters={editOnlyFilterCss}
+			filterDefinition={FILTER_DEFINITIONS.find(f => f.id === $cropState.activeFilter)}
+			filterStrength={$cropState.filterStrength}
 			blurEnabled={$cropState.blurEnabled}
 			blurBrushSize={$cropState.blurBrushSize}
 			blurStrength={$cropState.blurStrength}
