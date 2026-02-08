@@ -1,5 +1,6 @@
 <script>
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
+	import PexelsDrawer from './PexelsDrawer.svelte';
 	import { CANVAS_COLORS } from '$lib/stores/designStore.js';
 
 	export let overlay = null;
@@ -16,6 +17,12 @@
 	export let overlayNaturalHeight = 0;
 	export let getCanvasDimensions = () => ({ width: 300, height: 300 });
 	export let onChange = (key, value) => {};
+
+	let showPexelsDrawer = false;
+
+	function handlePexelsImageSelect(imageUrl) {
+		onChange('overlay', imageUrl);
+	}
 
 	const BORDER_COLORS = CANVAS_COLORS.solids;
 	const BORDER_STOPS = [0, 1, 2, 3];
@@ -137,6 +144,13 @@
 </script>
 
 <div class="overlay-controls">
+	{#if showPexelsDrawer}
+		<PexelsDrawer 
+			onClose={() => showPexelsDrawer = false}
+			onImageSelect={handlePexelsImageSelect}
+		/>
+	{/if}
+
 	{#if !overlay}
 		<div 
 			class="import-box"
@@ -159,6 +173,11 @@
 				Paste
 			</button>
 		</div>
+		
+		<button class="pexels-link" on:click={() => showPexelsDrawer = true}>
+			<span class="pexels-text">Search for free images online</span>
+			<img src="/icons/icon-search.svg" alt="" class="pexels-icon" />
+		</button>
 	{:else}
 		<div class="control-row fit-fill-row">
 			<div class="button-group">
@@ -354,7 +373,7 @@
 		align-items: center;
 		gap: var(--space-3);
 		padding: var(--space-6);
-		border: 2px dashed var(--color-border);
+		border: 2px dotted var(--color-border);
 		border-radius: var(--radius-lg);
 		background: var(--color-surface);
 	}
@@ -398,6 +417,41 @@
 
 	.paste-btn:hover {
 		background: var(--color-primary-light);
+	}
+
+	.pexels-link {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		padding: var(--space-3) 0;
+		border: none;
+		background: transparent;
+		cursor: pointer;
+		transition: color var(--transition-fast);
+	}
+
+	.pexels-link:hover {
+		color: var(--color-primary);
+	}
+
+	.pexels-text {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+	}
+
+	.pexels-link:hover .pexels-text {
+		color: var(--color-primary);
+	}
+
+	.pexels-icon {
+		width: 18px;
+		height: 18px;
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
+	}
+
+	.pexels-link:hover .pexels-icon {
+		filter: brightness(0) saturate(100%) invert(22%) sepia(97%) saturate(3000%) hue-rotate(254deg) brightness(90%) contrast(105%);
 	}
 
 	.control-row {

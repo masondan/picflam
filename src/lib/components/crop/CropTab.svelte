@@ -4,6 +4,7 @@
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
 	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import AlertModal from '$lib/components/ui/AlertModal.svelte';
+	import PexelsDrawer from '$lib/components/design/PexelsDrawer.svelte';
 	import CropCanvas from './CropCanvas.svelte';
 	import CropControls from './CropControls.svelte';
 	import EditControls from './EditControls.svelte';
@@ -22,6 +23,7 @@
 	let modalType = null;
 	let pendingAction = null;
 	let modalAction = null;
+	let showPexelsDrawer = false;
 	
 	$: cropWidth = Math.round($cropState.imageWidth * $cropState.cropBox.width / 100);
 	$: cropHeight = Math.round($cropState.imageHeight * $cropState.cropBox.height / 100);
@@ -44,6 +46,11 @@
 		});
 		cropState.setBaseState();
 		activeSubMenu.set('crop');
+	}
+
+	function handlePexelsImageSelect(imageUrl) {
+		handleImageImport(imageUrl);
+		showPexelsDrawer = false;
 	}
 	
 	function handleSubMenuChange(tab) {
@@ -529,6 +536,13 @@
 </script>
 
 <div class="crop-tab">
+	{#if showPexelsDrawer}
+		<PexelsDrawer 
+			onClose={() => showPexelsDrawer = false}
+			onImageSelect={handlePexelsImageSelect}
+		/>
+	{/if}
+
 	{#if !$hasImage}
 		<ImportArea 
 			title="Crop, edit and add"
@@ -536,6 +550,11 @@
 			hint="Import, drag or paste an image"
 			onImageImport={handleImageImport}
 		/>
+
+		<button class="pexels-link" on:click={() => showPexelsDrawer = true}>
+			<span class="pexels-text">Search for free images online</span>
+			<img src="/icons/icon-search.svg" alt="" class="pexels-icon" />
+		</button>
 	{:else}
 		<ActionBar 
 			canUndo={$undoState.canUndo}
@@ -686,5 +705,40 @@
 	
 	:global(.crop-canvas) {
 		margin-top: var(--space-3);
+	}
+
+	.pexels-link {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		padding: var(--space-3) 0;
+		border: none;
+		background: transparent;
+		cursor: pointer;
+		transition: color var(--transition-fast);
+	}
+
+	.pexels-link:hover {
+		color: var(--color-primary);
+	}
+
+	.pexels-text {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+	}
+
+	.pexels-link:hover .pexels-text {
+		color: var(--color-primary);
+	}
+
+	.pexels-icon {
+		width: 18px;
+		height: 18px;
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
+	}
+
+	.pexels-link:hover .pexels-icon {
+		filter: brightness(0) saturate(100%) invert(22%) sepia(97%) saturate(3000%) hue-rotate(254deg) brightness(90%) contrast(105%);
 	}
 </style>

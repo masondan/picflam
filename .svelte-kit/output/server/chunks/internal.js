@@ -896,7 +896,7 @@ const options = {
   service_worker: false,
   service_worker_options: void 0,
   templates: {
-    app: ({ head, body, assets, nonce, env }) => '<!doctype html>\n<html lang="en">\n	<head>\n		<meta charset="utf-8" />\n		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />\n		<meta name="theme-color" content="#5422b0" />\n		<meta name="description" content="PicFlam - Mobile-first image editing and design tool for journalists" />\n		<link rel="icon" href="' + assets + '/logos/logo-picflam-touch.png" />\n		<link rel="apple-touch-icon" href="' + assets + '/logos/logo-picflam-touch.png" />\n		<link rel="manifest" href="' + assets + '/manifest.json" />\n		<title>PicFlam</title>\n		' + head + '\n	</head>\n	<body data-sveltekit-preload-data="hover">\n		<div style="display: contents">' + body + "</div>\n	</body>\n</html>\n",
+    app: ({ head, body, assets, nonce, env }) => '<!doctype html>\n<html lang="en">\n	<head>\n		<meta charset="utf-8" />\n		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />\n		<meta name="theme-color" content="#5422b0" />\n		<meta name="description" content="PicFlam - Mobile-first image editing and design tool for journalists and content creators, with AI upscale and background removal" />\n		<meta name="keywords" content="image editing, design tool, journalists, crop, filter, AI enhancement" />\n		\n		<!-- Open Graph for social sharing -->\n		<meta property="og:type" content="website" />\n		<meta property="og:title" content="PicFlam" />\n		<meta property="og:description" content="PicFlam - Mobile-first image editing and design tool for journalists and content creators, with AI upscale and background removal" />\n		<meta property="og:url" content="https://picflam.com" />\n		<meta property="og:image" content="' + assets + '/logos/logo-picflam-og.png" />\n		<meta property="og:site_name" content="PicFlam" />\n		\n		<!-- Twitter Card -->\n		<meta name="twitter:card" content="summary_large_image" />\n		<meta name="twitter:title" content="PicFlam" />\n		<meta name="twitter:description" content="PicFlam - Mobile-first image editing and design tool for journalists and content creators, with AI upscale and background removal" />\n		<meta name="twitter:image" content="' + assets + '/logos/logo-picflam-og.png" />\n		\n		<!-- Canonical URL -->\n		<link rel="canonical" href="https://picflam.com" />\n		\n		<!-- Icons -->\n		<link rel="icon" type="image/x-icon" href="' + assets + '/logos/favicon.ico" />\n		<link rel="icon" type="image/png" href="' + assets + '/logos/favicon.png" />\n		<link rel="apple-touch-icon" href="' + assets + '/logos/logo-picflam-touch.png" />\n		<link rel="manifest" href="' + assets + '/manifest.json" />\n		\n		<title>PicFlam</title>\n		' + head + '\n	</head>\n	<body data-sveltekit-preload-data="hover">\n		<div style="display: contents">' + body + "</div>\n	</body>\n</html>\n",
     error: ({ status, message }) => '<!doctype html>\n<html lang="en">\n	<head>\n		<meta charset="utf-8" />\n		<title>' + message + `</title>
 
 		<style>
@@ -968,7 +968,7 @@ const options = {
 		<div class="error">
 			<span class="status">` + status + '</span>\n			<div class="message">\n				<h1>' + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
   },
-  version_hash: "gdig1l"
+  version_hash: "1hsl8b4"
 };
 async function get_hooks() {
   let handle;

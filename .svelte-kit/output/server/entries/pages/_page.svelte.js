@@ -1361,6 +1361,10 @@ function CropTab($$renderer, $$props) {
       return filters.filter((f) => f !== "none").join(" ") || "none";
     })();
     $$renderer2.push(`<div class="crop-tab svelte-c9tnuw">`);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> `);
     if (!store_get($$store_subs ??= {}, "$hasImage", hasImage)) {
       $$renderer2.push("<!--[-->");
       ImportArea($$renderer2, {
@@ -1369,6 +1373,7 @@ function CropTab($$renderer, $$props) {
         hint: "Import, drag or paste an image",
         onImageImport: handleImageImport
       });
+      $$renderer2.push(`<!----> <button class="pexels-link svelte-c9tnuw"><span class="pexels-text svelte-c9tnuw">Search for free images online</span> <img src="/icons/icon-search.svg" alt="" class="pexels-icon svelte-c9tnuw"/></button>`);
     } else {
       $$renderer2.push("<!--[!-->");
       ActionBar($$renderer2, {
@@ -2141,9 +2146,13 @@ function OverlayControls($$renderer, $$props) {
     });
     const BORDER_COLORS = CANVAS_COLORS.solids;
     $$renderer2.push(`<div class="overlay-controls svelte-qirtgp">`);
+    {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> `);
     if (!overlay) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="import-box svelte-qirtgp" role="button" tabindex="0"><label class="import-area svelte-qirtgp"><input type="file" accept="image/*" class="file-input svelte-qirtgp"/> <img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-qirtgp"/> <span class="import-text svelte-qirtgp">Import, drag or<br/>paste an image</span></label> <button class="paste-btn svelte-qirtgp">Paste</button></div>`);
+      $$renderer2.push(`<div class="import-box svelte-qirtgp" role="button" tabindex="0"><label class="import-area svelte-qirtgp"><input type="file" accept="image/*" class="file-input svelte-qirtgp"/> <img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-qirtgp"/> <span class="import-text svelte-qirtgp">Import, drag or<br/>paste an image</span></label> <button class="paste-btn svelte-qirtgp">Paste</button></div> <button class="pexels-link svelte-qirtgp"><span class="pexels-text svelte-qirtgp">Search for free images online</span> <img src="/icons/icon-search.svg" alt="" class="pexels-icon svelte-qirtgp"/></button>`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<div class="control-row fit-fill-row svelte-qirtgp"><div class="button-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Fit &amp; Fill</span> <button class="icon-btn svelte-qirtgp" title="Fit image to canvas" aria-label="Fit"><img src="/icons/icon-fit.svg" alt="Fit" class="control-icon svelte-qirtgp"/></button> <button class="icon-btn svelte-qirtgp" title="Fill canvas with image" aria-label="Fill"><img src="/icons/icon-fill.svg" alt="Fill" class="control-icon svelte-qirtgp"/></button></div> <div class="button-group right-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Layers</span> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} title="Image on front layer" aria-label="Front"><img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon svelte-qirtgp"/></button> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} title="Image on back layer" aria-label="Back"><img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Opacity</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 100)}${attr("value", overlayOpacity)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset opacity"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 3)}${attr("step", 1)}${attr("value", overlayBorderWidth)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset border"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="color-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Colour</span> <div class="color-buttons svelte-qirtgp">`);
