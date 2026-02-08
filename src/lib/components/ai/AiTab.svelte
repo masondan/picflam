@@ -5,10 +5,12 @@
 	import AIWelcome from '$lib/components/ai/AIWelcome.svelte';
 	import UpscaleControls from '$lib/components/ai/UpscaleControls.svelte';
 	import RemoveBackgroundControls from '$lib/components/ai/RemoveBackgroundControls.svelte';
+	import PexelsDrawer from '$lib/components/design/PexelsDrawer.svelte';
 	import { aiState, activeAiMenu, hasAiImage } from '$lib/stores/aiStore.js';
-	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
-	
+	import { copyImageToClipboard, downloadImage, fileToDataUrl, resizeImage } from '$lib/utils/imageUtils.js';
+
 	let comparisonPosition = 50;
+	let showPexelsDrawer = false;
 	
 	function handleComparisonChange(newPosition) {
 		comparisonPosition = newPosition;
@@ -22,6 +24,11 @@
 	
 	function handleImageImport(dataUrl) {
 		aiState.setImage(dataUrl);
+	}
+	
+	function handlePexelsImageSelect(imageUrl) {
+		handleImageImport(imageUrl);
+		showPexelsDrawer = false;
 	}
 	
 	function handleSubMenuChange(tab) {
@@ -48,10 +55,17 @@
 </script>
 
 <div class="ai-tab">
+	{#if showPexelsDrawer}
+		<PexelsDrawer 
+			onClose={() => showPexelsDrawer = false}
+			onImageSelect={handlePexelsImageSelect}
+		/>
+	{/if}
+
 	{#if !$hasAiImage}
 		<AIWelcome 
 			onImageImport={handleImageImport}
-			onSearchClick={() => {}}
+			onSearchClick={() => showPexelsDrawer = true}
 		/>
 	{:else}
 		<ActionBar 
