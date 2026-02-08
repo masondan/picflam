@@ -17,6 +17,13 @@
 			isProcessing = true;
 			error = null;
 			progressStatus = 'Starting...';
+			
+			// If we just upscaled, treat the upscaled image as the new "original"
+			// This clears the comparison view so the user only sees the image being processed
+			if ($aiState.showComparison && $aiState.processedImage) {
+				aiState.promoteCurrentToOriginal();
+			}
+			
 			aiState.startProcessing('background');
 			
 			const resultDataUrl = await removeBackground($aiState.currentImage, (status) => {

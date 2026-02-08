@@ -25,7 +25,14 @@ function createStore() {
 		startProcessing: (type) => update(state => ({
 			...state,
 			isProcessing: true,
-			processingType: type
+			processingType: type,
+			showComparison: false
+		})),
+		promoteCurrentToOriginal: () => update(state => ({
+			...state,
+			originalImage: state.currentImage,
+			processedImage: null,
+			showComparison: false
 		})),
 		finishProcessing: (result) => update(state => ({
 			...state,
