@@ -26,6 +26,12 @@
 	
 	function handleSubMenuChange(tab) {
 		activeAiMenu.set(tab);
+		
+		// If switching to background removal after upscaling, promote upscaled image
+		// to "original" so it displays without comparison
+		if (tab === 'background' && $aiState.showComparison && $aiState.processedImage) {
+			aiState.promoteCurrentToOriginal();
+		}
 	}
 	
 	async function handleCopy() {
