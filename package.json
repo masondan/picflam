@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
+    "@melloware/coloris": "^0.25.0",
     "@upscalerjs/esrgan-thick": "^1.0.0-beta.16",
     "html2canvas": "^1.4.1",
     "onnxruntime-web": "^1.23.2",

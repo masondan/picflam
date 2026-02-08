@@ -1,22 +1,41 @@
 <script>
+	import { onMount, onDestroy } from 'svelte';
+	import '@melloware/coloris/dist/coloris.css';
+
 	export let colors = [];
 	export let value = '';
 	export let onChange = (color) => {};
 	export let showRainbow = true;
 	
 	let customColor = '#5422b0';
-	let colorInput;
-	
-	function openColorPicker() {
-		if (colorInput) {
-			colorInput.click();
+	let colorInputEl;
+	let inputId = `color-picker-${Math.random().toString(36).substr(2, 9)}`;
+
+	function handleColorPick(event) {
+		customColor = event.detail.color;
+		onChange(event.detail.color);
+	}
+
+	onMount(async () => {
+		if (colorInputEl && showRainbow) {
+			const { default: Coloris, init } = await import('@melloware/coloris');
+			init();
+			Coloris({
+				el: `#${inputId}`,
+				parent: '.app',
+				wrap: false,
+				theme: 'polaroid',
+				alpha: false
+			});
+			document.addEventListener('coloris:pick', handleColorPick);
 		}
-	}
-	
-	function handleColorChange(e) {
-		customColor = e.target.value;
-		onChange(customColor);
-	}
+	});
+
+	onDestroy(() => {
+		if (typeof document !== 'undefined') {
+			document.removeEventListener('coloris:pick', handleColorPick);
+		}
+	});
 </script>
 
 <div class="color-swatches">
@@ -32,20 +51,14 @@
 	{/each}
 	
 	{#if showRainbow}
-		<button 
+		<input 
+			bind:this={colorInputEl}
+			id={inputId}
+			type="text" 
+			value={customColor}
 			class="swatch rainbow"
 			class:active={value && !colors.includes(value) && value !== 'transparent'}
 			style="border-color: {value && !colors.includes(value) && value !== 'transparent' ? customColor : '#999999'}; {value && !colors.includes(value) && value !== 'transparent' ? `box-shadow: inset 0 0 0 2px white;` : ''}"
-			on:click={openColorPicker}
-			aria-label="Custom color"
-		/>
-		
-		<input 
-			bind:this={colorInput}
-			type="color" 
-			value={customColor}
-			on:input={handleColorChange}
-			style="display: none;"
 		/>
 	{/if}
 </div>
@@ -85,13 +98,27 @@
 	.swatch.white.active {
 		border-color: #555555;
 	}
-	
+
 	.swatch.rainbow {
 		background: conic-gradient(
 			red, yellow, lime, aqua, blue, magenta, red
-		);
+		) !important;
+		color: transparent !important;
+		font-size: 0 !important;
 		padding: 0;
+		appearance: none;
+		-webkit-appearance: none;
 	}
-	
 
+	:global(.clr-picker::before) {
+		display: none !important;
+	}
+
+	:global(.clr-picker) {
+		position: fixed !important;
+		top: 50% !important;
+		left: 50% !important;
+		transform: translate(-50%, -50%) !important;
+		z-index: 1000 !important;
+	}
 </style>
