@@ -1,8 +1,8 @@
 <script>
-	import ImportArea from '$lib/components/ui/ImportArea.svelte';
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
 	import BeforeAfterSlider from '$lib/components/ui/BeforeAfterSlider.svelte';
+	import AIWelcome from '$lib/components/ai/AIWelcome.svelte';
 	import UpscaleControls from '$lib/components/ai/UpscaleControls.svelte';
 	import RemoveBackgroundControls from '$lib/components/ai/RemoveBackgroundControls.svelte';
 	import { aiState, activeAiMenu, hasAiImage } from '$lib/stores/aiStore.js';
@@ -49,11 +49,9 @@
 
 <div class="ai-tab">
 	{#if !$hasAiImage}
-		<ImportArea 
-			title="Remove backgrounds,"
-			subtitle="upscale images with AI"
-			hint="Import, drag or paste an image"
+		<AIWelcome 
 			onImageImport={handleImageImport}
+			onSearchClick={() => {}}
 		/>
 	{:else}
 		<ActionBar 
