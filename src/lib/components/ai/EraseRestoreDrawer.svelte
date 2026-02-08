@@ -309,52 +309,46 @@
 			
 			<div class="control-row">
 				<label>Brush size</label>
-				<div class="control-item">
-					<Slider 
-						min={5}
-						max={100}
-						step={1}
-						value={brushSize}
-						onChange={(newValue) => brushSize = newValue}
-						onInteractionStart={() => { updateDisplayDimensions(); showBrushPreview = true; }}
-						onInteractionEnd={() => showBrushPreview = false}
-					/>
-					<button class="reset-btn" on:click={resetBrushSize} title="Reset">
-						<img src="/icons/icon-reset.svg" alt="Reset" />
-					</button>
-				</div>
+				<Slider 
+					min={5}
+					max={100}
+					step={1}
+					value={brushSize}
+					onChange={(newValue) => brushSize = newValue}
+					onInteractionStart={() => { updateDisplayDimensions(); showBrushPreview = true; }}
+					onInteractionEnd={() => showBrushPreview = false}
+				/>
+				<button class="reset-btn" on:click={resetBrushSize} title="Reset">
+					<img src="/icons/icon-reset.svg" alt="Reset" />
+				</button>
 			</div>
 			
 			<div class="control-row">
 				<label>Soften edges</label>
-				<div class="control-item">
-					<Slider 
-						min={0}
-						max={100}
-						step={1}
-						value={softenEdges}
-						onChange={(newValue) => softenEdges = newValue}
-					/>
-					<button class="reset-btn" on:click={resetSoftenEdges} title="Reset">
-						<img src="/icons/icon-reset.svg" alt="Reset" />
-					</button>
-				</div>
+				<Slider 
+					min={0}
+					max={100}
+					step={1}
+					value={softenEdges}
+					onChange={(newValue) => softenEdges = newValue}
+				/>
+				<button class="reset-btn" on:click={resetSoftenEdges} title="Reset">
+					<img src="/icons/icon-reset.svg" alt="Reset" />
+				</button>
 			</div>
 			
 			<div class="control-row">
 				<label>Zoom in</label>
-				<div class="control-item">
-					<Slider 
-						min={1}
-						max={3}
-						step={0.1}
-						value={zoomLevel}
-						onChange={(newValue) => zoomLevel = newValue}
-					/>
-					<button class="reset-btn" on:click={resetZoom} title="Reset">
-						<img src="/icons/icon-reset.svg" alt="Reset" />
-					</button>
-				</div>
+				<Slider 
+					min={1}
+					max={3}
+					step={0.1}
+					value={zoomLevel}
+					onChange={(newValue) => zoomLevel = newValue}
+				/>
+				<button class="reset-btn" on:click={resetZoom} title="Reset">
+					<img src="/icons/icon-reset.svg" alt="Reset" />
+				</button>
 			</div>
 			
 			<div class="nudge-buttons">
@@ -538,20 +532,17 @@
 	
 	.control-row {
 		display: flex;
-		flex-direction: column;
 		gap: var(--space-2);
+		align-items: center;
 	}
 	
 	.control-row label {
 		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-medium);
 		color: var(--color-text-primary);
-	}
-	
-	.control-item {
-		display: flex;
-		gap: var(--space-2);
-		align-items: center;
+		white-space: nowrap;
+		flex-shrink: 0;
+		min-width: 80px;
 	}
 	
 	.reset-btn {
