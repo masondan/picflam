@@ -1,6 +1,6 @@
 {
   ".svelte-kit/generated/client-optimized/app.js": {
-    "file": "_app/immutable/entry/app.DEIGJGCl.js",
+    "file": "_app/immutable/entry/app.CnPDYw6o.js",
     "name": "entry/app",
     "src": ".svelte-kit/generated/client-optimized/app.js",
     "isEntry": true,
@@ -33,7 +33,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/1.js": {
-    "file": "_app/immutable/nodes/1.Dc2HFANR.js",
+    "file": "_app/immutable/nodes/1.CbIF91ZF.js",
     "name": "nodes/1",
     "src": ".svelte-kit/generated/client-optimized/nodes/1.js",
     "isEntry": true,
@@ -44,11 +44,11 @@
       "_Dowq9yQq.js",
       "_CgNPIS03.js",
       "_Dqy9l8l1.js",
-      "_qw1Mqp0b.js"
+      "_CKCVkTmd.js"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/2.js": {
-    "file": "_app/immutable/nodes/2.RGwofYuS.js",
+    "file": "_app/immutable/nodes/2.BAwptgh4.js",
     "name": "nodes/2",
     "src": ".svelte-kit/generated/client-optimized/nodes/2.js",
     "isEntry": true,
@@ -63,10 +63,11 @@
       "_C99_Sh4f.js"
     ],
     "dynamicImports": [
-      "node_modules/@huggingface/transformers/dist/transformers.web.js"
+      "node_modules/@huggingface/transformers/dist/transformers.web.js",
+      "node_modules/@melloware/coloris/dist/esm/coloris.js"
     ],
     "css": [
-      "_app/immutable/assets/2.CcHTVkE_.css"
+      "_app/immutable/assets/2.IZq-aebx.css"
     ]
   },
   "_C99_Sh4f.js": {
@@ -74,6 +75,14 @@
     "name": "index-client",
     "imports": [
       "_Dowq9yQq.js"
+    ]
+  },
+  "_CKCVkTmd.js": {
+    "file": "_app/immutable/chunks/CKCVkTmd.js",
+    "name": "entry",
+    "imports": [
+      "_Dowq9yQq.js",
+      "_C99_Sh4f.js"
     ]
   },
   "_CTT2nEcH.js": {
@@ -117,14 +126,6 @@
       "_Dowq9yQq.js"
     ]
   },
-  "_qw1Mqp0b.js": {
-    "file": "_app/immutable/chunks/qw1Mqp0b.js",
-    "name": "entry",
-    "imports": [
-      "_Dowq9yQq.js",
-      "_C99_Sh4f.js"
-    ]
-  },
   "node_modules/@huggingface/transformers/dist/transformers.web.js": {
     "file": "_app/immutable/chunks/bLAnV4ll.js",
     "name": "transformers.web",
@@ -138,13 +139,19 @@
     "file": "_app/immutable/assets/ort-wasm-simd-threaded.jsep.B0T3yYHD.wasm",
     "src": "node_modules/@huggingface/transformers/node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.jsep.wasm"
   },
+  "node_modules/@melloware/coloris/dist/esm/coloris.js": {
+    "file": "_app/immutable/chunks/B3mo8nTR.js",
+    "name": "coloris",
+    "src": "node_modules/@melloware/coloris/dist/esm/coloris.js",
+    "isDynamicEntry": true
+  },
   "node_modules/@sveltejs/kit/src/runtime/client/entry.js": {
-    "file": "_app/immutable/entry/start.0ok2uIj0.js",
+    "file": "_app/immutable/entry/start.C9FT2VVo.js",
     "name": "entry/start",
     "src": "node_modules/@sveltejs/kit/src/runtime/client/entry.js",
     "isEntry": true,
     "imports": [
-      "_qw1Mqp0b.js"
+      "_CKCVkTmd.js"
     ]
   }
 }

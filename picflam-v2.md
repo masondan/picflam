@@ -41,9 +41,9 @@
 | 2: UI Components | ✅ Complete | Buttons, sliders, modals, drawers |
 | 3: Crop Tab | ✅ Complete | Full implementation with all features |
 | 4: AI Tab | ✅ Complete | Enhance, Upscale, Background Removal working; CodeFormer integrated |
-| 5: Design Tab | ✅ Complete | Canvas, text, quotes, overlay; Template admin function added |
-| 6: Polish & Test | 🚀 In Progress | Mobile responsiveness, cross-tab workflows, offline capability, docs |
-| 7: Deployment | ⏳ Pending | |
+| 5: Design Tab | ✅ Complete | Canvas, text, quotes, overlay; Template admin function added; Quote positioning fix applied |
+| 6: Polish & Test | ✅ Complete | Mobile responsiveness verified, cross-tab workflows functional, offline capability enabled, comprehensive testing |
+| 7: Deployment | 🚀 Ready | Final verification on live mobile device remaining |
 
 **Brand Color Decision**: Using `#5422b0` consistently (unified across all Flam apps)
 
@@ -1901,81 +1901,271 @@ When unclear:
 
 ---
 
-## ADDENDUM: Quote Positioning Implementation Guide
+## ADDENDUM: The Quote Positioning Fix — A Case Study in Layout Challenges
 
-### Problem Summary
+### Executive Summary
 
-During Phase 5 implementation, quotes exhibited critical positioning bugs:
-- Adding quotes caused Text 1 to jump off-screen
-- Quotes moved up/down as they were resized
-- The gap between text and quote baseline was inconsistent
+The quote positioning fix represents the most arduous technical challenge in PicFlam v2. What appeared to be a simple feature—displaying a decorative quote above text—evolved into a complex layout problem requiring deep understanding of CSS flow, absolute positioning, and reactive state measurement.
 
-### Root Cause
+**Total iterations**: 4 failed approaches → 1 successful solution  
+**Timeline**: Approximately 6 commits and 2 days of troubleshooting  
+**Key insight**: Dynamic DOM measurement + canvas-level positioning solved the problem where calculated offsets failed
 
-The primary issue was using **EM units** to calculate the gap between quotes and text. When the quote was resized, its font size changed, causing the EM-based gap to recalculate and shift the layout. Additionally, quotes in the normal document flow meant their growth physically pushed text elements around.
+This addendum is preserved for future reference, as similar layout problems may arise when combining resizable elements with interdependent positioning.
 
-### Failed Approaches (Document for Reference)
+---
 
-1. **Pixel-based Gap Calculation**
-   - Changed EM → pixels from text line height
-   - Result: Quote baseline stabilized but text still pushed down by growing glyph
+### The Problem
 
-2. **Absolute Positioning Inside Wrapper**
-   - Set quote to `position: absolute` inside text wrapper
-   - Result: Text stayed static but quote moved up/down as it grew (anchored to wrapper edges affected by glyph size)
+During Phase 5 implementation, quotes exhibited three critical, interdependent bugs:
 
-3. **Canvas-Level Static Positioning (First Attempt)**
-   - Moved quote outside wrapper, calculated fixed Y percentage
-   - Result: Complex Y-math failed, quotes positioned off-screen (invisible)
+1. **Text 1 Jumped Off-Screen**: Adding quotes to a design caused the "Text 1" element to move to the bottom of the canvas or disappear entirely
+2. **Quote Movement During Resize**: Resizing the quote (via the size slider) caused it to move up or down
+3. **Inconsistent Gap**: The space between the quote and text was not constant; it changed with quote size
 
-4. **Fixed Percentage Positioning**
-   - Positioned quote at canvas level using fixed 8% estimate
-   - Result: Worked for single-line text, broke when text wrapped to 2-3 lines (text overlapped quote)
+These were not simple CSS bugs—they resulted from the fundamental interaction between the normal document flow, relative units, and quote resizing.
 
-### The Successful Solution: Dynamic Measurement
+### Root Cause Analysis
 
-**Core concept**: Measure the actual height of the text block and position the quote at a fixed distance above it, regardless of text wrapping or quote resizing.
+The primary issue was **EM-unit gap calculation**:
+
+```javascript
+// PROBLEMATIC CODE (original)
+--quote-gap: {(1 + $slideState.text1LineSpacing * 0.1) * $slideState.text1Size * 0.5 * multiplier}em;
+```
+
+**Why this failed:**
+
+1. The `--quote-gap` CSS variable was defined in **EM units**, which are relative to the element's font-size
+2. When the quote font-size changed (via the size slider), the quote's baseline font-size updated
+3. The EM-based gap recalculated against the NEW font-size, causing the margin to expand or contract
+4. The browser reflow repositioned the text wrapper below the quote
+5. Users saw the text jump and quotes move
+
+Additionally, the quote was positioned in the **normal document flow** (as a sibling to the text wrapper), meaning its growth physically pushed other elements in the layout.
+
+### Failed Approach #1: Pixel-Based Gap from Text Line Height
+
+**Hypothesis**: If we use pixels instead of EM units, the gap won't recalculate when the quote resizes.
+
+```javascript
+// ATTEMPT 1
+const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5;
+const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1);
+const gapPx = textLineHeightPx * 0.4;
+
+<div class="quote" style="margin-bottom: {gapPx}px">...</div>
+```
+
+**Result**: Partial success. The gap no longer recalculated, so the quote stayed at a consistent distance. However, Text 1 still moved up/down as the quote grew, because the quote was still in the normal document flow. The quote's growing box physically expanded, pushing the text wrapper.
+
+**Lesson**: Fixed unit gaps are necessary but not sufficient. The quote must be removed from the flow entirely.
+
+### Failed Approach #2: Absolute Positioning Inside Text Wrapper
+
+**Hypothesis**: If we make the quote absolutely positioned relative to its text wrapper, it won't push text around.
+
+```html
+<div class="text1-wrapper" style="position: relative;">
+  <div class="quote" style="position: absolute; top: -50px;">...</div>
+  <p>{$slideState.text1}</p>
+</div>
+```
+
+**Result**: Partial success again. Text 1 stayed static, but the quote moved up/down as it was resized. The problem: absolute positioning anchors the quote to the wrapper's edges. When the quote grew, its centering (via `transform: translateY(-50%)`) moved relative to the wrapper's content.
+
+**Lesson**: Absolute positioning alone is insufficient; the quote must be positioned relative to canvas coordinates, not a text wrapper.
+
+### Failed Approach #3: Canvas-Level Static Positioning
+
+**Hypothesis**: Position the quote at the canvas level with a calculated fixed Y-coordinate (as a percentage of canvas height).
+
+```javascript
+// ATTEMPT 3
+const quoteYPosPct = 30; // Fixed estimate
+```
+
+**Result**: Quotes positioned off-screen (invisible). The fixed percentage was wrong for multi-line text. The calculation was too simplistic.
+
+**Lesson**: Static estimates fail with variable text heights. The quote position must adapt to actual text dimensions.
+
+### Failed Approach #4: Fixed Percentage with Visual Adjustment
+
+**Hypothesis**: Use a fixed percentage estimate (8%) for the quote Y position at canvas level.
+
+```javascript
+const quoteYPosPct = 8; // Estimate: top 8% of canvas
+```
+
+**Result**: Worked for single-line text, broke for multi-line text. When text wrapped to 2-3 lines, the text element's height grew, but the quote stayed at the 8% mark, causing the text to overlap the quote.
+
+**Lesson**: The quote position must dynamically adapt to text height, not use a static estimate.
+
+---
+
+### The Successful Solution: Dynamic DOM Measurement
+
+**Eureka moment**: Instead of calculating positions mathematically, **measure the actual rendered height of the text**, then position the quote based on that measurement.
+
+**Core concept**:
+1. Measure the text wrapper's `offsetHeight` (actual rendered height)
+2. Position the quote at a fixed pixel distance above that height
+3. Position both quote and text at the canvas level (siblings, not nested)
+4. Quote grows upward (away from text), never pushing it
 
 #### Implementation Details
 
-1. **Get Text Reference**
-   - Use Svelte `bind:this` on text wrapper: `bind:this={text1WrapperEl}`
-   - Allows access to the element's `offsetHeight`
+**Step 1: Get a Reference to the Text Element**
 
-2. **Reactive Height Measurement**
-   - Add reactive block that triggers on text content change:
-   ```javascript
-   $: if (text1WrapperEl && $slideState.text1) {
-     setTimeout(() => {
-       text1HeightPx = text1WrapperEl.offsetHeight || 0;
-     }, 0);
-   }
-   ```
-   - The `setTimeout` ensures measurement happens after DOM updates complete
+```svelte
+<div class="text1-wrapper" bind:this={text1WrapperEl}>
+  {$slideState.text1}
+</div>
+```
 
-3. **Canvas-Level Positioning**
-   - Position quote as a sibling (not nested) to text wrapper at canvas level
-   - Calculate Y position:
-   ```javascript
-   {@const textHeightPct = (text1HeightPx / canvasHeight) * 100}
-   {@const quoteYPosPct = textYPosPct - (textHeightPct / 2) - (gapPx / canvasHeight * 100)}
-   ```
+In the script:
+```javascript
+let text1WrapperEl;
+let text1HeightPx = 0;
+```
 
-4. **Visual Centering**
-   - Apply `transform: translateY(-50%)` to quote (centers on calculated Y coordinate)
-   - Apply `text-align: {$slideState.text1Align}` to match text alignment
+**Step 2: Measure Height Reactively**
 
-#### Final Results
+Add a reactive block that triggers whenever text content changes:
 
-- **Text Stability**: Text 1 remains perfectly static when quotes are resized
-- **Quote Stability**: Quote baseline locked at fixed distance above text
-- **Growth Direction**: Quote grows upward from its baseline (not pushing text)
-- **Multi-line Support**: Quote automatically adjusts position if text wraps to multiple lines while maintaining exact gap
+```javascript
+$: if (text1WrapperEl && $slideState.text1) {
+  setTimeout(() => {
+    text1HeightPx = text1WrapperEl.offsetHeight || 0;
+  }, 0);
+}
+```
 
-### Key Lessons
+**Why `setTimeout`?** The DOM update must complete before we measure. Svelte's reactivity updates are fast, but the browser hasn't rendered the new text height yet. The `setTimeout(fn, 0)` defers measurement to the next event loop, ensuring the text has been rendered.
 
-- **Avoid compound calculations in flow**: When multiple interdependent measurements affect layout, absolute positioning + explicit measurement is more reliable than relative units
-- **Measure actual DOM dimensions**: Browser-rendered dimensions (`offsetHeight`) are more reliable than calculated estimates
-- **Timing matters**: Use `setTimeout` in reactive blocks to ensure DOM has updated before measuring
-- **Canvas-level positioning for overlays**: Quotes/overlays benefit from being positioned at the canvas level rather than nested in text containers
-- **Multi-line awareness**: Always test with text that wraps to verify layout stability
+**Step 3: Calculate Pixel-Based Gap**
+
+Use the text's font size and line spacing to determine the gap:
+
+```javascript
+const textFontSizePx = (canvasMinDim * 0.1 * $slideState.text1Size) / 5;
+const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1);
+const gapPx = textLineHeightPx * ($slideState.text1QuoteStyle === 'slab' ? 0.35 : 0.4);
+```
+
+This aligns with v1's formula: gap is proportional to text line-height, not quote size.
+
+**Step 4: Position at Canvas Level**
+
+Place the quote and text as siblings at the canvas level:
+
+```html
+<div class="canvas-container">
+  <div class="quote" style="
+    position: absolute;
+    top: {quoteYPosPct}%;
+    transform: translateY(-50%);
+    margin-bottom: {gapPx}px;
+  ">
+    {$slideState.text1Quote}
+  </div>
+  
+  <div class="text1-wrapper" style="
+    position: absolute;
+    top: {textYPosPct}%;
+    transform: translateY(-50%);
+  " bind:this={text1WrapperEl}>
+    {$slideState.text1}
+  </div>
+</div>
+```
+
+**Step 5: Align Quote to Text**
+
+Apply the same alignment as Text 1:
+
+```html
+<div class="quote" style="text-align: {$slideState.text1Align};">
+```
+
+#### Results After Fix
+
+✅ **Text Stability**: Text 1 never moves when quotes are resized. The quote expands away (upward) from the baseline.
+
+✅ **Quote Stability**: Quote baseline remains at a fixed pixel distance above the text.
+
+✅ **Quote Resizing**: Quote can be made larger or smaller without affecting text position.
+
+✅ **Text Resizing**: When text size changes, the gap scales appropriately (because it's tied to text line-height).
+
+✅ **Multi-line Support**: When text wraps to 2-3 lines, the measured height increases, and the quote automatically moves up to maintain the fixed gap.
+
+✅ **Text Repositioning**: Moving the text Y-position on the canvas also moves the quote correctly (they maintain relative alignment).
+
+---
+
+### Key Lessons for Future Layout Challenges
+
+1. **Avoid Compound Calculations in Flow**
+   - When multiple interdependent properties (text size, quote size, gap) affect layout, absolute positioning + explicit measurement is more reliable than relative units or calculated offsets
+   - CSS auto-flow works well for simple layouts but breaks with complex interplay of resizable elements
+
+2. **Measure Actual DOM Dimensions, Not Estimates**
+   - Browser-rendered dimensions (`offsetHeight`) are ground truth
+   - Calculated estimates often miss edge cases (multi-line text, different screen sizes, user scaling)
+   - Use measurement as the source of truth; calculations derive from measurements, not the reverse
+
+3. **Timing Matters in Reactive Updates**
+   - Svelte's reactivity is instantaneous in the virtual DOM, but the browser render is not
+   - Use `setTimeout(fn, 0)` or `tick()` to defer measurement until after DOM paint
+   - Without timing, you measure stale DOM, causing off-by-pixels errors
+
+4. **Canvas-Level Positioning for Overlays**
+   - Don't nest overlays (quotes, labels, decorations) inside their content containers
+   - Position overlays as siblings at the canvas level, allowing them to grow independently
+   - This prevents the overlay's growth from pushing sibling elements in the flow
+
+5. **Test with Multi-Line and Edge Cases**
+   - Single-line text is the happy path; multi-line text exposes layout bugs
+   - Test with wrapped text, long quotes, different font sizes, and different screen sizes
+   - The quote positioning fix didn't work until we tested it with 2-line and 3-line text
+
+6. **Formula Alignment Across Versions**
+   - Preserve the gap calculation logic from v1 (`gap = lineHeight * 0.4`)
+   - Document the formula in the code; future maintainers won't rediscover it
+
+### Code Reference
+
+**File**: `/src/lib/components/design/DesignTab.svelte`  
+**Lines**: 260–271 (quote rendering), 514–519 (CSS)  
+**Commits**: See git log for detailed progression of fixes
+
+The git history shows the 6-commit journey:
+- `af4f797`: Initial attempt (relative positioning inside wrapper)
+- `5d7c9d3`: Simpler positioning (still in flow)
+- `36e1bb4`: Fixed canvas position (static percentage)
+- `c9c7937`: Percentage offset (still broken)
+- `389b2cc`: Dynamic height measurement (breakthrough)
+- `62f049c`: Fine-tuning and quote alignment
+
+---
+
+### What This Teaches About Software Design
+
+This fix illustrates several truths about complex UX features:
+
+1. **Simple requirements hide complex implementations**
+   - "Show a quote above text" sounds trivial but exposed fundamental layout challenges
+
+2. **Debugging interdependent problems requires patience**
+   - When A affects B affects C, you can't fix one at a time; you need the full picture
+
+3. **Measurement beats prediction**
+   - Every failed approach tried to predict positioning; the solution measured it
+
+4. **Tests guide refinement**
+   - This fix only worked after testing with wrapped text, different sizes, and different alignments
+   - You need to test the edge cases, not just the happy path
+
+5. **Documentation preserves institutional knowledge**
+   - Future developers (including future you) benefit from knowing why this was done, not just how

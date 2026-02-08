@@ -1778,6 +1778,16 @@ function ColorSwatch($$renderer, $$props) {
     });
     let showRainbow = fallback($$props["showRainbow"], true);
     let customColor = "#5422b0";
+    let inputId = `color-picker-${Math.random().toString(36).substr(2, 9)}`;
+    function handleColorPick(event) {
+      customColor = event.detail.color;
+      onChange(event.detail.color);
+    }
+    onDestroy(() => {
+      if (typeof document !== "undefined") {
+        document.removeEventListener("coloris:pick", handleColorPick);
+      }
+    });
     $$renderer2.push(`<div class="color-swatches svelte-x97jji"><!--[-->`);
     const each_array = ensure_array_like(colors);
     for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
@@ -1787,9 +1797,9 @@ function ColorSwatch($$renderer, $$props) {
     $$renderer2.push(`<!--]--> `);
     if (showRainbow) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<button${attr_class("swatch rainbow svelte-x97jji", void 0, {
+      $$renderer2.push(`<input${attr("id", inputId)} type="text"${attr("value", customColor)}${attr_class("swatch rainbow svelte-x97jji", void 0, {
         "active": value && !colors.includes(value) && value !== "transparent"
-      })}${attr_style(`border-color: ${stringify(value && !colors.includes(value) && value !== "transparent" ? customColor : "#999999")}; ${stringify(value && !colors.includes(value) && value !== "transparent" ? `box-shadow: inset 0 0 0 2px white;` : "")}`)} aria-label="Custom color"></button> <input type="color"${attr("value", customColor)} style="display: none;"/>`);
+      })}${attr_style(`border-color: ${stringify(value && !colors.includes(value) && value !== "transparent" ? customColor : "#999999")}; ${stringify(value && !colors.includes(value) && value !== "transparent" ? `box-shadow: inset 0 0 0 2px white;` : "")}`)}/>`);
     } else {
       $$renderer2.push("<!--[!-->");
     }
@@ -2292,7 +2302,7 @@ function DesignTab($$renderer, $$props) {
     $$renderer2.push(`<div class="design-tab svelte-fxk5n4">`);
     if (store_get($$store_subs ??= {}, "$showTemplatePicker", showTemplatePicker)) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="template-picker svelte-fxk5n4"><p class="picker-title svelte-fxk5n4">Create quotes &amp; cards with<br/>a template or blank canvas</p> <button class="blank-canvas-btn svelte-fxk5n4"><img src="/icons/icon-add.svg" alt="" class="add-icon svelte-fxk5n4"/></button> <div class="template-grid svelte-fxk5n4"><!--[-->`);
+      $$renderer2.push(`<div class="template-picker svelte-fxk5n4"><p class="picker-title svelte-fxk5n4">Create quotes &amp; cards with<br/>a template or blank canvas</p> <div class="template-grid svelte-fxk5n4"><button class="blank-canvas-btn svelte-fxk5n4"><img src="/icons/icon-add.svg" alt="" class="add-icon svelte-fxk5n4"/></button> <!--[-->`);
       const each_array = ensure_array_like(templatesData.templates);
       for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
         let template = each_array[$$index];
