@@ -20,6 +20,85 @@ function Header($$renderer, $$props) {
     bind_props($$props, { activeTab: activeTab2, onTabChange });
   });
 }
+function ActionBar($$renderer, $$props) {
+  let canUndo = fallback($$props["canUndo"], false);
+  let canRedo = fallback($$props["canRedo"], false);
+  let onUndo = fallback($$props["onUndo"], () => {
+  });
+  let onRedo = fallback($$props["onRedo"], () => {
+  });
+  let onStartAgain = fallback($$props["onStartAgain"], () => {
+  });
+  let onCopy = fallback($$props["onCopy"], () => {
+  });
+  let onExport = fallback($$props["onExport"], () => {
+  });
+  $$renderer.push(`<div class="action-bar svelte-96zw02"><div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02"${attr("disabled", !canUndo, true)} aria-label="Undo"><img src="/icons/icon-undo.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02"${attr("disabled", !canRedo, true)} aria-label="Redo"><img src="/icons/icon-redo.svg" alt="" class="action-icon svelte-96zw02"/></button></div> <div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02" aria-label="Start again"><img src="/icons/icon-startagain.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Copy to clipboard"><img src="/icons/icon-copy.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Export"><img src="/icons/icon-export.svg" alt="" class="action-icon svelte-96zw02"/></button></div></div>`);
+  bind_props($$props, {
+    canUndo,
+    canRedo,
+    onUndo,
+    onRedo,
+    onStartAgain,
+    onCopy,
+    onExport
+  });
+}
+function SubMenuTabs($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let tabs = fallback($$props["tabs"], () => [], true);
+    let activeTab2 = fallback($$props["activeTab"], "");
+    let onTabChange = fallback($$props["onTabChange"], (tab) => {
+    });
+    $$renderer2.push(`<div class="sub-menu-tabs svelte-tv6tw8"><!--[-->`);
+    const each_array = ensure_array_like(tabs);
+    for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
+      let tab = each_array[$$index];
+      $$renderer2.push(`<button${attr_class("sub-menu-tab svelte-tv6tw8", void 0, { "active": activeTab2 === tab.id })}>${escape_html(tab.label)}</button>`);
+    }
+    $$renderer2.push(`<!--]--></div>`);
+    bind_props($$props, { tabs, activeTab: activeTab2, onTabChange });
+  });
+}
+function ConfirmModal($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let message = fallback($$props["message"], "");
+    let confirmText = fallback($$props["confirmText"], "Yes");
+    let cancelText = fallback($$props["cancelText"], "Cancel");
+    let onConfirm = fallback($$props["onConfirm"], () => {
+    });
+    let onCancel = fallback($$props["onCancel"], () => {
+    });
+    $$renderer2.push(`<div class="modal-overlay svelte-qik81a" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-qik81a" role="document"><p class="modal-message svelte-qik81a">${html(message)}</p> <div class="modal-actions svelte-qik81a"><button class="btn-text svelte-qik81a">${escape_html(cancelText)}</button> <button class="btn-text btn-confirm svelte-qik81a">${escape_html(confirmText)}</button></div></div></div>`);
+    bind_props($$props, { message, confirmText, cancelText, onConfirm, onCancel });
+  });
+}
+function AlertModal($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let message = fallback($$props["message"], "");
+    let actionText = fallback($$props["actionText"], "Got it");
+    let onAction = fallback($$props["onAction"], () => {
+    });
+    $$renderer2.push(`<div class="modal-overlay svelte-199npzs" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-199npzs" role="document"><p class="modal-message svelte-199npzs">${html(message)}</p> <div class="modal-actions svelte-199npzs"><button class="btn-action svelte-199npzs">${escape_html(actionText)}</button></div></div></div>`);
+    bind_props($$props, { message, actionText, onAction });
+  });
+}
+function PexelsDrawer($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let onClose = fallback($$props["onClose"], () => {
+    });
+    let onImageSelect = fallback($$props["onImageSelect"], (imageUrl) => {
+    });
+    let searchQuery = "";
+    $$renderer2.push(`<div class="pexels-overlay svelte-1rrbj1j"><div class="pexels-drawer svelte-1rrbj1j"><div class="drawer-header svelte-1rrbj1j"><button class="close-btn svelte-1rrbj1j" aria-label="Close search"><img src="/icons/icon-close.svg" alt="" class="close-icon svelte-1rrbj1j"/></button></div> <div class="search-container svelte-1rrbj1j"><form class="search-form svelte-1rrbj1j"><input type="text"${attr("value", searchQuery)} placeholder="Search for images" class="search-input svelte-1rrbj1j"/> <button type="submit" class="search-btn svelte-1rrbj1j" aria-label="Search"><img src="/icons/icon-search.svg" alt="" class="search-icon svelte-1rrbj1j"/></button></form></div> <div class="drawer-body svelte-1rrbj1j">`);
+    {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<div class="loading svelte-1rrbj1j">Loading images...</div>`);
+    }
+    $$renderer2.push(`<!--]--></div></div></div>`);
+    bind_props($$props, { onClose, onImageSelect });
+  });
+}
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -184,86 +263,15 @@ async function renderFinalImage(dataUrl, editFilterCss, blurMask) {
   }
   return canvas.toDataURL("image/png");
 }
-function ImportArea($$renderer, $$props) {
+function CropWelcome($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
-    let title = fallback($$props["title"], "Import an image");
-    let subtitle = fallback($$props["subtitle"], "");
-    let hint = fallback($$props["hint"], "Import, drag or paste an image");
     let onImageImport = fallback($$props["onImageImport"], (dataUrl) => {
     });
+    let onSearchClick = fallback($$props["onSearchClick"], () => {
+    });
     let isDragging = false;
-    $$renderer2.push(`<div${attr_class("import-area svelte-f1bndr", void 0, { "dragging": isDragging })} role="button" tabindex="0"><p class="import-title svelte-f1bndr">${escape_html(title)}`);
-    if (subtitle) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<br/>${escape_html(subtitle)}`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></p> <img src="/icons/icon-upload.svg" alt="" class="import-icon svelte-f1bndr"/> <p class="import-hint svelte-f1bndr">${escape_html(hint)}</p> <button class="btn-paste svelte-f1bndr">Paste</button> <input type="file" accept="image/*" class="sr-only"/></div>`);
-    bind_props($$props, { title, subtitle, hint, onImageImport });
-  });
-}
-function ActionBar($$renderer, $$props) {
-  let canUndo = fallback($$props["canUndo"], false);
-  let canRedo = fallback($$props["canRedo"], false);
-  let onUndo = fallback($$props["onUndo"], () => {
-  });
-  let onRedo = fallback($$props["onRedo"], () => {
-  });
-  let onStartAgain = fallback($$props["onStartAgain"], () => {
-  });
-  let onCopy = fallback($$props["onCopy"], () => {
-  });
-  let onExport = fallback($$props["onExport"], () => {
-  });
-  $$renderer.push(`<div class="action-bar svelte-96zw02"><div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02"${attr("disabled", !canUndo, true)} aria-label="Undo"><img src="/icons/icon-undo.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02"${attr("disabled", !canRedo, true)} aria-label="Redo"><img src="/icons/icon-redo.svg" alt="" class="action-icon svelte-96zw02"/></button></div> <div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02" aria-label="Start again"><img src="/icons/icon-startagain.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Copy to clipboard"><img src="/icons/icon-copy.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Export"><img src="/icons/icon-export.svg" alt="" class="action-icon svelte-96zw02"/></button></div></div>`);
-  bind_props($$props, {
-    canUndo,
-    canRedo,
-    onUndo,
-    onRedo,
-    onStartAgain,
-    onCopy,
-    onExport
-  });
-}
-function SubMenuTabs($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let tabs = fallback($$props["tabs"], () => [], true);
-    let activeTab2 = fallback($$props["activeTab"], "");
-    let onTabChange = fallback($$props["onTabChange"], (tab) => {
-    });
-    $$renderer2.push(`<div class="sub-menu-tabs svelte-tv6tw8"><!--[-->`);
-    const each_array = ensure_array_like(tabs);
-    for (let $$index = 0, $$length = each_array.length; $$index < $$length; $$index++) {
-      let tab = each_array[$$index];
-      $$renderer2.push(`<button${attr_class("sub-menu-tab svelte-tv6tw8", void 0, { "active": activeTab2 === tab.id })}>${escape_html(tab.label)}</button>`);
-    }
-    $$renderer2.push(`<!--]--></div>`);
-    bind_props($$props, { tabs, activeTab: activeTab2, onTabChange });
-  });
-}
-function ConfirmModal($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let message = fallback($$props["message"], "");
-    let confirmText = fallback($$props["confirmText"], "Yes");
-    let cancelText = fallback($$props["cancelText"], "Cancel");
-    let onConfirm = fallback($$props["onConfirm"], () => {
-    });
-    let onCancel = fallback($$props["onCancel"], () => {
-    });
-    $$renderer2.push(`<div class="modal-overlay svelte-qik81a" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-qik81a" role="document"><p class="modal-message svelte-qik81a">${html(message)}</p> <div class="modal-actions svelte-qik81a"><button class="btn-text svelte-qik81a">${escape_html(cancelText)}</button> <button class="btn-text btn-confirm svelte-qik81a">${escape_html(confirmText)}</button></div></div></div>`);
-    bind_props($$props, { message, confirmText, cancelText, onConfirm, onCancel });
-  });
-}
-function AlertModal($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let message = fallback($$props["message"], "");
-    let actionText = fallback($$props["actionText"], "Got it");
-    let onAction = fallback($$props["onAction"], () => {
-    });
-    $$renderer2.push(`<div class="modal-overlay svelte-199npzs" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-199npzs" role="document"><p class="modal-message svelte-199npzs">${html(message)}</p> <div class="modal-actions svelte-199npzs"><button class="btn-action svelte-199npzs">${escape_html(actionText)}</button></div></div></div>`);
-    bind_props($$props, { message, actionText, onAction });
+    $$renderer2.push(`<div class="crop-welcome svelte-11oijc1"><img src="/images/crop-intro.png" alt="Welcome to Crop" class="welcome-image svelte-11oijc1"/> <div class="input-panel svelte-11oijc1"><div${attr_class("upload-border svelte-11oijc1", void 0, { "dragging": isDragging })} role="button" tabindex="0"><div class="upload-button svelte-11oijc1"><img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-11oijc1"/></div></div> <div class="button-row svelte-11oijc1"><button class="action-button svelte-11oijc1"><span class="button-text svelte-11oijc1">Search</span> <img src="/icons/icon-search.svg" alt="" class="button-icon svelte-11oijc1"/></button> <button class="action-button svelte-11oijc1"><span class="button-text svelte-11oijc1">Paste</span> <img src="/icons/icon-paste.svg" alt="" class="button-icon svelte-11oijc1"/></button></div></div> <input type="file" accept="image/*" class="sr-only svelte-11oijc1"/></div>`);
+    bind_props($$props, { onImageImport, onSearchClick });
   });
 }
 function CropCanvas($$renderer, $$props) {
@@ -973,6 +981,7 @@ function CropTab($$renderer, $$props) {
     let modalType = null;
     let pendingAction = null;
     let modalAction = null;
+    let showPexelsDrawer = false;
     async function handleImageImport(dataUrl) {
       const dims = await getImageDimensions(dataUrl);
       cropState.set({
@@ -991,6 +1000,10 @@ function CropTab($$renderer, $$props) {
       });
       cropState.setBaseState();
       activeSubMenu.set("crop");
+    }
+    function handlePexelsImageSelect(imageUrl) {
+      handleImageImport(imageUrl);
+      showPexelsDrawer = false;
     }
     function handleSubMenuChange(tab) {
       if (store_get($$store_subs ??= {}, "$cropState", cropState).cropPending && store_get($$store_subs ??= {}, "$activeSubMenu", activeSubMenu) === "crop" && tab !== "crop") {
@@ -1361,19 +1374,22 @@ function CropTab($$renderer, $$props) {
       return filters.filter((f) => f !== "none").join(" ") || "none";
     })();
     $$renderer2.push(`<div class="crop-tab svelte-c9tnuw">`);
-    {
+    if (showPexelsDrawer) {
+      $$renderer2.push("<!--[-->");
+      PexelsDrawer($$renderer2, {
+        onClose: () => showPexelsDrawer = false,
+        onImageSelect: handlePexelsImageSelect
+      });
+    } else {
       $$renderer2.push("<!--[!-->");
     }
     $$renderer2.push(`<!--]--> `);
     if (!store_get($$store_subs ??= {}, "$hasImage", hasImage)) {
       $$renderer2.push("<!--[-->");
-      ImportArea($$renderer2, {
-        title: "Crop, edit and add",
-        subtitle: "filters to photos",
-        hint: "Import, drag or paste an image",
-        onImageImport: handleImageImport
+      CropWelcome($$renderer2, {
+        onImageImport: handleImageImport,
+        onSearchClick: () => showPexelsDrawer = true
       });
-      $$renderer2.push(`<!----> <button class="pexels-link svelte-c9tnuw"><span class="pexels-text svelte-c9tnuw">Search for free images online</span> <img src="/icons/icon-search.svg" alt="" class="pexels-icon svelte-c9tnuw"/></button>`);
     } else {
       $$renderer2.push("<!--[!-->");
       ActionBar($$renderer2, {
@@ -1538,6 +1554,25 @@ function CropTab($$renderer, $$props) {
     if ($$store_subs) unsubscribe_stores($$store_subs);
   });
 }
+function ImportArea($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let title = fallback($$props["title"], "Import an image");
+    let subtitle = fallback($$props["subtitle"], "");
+    let hint = fallback($$props["hint"], "Import, drag or paste an image");
+    let onImageImport = fallback($$props["onImageImport"], (dataUrl) => {
+    });
+    let isDragging = false;
+    $$renderer2.push(`<div${attr_class("import-area svelte-f1bndr", void 0, { "dragging": isDragging })} role="button" tabindex="0"><p class="import-title svelte-f1bndr">${escape_html(title)}`);
+    if (subtitle) {
+      $$renderer2.push("<!--[-->");
+      $$renderer2.push(`<br/>${escape_html(subtitle)}`);
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--></p> <img src="/icons/icon-upload.svg" alt="" class="import-icon svelte-f1bndr"/> <p class="import-hint svelte-f1bndr">${escape_html(hint)}</p> <button class="btn-paste svelte-f1bndr">Paste</button> <input type="file" accept="image/*" class="sr-only"/></div>`);
+    bind_props($$props, { title, subtitle, hint, onImageImport });
+  });
+}
 function BeforeAfterSlider($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let beforeImage = fallback($$props["beforeImage"], "");
@@ -1572,7 +1607,14 @@ function createStore() {
     startProcessing: (type) => update((state) => ({
       ...state,
       isProcessing: true,
-      processingType: type
+      processingType: type,
+      showComparison: false
+    })),
+    promoteCurrentToOriginal: () => update((state) => ({
+      ...state,
+      originalImage: state.currentImage,
+      processedImage: null,
+      showComparison: false
     })),
     finishProcessing: (result) => update((state) => ({
       ...state,
@@ -1678,6 +1720,9 @@ function AiTab($$renderer, $$props) {
     }
     function handleSubMenuChange(tab) {
       activeAiMenu.set(tab);
+      if (tab === "background" && store_get($$store_subs ??= {}, "$aiState", aiState).showComparison && store_get($$store_subs ??= {}, "$aiState", aiState).processedImage) {
+        aiState.promoteCurrentToOriginal();
+      }
     }
     async function handleCopy() {
       if (store_get($$store_subs ??= {}, "$aiState", aiState).currentImage) {
