@@ -548,24 +548,24 @@
 	.reset-btn {
 		width: 32px;
 		height: 32px;
-		border: 1px solid var(--color-border);
-		background-color: var(--color-surface);
-		border-radius: var(--radius-md);
+		border: none;
+		background: none;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: all var(--transition-fast);
+		transition: opacity var(--transition-fast);
 		flex-shrink: 0;
+		opacity: 0.6;
 	}
 	
 	.reset-btn:hover {
-		background-color: var(--color-border-light);
+		opacity: 1;
 	}
 	
 	.reset-btn img {
-		width: 16px;
-		height: 16px;
+		width: 20px;
+		height: 20px;
 	}
 	
 	.nudge-buttons {
