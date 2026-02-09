@@ -678,7 +678,10 @@
 							z-index: {$activeDesignMenu === 'image' ? 11 : ($slideState.overlayLayer === 'below' ? 1 : 10)};
 						"
 						on:mousedown={handleOverlayDragStart}
-						on:touchstart={handleOverlayTouchStart}
+						on:touchstart={(e) => {
+							handleOverlayDragStart(e);
+							handleOverlayTouchStart(e);
+						}}
 						on:touchmove={handleOverlayTouchMove}
 						on:touchend={handleOverlayTouchEnd}
 						on:wheel={handleOverlayWheel}

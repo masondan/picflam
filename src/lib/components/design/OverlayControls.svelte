@@ -273,7 +273,7 @@
 		</div>
 
 		<div class="color-row">
-			<span class="row-label">Colour</span>
+			<span class="row-label">Border colour</span>
 			<div class="color-buttons">
 				<ColorSwatch 
 					colors={BORDER_COLORS}
@@ -528,8 +528,9 @@
 
 	.icon-btn.active,
 	.layer-btn.active {
-		background: var(--color-primary);
-		border-color: var(--color-primary);
+		background: #555555;
+		border-color: #555555;
+		color: white;
 	}
 
 	.control-icon {
@@ -590,7 +591,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		cursor: pointer;
 		transition: transform var(--transition-fast);
 	}
@@ -603,7 +604,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		border: none;
 		cursor: pointer;
 	}
@@ -673,8 +674,9 @@
 	}
 
 	.mask-btn.active {
-		background: var(--color-primary);
-		border-color: var(--color-primary);
+		background: #555555;
+		border-color: #555555;
+		color: white;
 	}
 
 	.mask-icon {
