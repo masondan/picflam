@@ -26,8 +26,10 @@
 	let displayWidth = 0;
 	let displayHeight = 0;
 	let showCompare = false;
+	let initialHistoryIndex = 0;
 	
 	$: brushDisplaySize = (brushSize / 100) * Math.min(displayWidth || 300, displayHeight || 300) * 0.5;
+	$: hasChanges = historyIndex !== initialHistoryIndex;
 	
 	onMount(async () => {
 		const img = await loadImage(image);
@@ -44,6 +46,7 @@
 		
 		updateDisplayDimensions();
 		saveToHistory();
+		initialHistoryIndex = historyIndex;
 	});
 	
 	function updateDisplayDimensions() {
@@ -227,6 +230,25 @@
 			<div class="spacer"></div>
 			
 			<button 
+				class="action-btn cancel-btn"
+				on:click={handleCancel}
+				aria-label="Cancel"
+			>
+				Cancel
+			</button>
+			
+			<button 
+				class="action-btn save-btn"
+				class:active={hasChanges}
+				class:inactive={!hasChanges}
+				on:click={handleDone}
+				disabled={!hasChanges}
+				aria-label="Save changes"
+			>
+				Save
+			</button>
+			
+			<button 
 				class="icon-btn" 
 				class:active={showCompare}
 				title="Compare"
@@ -365,11 +387,6 @@
 					<img src="/icons/icon-nudge-right.svg" alt="" class="nudge-icon" />
 				</button>
 			</div>
-			
-			<div class="drawer-footer">
-				<button class="btn-cancel" on:click={handleCancel}>Cancel</button>
-				<button class="btn-done" on:click={handleDone}>Done</button>
-			</div>
 		</div>
 	</div>
 </div>
@@ -437,6 +454,43 @@
 	
 	.spacer {
 		flex: 1;
+	}
+	
+	.action-btn {
+		height: 38px;
+		padding: 0 var(--space-3);
+		border-radius: var(--radius-md);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+		flex: 1;
+		min-width: 0;
+	}
+	
+	.cancel-btn {
+		border: 1px solid #555555;
+		background-color: var(--color-surface);
+		color: #555555;
+	}
+	
+	.cancel-btn:hover {
+		background-color: var(--color-border-light);
+	}
+	
+	.save-btn {
+		border: none;
+		color: white;
+	}
+	
+	.save-btn.active {
+		background-color: var(--color-primary);
+	}
+	
+	.save-btn.inactive {
+		background-color: #555555;
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 	
 	.canvas-container {
@@ -607,48 +661,5 @@
 		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
-	.drawer-footer {
-		display: flex;
-		gap: var(--space-3);
-		padding-top: var(--space-3);
-		justify-content: space-between;
-	}
-	
-	.btn-cancel {
-		height: 38px;
-		padding: 0 var(--space-4);
-		background-color: var(--color-surface);
-		color: var(--color-text-secondary);
-		border: 1px solid #555555;
-		border-radius: var(--radius-md);
-		cursor: pointer;
-		font-size: var(--font-size-base);
-		font-weight: var(--font-weight-medium);
-		transition: all var(--transition-fast);
-		white-space: nowrap;
-	}
 
-	.btn-cancel:hover {
-		background-color: var(--color-border-light);
-	}
-
-	.btn-done {
-		height: 38px;
-		padding: 0 var(--space-4);
-		background-color: var(--color-surface);
-		color: var(--color-primary);
-		border: 1px solid var(--color-primary);
-		border-radius: var(--radius-md);
-		cursor: pointer;
-		font-size: var(--font-size-base);
-		font-weight: var(--font-weight-medium);
-		transition: all var(--transition-fast);
-		white-space: nowrap;
-	}
-	
-	.btn-done:hover {
-		background-color: var(--color-primary);
-		color: white;
-		border-color: var(--color-primary);
-	}
 </style>

@@ -2608,7 +2608,21 @@ function DesignTab($$renderer, $$props) {
     if ($$store_subs) unsubscribe_stores($$store_subs);
   });
 }
-const activeTab = writable("crop");
+function createActiveTabStore() {
+  const initialTab = typeof window !== "undefined" ? localStorage.getItem("activeTab") || "crop" : "crop";
+  const { subscribe, set, update } = writable(initialTab);
+  return {
+    subscribe,
+    set: (value) => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("activeTab", value);
+      }
+      set(value);
+    },
+    update
+  };
+}
+const activeTab = createActiveTabStore();
 function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     var $$store_subs;

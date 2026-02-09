@@ -110,7 +110,7 @@
 		object-position: center;
 		flex: 1;
 		min-height: 0;
-		max-height: 70vh;
+		max-height: 69vh;
 	}
 	
 	.input-panel {
