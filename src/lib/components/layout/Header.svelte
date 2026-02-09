@@ -48,8 +48,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		height: 64px;
-		padding: 0 var(--space-6);
+		padding: 0.875rem var(--space-6);
 		border-bottom: 1px solid #aaaaaa;
 		background-color: var(--color-surface);
 	}
