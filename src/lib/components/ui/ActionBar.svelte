@@ -58,8 +58,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: var(--space-0.1) 0;
-		margin-bottom: var(--space-0.0);
+		padding: var(--space-2) 0;
+		margin-bottom: var(--space-2.0);
 	}
 	
 	.action-group {

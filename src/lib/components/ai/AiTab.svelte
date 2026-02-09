@@ -118,6 +118,7 @@
 	
 	.image-container {
 		width: 100%;
+		margin-top: var(--space-3);
 	}
 	
 	.working-image {
