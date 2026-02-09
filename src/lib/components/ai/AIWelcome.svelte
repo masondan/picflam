@@ -56,12 +56,14 @@
 </script>
 
 <div class="ai-welcome">
-	<BeforeAfterSlider
-		beforeImage="/images/ai-intro-before.png"
-		afterImage="/images/ai-intro-after.png"
-		position={sliderPosition}
-		onChange={handleSliderChange}
-	/>
+	<div style="flex: 1; min-height: 0; max-height: 70vh; width: 100%;">
+		<BeforeAfterSlider
+			beforeImage="/images/ai-intro-before.png"
+			afterImage="/images/ai-intro-after.png"
+			position={sliderPosition}
+			onChange={handleSliderChange}
+		/>
+	</div>
 	
 	<div class="input-panel">
 		<div
@@ -108,6 +110,11 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
+	}
+	
+	:global(.before-after-container) {
+		height: 100%;
+		overflow: hidden;
 	}
 	
 	.input-panel {
