@@ -547,7 +547,6 @@
 		align-items: center;
 		gap: var(--space-2);
 		padding-bottom: 0;
-		margin-top: calc(var(--space-2) * -1);
 	}
 
 	.slider-wrapper {

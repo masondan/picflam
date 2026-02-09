@@ -1,10 +1,31 @@
 import { writable } from 'svelte/store';
 
 /**
- * Active tab state
+ * Active tab state with localStorage persistence
+ * Persists across page refreshes but defaults to 'crop' on first load
  * @type {import('svelte/store').Writable<'crop' | 'ai' | 'design'>}
  */
-export const activeTab = writable('crop');
+function createActiveTabStore() {
+	// Get stored tab from localStorage, or default to 'crop'
+	const initialTab = typeof window !== 'undefined' 
+		? localStorage.getItem('activeTab') || 'crop'
+		: 'crop';
+	
+	const { subscribe, set, update } = writable(initialTab);
+	
+	return {
+		subscribe,
+		set: (value) => {
+			if (typeof window !== 'undefined') {
+				localStorage.setItem('activeTab', value);
+			}
+			set(value);
+		},
+		update
+	};
+}
+
+export const activeTab = createActiveTabStore();
 
 /**
  * Current working image (shared across tabs)
