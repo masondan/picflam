@@ -117,7 +117,7 @@
 		aspect-ratio: 9 / 16;
 		flex: 1;
 		min-height: 0;
-		max-height: 70vh;
+		max-height: 72vh;
 	}
 	
 	.slider-container :global(.before-after-container) {
