@@ -49,7 +49,7 @@
 		justify-content: center;
 		width: 52px;
 		height: 52px;
-		border: 1px solid #777777;
+		border: 1px solid #555555;
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
 		transition: all var(--transition-fast);
@@ -71,7 +71,7 @@
 	}
 	
 	.toggle-btn:not(.active) .toggle-icon {
-		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.toggle-btn.active .toggle-icon {

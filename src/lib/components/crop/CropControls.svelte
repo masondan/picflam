@@ -178,7 +178,7 @@
 		width: 38px;
 		height: 38px;
 		min-width: 38px;
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
 		cursor: pointer;
@@ -192,7 +192,7 @@
 	.icon-btn-img {
 		width: 20px;
 		height: 20px;
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 
 </style>

@@ -83,7 +83,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		cursor: pointer;
 		transition: transform var(--transition-fast);
 	}
@@ -96,7 +96,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		border: none;
 		cursor: pointer;
 	}

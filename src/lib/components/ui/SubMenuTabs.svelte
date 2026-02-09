@@ -27,7 +27,7 @@
 		padding: var(--space-1) 0;
 		font-size: var(--font-size-base);
 		font-weight: var(--font-weight-medium);
-		color: var(--color-text-muted);
+		color: var(--color-text-secondary);
 		background: none;
 		border: none;
 		border-bottom: 2px solid transparent;
@@ -35,11 +35,12 @@
 	}
 	
 	.sub-menu-tab:hover {
-		color: var(--color-text-secondary);
+		color: var(--color-text-primary);
 	}
 	
 	.sub-menu-tab.active {
 		color: var(--color-primary);
-		border-bottom-color: var(--color-primary);
+		font-weight: var(--font-weight-bold);
+		border-bottom: 3px solid var(--color-primary);
 	}
 </style>

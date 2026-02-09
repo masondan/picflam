@@ -56,7 +56,7 @@
 		width: 100%;
 		height: 38px;
 		padding: var(--space-2) var(--space-3);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		font-size: var(--font-size-base);
 		color: var(--color-text-primary);

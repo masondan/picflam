@@ -87,7 +87,7 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: var(--radius-md);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		background: var(--color-surface);
 		transition: all var(--transition-fast);
 	}
@@ -97,17 +97,17 @@
 	}
 	
 	.action-btn:disabled {
-		opacity: 0.4;
+		border-color: #777777;
 	}
 	
 	.action-icon {
 		width: 22px;
 		height: 22px;
-		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.action-btn:disabled .action-icon {
-		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.apply-btn {
