@@ -59,7 +59,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: var(--space-2) 0;
-		margin-bottom: var(--space-1);
+		margin-bottom: var(--space-0.5);
 	}
 	
 	.action-group {
