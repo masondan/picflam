@@ -101,6 +101,7 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
+		max-height: calc(100dvh - 140px);
 	}
 	
 	.welcome-image {
