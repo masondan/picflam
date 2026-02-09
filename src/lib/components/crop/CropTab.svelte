@@ -115,6 +115,16 @@
 		modalType = 'startAgain';
 	}
 	
+	function handleCancelCrop() {
+		cropState.silentUpdate(state => ({
+			...state,
+			cropPending: false,
+			cropBox: { x: 0, y: 0, width: 100, height: 100 },
+			aspectRatio: 'custom',
+			ratioLocked: false
+		}));
+	}
+	
 	function handleUndo() {
 		cropState.undo();
 	}
@@ -552,8 +562,10 @@
 		<ActionBar 
 			canUndo={$undoState.canUndo}
 			canRedo={$undoState.canRedo}
+			cropPending={$cropState.cropPending}
 			onUndo={handleUndo}
 			onRedo={handleRedo}
+			onApply={handleApplyCrop}
 			onStartAgain={handleStartAgain}
 			onCopy={handleCopy}
 			onExport={handleExport}
@@ -583,11 +595,16 @@
 			on:blurPaint={handleBlurPaint}
 		/>
 		
-		<SubMenuTabs 
-			tabs={subMenuTabs}
-			activeTab={$activeSubMenu}
-			onTabChange={handleSubMenuChange}
-		/>
+		<div class="submenu-wrapper">
+			<SubMenuTabs 
+				tabs={subMenuTabs}
+				activeTab={$activeSubMenu}
+				onTabChange={handleSubMenuChange}
+			/>
+			{#if $cropState.cropPending}
+				<button class="cancel-btn" on:click={handleCancelCrop}>Cancel</button>
+			{/if}
+		</div>
 		
 		{#if $activeSubMenu === 'crop'}
 			<CropControls
@@ -694,6 +711,28 @@
 	
 	.controls-panel {
 		padding: var(--space-4) 0;
+	}
+	
+	.submenu-wrapper {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	
+	.cancel-btn {
+		background: none;
+		border: none;
+		padding: var(--space-1) 0;
+		padding-right: var(--space-2);
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition: color var(--transition-fast);
+	}
+	
+	.cancel-btn:hover {
+		color: var(--color-primary);
 	}
 	
 	:global(.crop-canvas) {

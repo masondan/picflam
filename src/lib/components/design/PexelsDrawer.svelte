@@ -187,6 +187,12 @@
 		animation: slideDown 0.3s ease-out;
 	}
 
+	@media (min-width: 481px) {
+		.pexels-drawer {
+			box-shadow: var(--shadow-lg);
+		}
+	}
+
 	@keyframes slideDown {
 		from {
 			opacity: 0;

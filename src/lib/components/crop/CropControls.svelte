@@ -107,12 +107,6 @@
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
-
-	{#if cropPending}
-		<div class="apply-row">
-			<button class="btn-apply" on:click={onApply}>Apply</button>
-		</div>
-	{/if}
 </div>
 
 <style>
@@ -201,24 +195,4 @@
 		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
 	}
 
-	.apply-row {
-		display: flex;
-		justify-content: flex-end;
-	}
-
-	.btn-apply {
-		padding: var(--space-2) var(--space-4);
-		border: 1px solid var(--color-primary);
-		border-radius: var(--radius-md);
-		background: var(--color-surface);
-		color: var(--color-primary);
-		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-bold);
-		cursor: pointer;
-	}
-
-	.btn-apply:hover {
-		background-color: var(--color-primary);
-		color: white;
-	}
 </style>

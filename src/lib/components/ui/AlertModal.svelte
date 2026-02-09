@@ -34,10 +34,10 @@
   
   .modal {
     width: 100%;
-    max-width: 280px;
+    max-width: 220px;
     background-color: var(--color-surface);
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    padding: var(--space-4) var(--space-3) var(--space-3) var(--space-3);
     box-shadow: var(--shadow-lg);
     display: flex;
     flex-direction: column;
@@ -46,13 +46,12 @@
   .modal-message {
     text-align: center;
     font-size: var(--font-size-base);
-    margin: 0 0 var(--space-4) 0;
+    margin: 0 0 var(--space-2) 0;
     line-height: var(--line-height-normal);
     color: var(--color-text-primary);
   }
 
   :global(.modal-message-first) {
-    font-weight: var(--font-weight-bold);
     color: #333333;
   }
 
@@ -63,20 +62,22 @@
   .modal-actions {
     display: flex;
     justify-content: flex-end;
+    max-width: 50%;
+    margin-left: auto;
   }
   
   .btn-action {
     background: none;
     border: none;
     padding: var(--space-2) var(--space-3);
-    color: var(--color-primary);
+    color: var(--color-text-secondary);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
     cursor: pointer;
   }
   
   .btn-action:hover {
-    color: var(--color-primary);
+    color: var(--color-text-primary);
     opacity: 0.8;
   }
 </style>

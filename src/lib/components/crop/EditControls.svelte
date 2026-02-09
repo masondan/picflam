@@ -37,7 +37,7 @@
 		{ id: 'brightness', label: 'Brightness' },
 		{ id: 'shadows', label: 'Shadows' },
 		{ id: 'contrast', label: 'Contrast' },
-		{ id: 'hdr', label: 'HDR' }
+		{ id: 'hdr', label: 'Vivid' }
 	];
 
 	const blurControls = [

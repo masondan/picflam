@@ -1,8 +1,10 @@
 <script>
 	export let canUndo = false;
 	export let canRedo = false;
+	export let cropPending = false;
 	export let onUndo = () => {};
 	export let onRedo = () => {};
+	export let onApply = () => {};
 	export let onStartAgain = () => {};
 	export let onCopy = () => {};
 	export let onExport = () => {};
@@ -27,6 +29,16 @@
 			<img src="/icons/icon-redo.svg" alt="" class="action-icon" />
 		</button>
 	</div>
+	
+	{#if cropPending}
+		<button 
+			class="apply-btn"
+			on:click={onApply}
+			aria-label="Apply crop"
+		>
+			Apply crop
+		</button>
+	{/if}
 	
 	<div class="action-group">
 		<button 
@@ -58,8 +70,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: var(--space-2);
 		padding: var(--space-2) 0;
-		margin-bottom: var(--space-2.0);
+		margin-bottom: var(--space-2);
 	}
 	
 	.action-group {
@@ -95,5 +108,27 @@
 	
 	.action-btn:disabled .action-icon {
 		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
+	}
+	
+	.apply-btn {
+		flex: 1;
+		height: 38px;
+		padding: 0 var(--space-4);
+		background-color: var(--color-primary);
+		border: none;
+		border-radius: var(--radius-md);
+		color: white;
+		font-size: 14px;
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+	
+	.apply-btn:hover {
+		opacity: 0.9;
+	}
+	
+	.apply-btn:active {
+		opacity: 0.8;
 	}
 </style>
