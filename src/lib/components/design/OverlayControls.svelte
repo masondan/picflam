@@ -483,7 +483,7 @@
 		width: 38px;
 		height: 38px;
 		padding: 0;
-		border: 1px solid #777777;
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		cursor: pointer;
@@ -497,8 +497,8 @@
 
 	.icon-btn.active,
 	.layer-btn.active {
-		background: #777777;
-		border-color: #777777;
+		background: var(--color-primary);
+		border-color: var(--color-primary);
 	}
 
 	.control-icon {
@@ -507,7 +507,7 @@
 	}
 
 	.icon-btn:not(.active) .control-icon {
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 
 	.icon-btn.active .control-icon {
@@ -630,7 +630,7 @@
 		justify-content: center;
 		width: 38px;
 		height: 38px;
-		border: 1px solid #777777;
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		cursor: pointer;
@@ -642,8 +642,8 @@
 	}
 
 	.mask-btn.active {
-		background: #777777;
-		border-color: #777777;
+		background: var(--color-primary);
+		border-color: var(--color-primary);
 	}
 
 	.mask-icon {
@@ -652,7 +652,7 @@
 	}
 
 	.mask-btn:not(.active) .mask-icon {
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 
 	.mask-btn.active .mask-icon {
@@ -667,7 +667,7 @@
 	}
 
 	.mask-btn:not(.active) .circle-icon {
-		border-color: #777777;
+		border-color: #555555;
 	}
 
 	.mask-btn.active .circle-icon {
@@ -683,7 +683,7 @@
 	}
 
 	.mask-btn:not(.active) .diamond-icon {
-		border-color: #777777;
+		border-color: #555555;
 	}
 
 	.mask-btn.active .diamond-icon {
@@ -703,7 +703,7 @@
 		width: 38px;
 		height: 38px;
 		padding: 0;
-		border: 1px solid #777777;
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		cursor: pointer;
@@ -717,7 +717,7 @@
 	.nudge-icon {
 		width: 22px;
 		height: 22px;
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 
 	.nudge-btn:hover .nudge-icon {

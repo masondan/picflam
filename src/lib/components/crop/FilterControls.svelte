@@ -63,8 +63,23 @@
 	}
 
 	.strength-controls.disabled {
-		opacity: 0.4;
 		pointer-events: none;
+	}
+
+	.strength-controls.disabled .strength-label {
+		color: #777777;
+	}
+
+	.strength-controls.disabled :global(.slider) {
+		background: #cccccc;
+	}
+
+	.strength-controls.disabled :global(.slider::-webkit-slider-thumb) {
+		background: #777777;
+	}
+
+	.strength-controls.disabled :global(.slider::-moz-range-thumb) {
+		background: #777777;
 	}
 
 	.reset-btn {

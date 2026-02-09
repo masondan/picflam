@@ -210,7 +210,7 @@
 		width: 36px;
 		height: 36px;
 		border-radius: var(--radius-full);
-		border: 2px solid var(--color-border);
+		border: 2px solid #555555;
 		cursor: pointer;
 		transition: all var(--transition-fast);
 		flex-shrink: 0;
@@ -242,10 +242,11 @@
 		justify-content: center;
 		width: 40px;
 		height: 40px;
-		border: none;
+		border: 1px solid #777777;
 		background: transparent;
 		cursor: pointer;
 		transition: all var(--transition-fast);
+		border-radius: var(--radius-md);
 	}
 
 	.direction-btn:hover {
@@ -255,15 +256,26 @@
 	.direction-icon {
 		width: 24px;
 		height: 24px;
-		filter: brightness(0) saturate(100%) invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%);
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+	}
+
+	.direction-btn.active {
+		border-color: var(--color-primary);
 	}
 
 	.direction-btn.active .direction-icon {
-		filter: brightness(0) saturate(100%) invert(19%) sepia(89%) saturate(2194%) hue-rotate(258deg) brightness(87%) contrast(98%);
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
 	}
 
 	.direction-row.inactive {
-		opacity: 0.3;
 		pointer-events: none;
+	}
+
+	.direction-row.inactive .direction-btn {
+		border-color: #cccccc;
+	}
+
+	.direction-row.inactive .direction-icon {
+		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
 	}
 </style>

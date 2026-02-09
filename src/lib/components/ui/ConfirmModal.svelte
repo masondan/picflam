@@ -37,7 +37,7 @@
   
   .modal {
     width: 100%;
-    max-width: 250px;
+    max-width: 20px;
     background-color: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--space-4) var(--space-3) var(--space-3) var(--space-3);

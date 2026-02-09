@@ -125,7 +125,7 @@
 		scroll-behavior: smooth;
 		scroll-snap-type: x proximity;
 		flex: 1;
-		padding: var(--space-2) 0;
+		padding: var(--space-2) 0 var(--space-2) var(--space-2);
 		-webkit-overflow-scrolling: touch;
 		scrollbar-width: none;
 	}

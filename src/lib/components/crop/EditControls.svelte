@@ -284,13 +284,14 @@
 		padding: var(--space-1) 0;
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
+		font-weight: var(--font-weight-medium);
 		cursor: pointer;
 		transition: color var(--transition-fast);
 	}
 
 	.enhancement-btn.active {
 		color: var(--color-primary);
-		font-weight: var(--font-weight-medium);
+		font-weight: var(--font-weight-bold);
 	}
 
 	.enhancement-btn:hover:not(.active) {
@@ -423,6 +424,7 @@
 		padding: var(--space-1) 0;
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
+		font-weight: var(--font-weight-medium);
 		cursor: pointer;
 		transition: color var(--transition-fast);
 		white-space: nowrap;
@@ -430,7 +432,7 @@
 
 	.blur-control-btn.active {
 		color: var(--color-primary);
-		font-weight: var(--font-weight-medium);
+		font-weight: var(--font-weight-bold);
 	}
 
 	.blur-control-btn:hover:not(.active) {
@@ -459,19 +461,23 @@
 
 	.zoom-row {
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
+		align-items: center;
+		gap: var(--space-3);
 	}
 
 	.zoom-label {
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
+		flex-shrink: 0;
+		min-width: 65px;
+		padding-top: 2px;
 	}
 
 	.zoom-slider-row {
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
+		flex: 1;
 	}
 
         .nudge-row {
@@ -490,7 +496,7 @@
                 height: 38px;
                 border-radius: var(--radius-md);
                 background-color: var(--color-surface);
-                border: 1px solid var(--color-border);
+                border: 1px solid #555555;
                 cursor: pointer;
 		transition: background-color var(--transition-fast);
 	}
@@ -502,5 +508,6 @@
         .nudge-btn img {
                 width: 22px;
                 height: 22px;
+                filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
         }
 </style>

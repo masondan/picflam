@@ -399,7 +399,7 @@
 		width: 38px;
 		height: 38px;
 		border-radius: var(--radius-md);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		background-color: var(--color-surface);
 		display: flex;
 		align-items: center;
@@ -407,24 +407,24 @@
 		cursor: pointer;
 		transition: all var(--transition-fast);
 	}
-	
+
 	.icon-btn:hover {
 		background-color: var(--color-border-light);
 	}
-	
+
 	.icon-btn.active {
 		background-color: var(--color-primary);
 		border-color: var(--color-primary);
 	}
-	
+
 	.icon-btn.active img {
 		filter: brightness(0) invert(1);
 	}
-	
+
 	.icon-btn img {
 		width: 22px;
 		height: 22px;
-		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.spacer {
@@ -435,7 +435,7 @@
 		overflow: hidden;
 		margin: var(--space-4) var(--space-6);
 		width: calc(100% - var(--space-6) * 2);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 	}
 	
 	.canvas-wrapper {
@@ -497,7 +497,7 @@
 		flex: 1;
 		height: 40px;
 		padding: 0 var(--space-2);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		background-color: var(--color-surface);
 		border-radius: var(--radius-md);
 		cursor: pointer;
@@ -509,23 +509,23 @@
 		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-medium);
 	}
-	
+
 	.mode-btn:hover {
 		background-color: var(--color-border-light);
 	}
-	
+
 	.mode-btn.active {
 		background-color: var(--color-primary);
 		color: var(--color-text-inverse);
 		border-color: var(--color-primary);
 	}
-	
+
 	.mode-btn img {
 		width: 16px;
 		height: 16px;
-		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
-	
+
 	.mode-btn.active img {
 		filter: brightness(0) invert(1);
 	}
@@ -579,7 +579,7 @@
 		width: 38px;
 		height: 38px;
 		padding: 0;
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		background-color: var(--color-surface);
 		border-radius: var(--radius-md);
 		cursor: pointer;
@@ -588,14 +588,15 @@
 		justify-content: center;
 		transition: all var(--transition-fast);
 	}
-	
+
 	.nudge-btn:hover {
 		background-color: var(--color-border-light);
 	}
-	
+
 	.nudge-btn img {
 		width: 22px;
 		height: 22px;
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.drawer-footer {
@@ -610,7 +611,7 @@
 		padding: 0 var(--space-4);
 		background-color: var(--color-surface);
 		color: var(--color-text-secondary);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		border-radius: var(--radius-md);
 		cursor: pointer;
 		font-size: var(--font-size-base);
@@ -618,11 +619,11 @@
 		transition: all var(--transition-fast);
 		white-space: nowrap;
 	}
-	
+
 	.btn-cancel:hover {
 		background-color: var(--color-border-light);
 	}
-	
+
 	.btn-done {
 		height: 38px;
 		padding: 0 var(--space-4);

@@ -305,7 +305,7 @@
 		width: 100%;
 		min-height: 60px;
 		padding: var(--space-3);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		border-radius: var(--radius-md);
 		font-size: var(--font-size-base);
 		font-family: var(--font-family-base);
@@ -344,7 +344,7 @@
 		width: 100%;
 		height: 38px;
 		padding: var(--space-2) var(--space-3);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		font-size: var(--font-size-base);
 		color: var(--color-text-primary);
@@ -372,7 +372,7 @@
 		left: 0;
 		right: 0;
 		background: var(--color-surface);
-		border: 1px solid var(--color-border);
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		box-shadow: var(--shadow-lg);
 		z-index: 100;
@@ -407,13 +407,12 @@
 		justify-content: center;
 		width: 38px;
 		height: 38px;
-		border: 1px solid #777777;
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		cursor: pointer;
 		transition: all var(--transition-fast);
 		flex-shrink: 0;
-		color: #777777;
 	}
 
 	.icon-btn:hover:not(.active) {
@@ -421,19 +420,18 @@
 	}
 
 	.icon-btn.active {
-		border-color: #777777;
-		background: #777777;
+		border-color: var(--color-primary);
+		background: var(--color-primary);
 		color: white;
 	}
 
 	.btn-icon {
 		width: 22px;
 		height: 22px;
-		filter: currentColor;
 	}
 
 	.icon-btn:not(.active) .btn-icon {
-		filter: brightness(0) saturate(100%) invert(45%) sepia(0%) saturate(0%) brightness(95%) contrast(90%);
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 
 	.icon-btn.active .btn-icon {
@@ -466,16 +464,17 @@
 		cursor: pointer;
 		font-size: var(--font-size-sm);
 		font-weight: var(--font-weight-medium);
-		color: #777777;
+		color: #555555;
 		transition: color var(--transition-fast);
 	}
 
 	.slider-tab:hover {
-		color: #666666;
+		color: var(--color-text-primary);
 	}
 
 	.slider-tab.active {
 		color: var(--color-primary);
+		font-weight: var(--font-weight-bold);
 	}
 
 	.slider-row {

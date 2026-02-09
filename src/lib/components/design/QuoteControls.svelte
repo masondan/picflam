@@ -71,12 +71,11 @@
 		justify-content: center;
 		width: 44px;
 		height: 44px;
-		border: 1px solid #777777;
+		border: 1px solid #555555;
 		border-radius: var(--radius-md);
 		background: var(--color-surface);
 		cursor: pointer;
 		transition: all var(--transition-fast);
-		color: #777777;
 	}
 
 	.style-btn:hover:not(.active) {
@@ -85,7 +84,7 @@
 
 	.style-btn.active {
 		border-color: var(--color-primary);
-		color: #333333;
+		background: var(--color-primary-light);
 	}
 
 	.style-icon {

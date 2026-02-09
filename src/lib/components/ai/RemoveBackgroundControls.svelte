@@ -136,7 +136,7 @@
 		padding: 0 var(--space-4);
 		background-color: var(--color-surface);
 		color: var(--color-text-secondary);
-		border: 1px solid var(--color-border);
+		border: 1px solid #777777;
 		border-radius: var(--radius-md);
 		font-size: var(--font-size-base);
 		font-weight: var(--font-weight-semibold);
@@ -146,17 +146,17 @@
 		white-space: nowrap;
 		gap: var(--space-2);
 	}
-	
+
 	.erase-btn .btn-icon {
 		flex-shrink: 0;
-		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
-	
+
 	.erase-btn:not(:disabled) {
 		color: var(--color-primary);
 		border-color: var(--color-primary);
 	}
-	
+
 	.erase-btn:not(:disabled) .btn-icon {
 		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
 	}

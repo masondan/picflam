@@ -667,7 +667,7 @@
 	
 	{#if modalType === 'save'}
 		<ConfirmModal
-			message="<span class='modal-message-first'>Apply changes?</span><br /><span class='modal-message-second'>Before downloading</span>"
+			message="<span class='modal-message-first'>Apply changes?</span>"
 			confirmText="Yes"
 			cancelText="Cancel"
 			onConfirm={handleSaveConfirm}
