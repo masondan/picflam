@@ -48,13 +48,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.875rem var(--space-6);
+		padding: 16px var(--space-6);
 		border-bottom: 1px solid #aaaaaa;
 		background-color: var(--color-surface);
 	}
 	
 	.header-logo {
-		height: 24px;
+		height: 30px;
 		width: auto;
 	}
 	
@@ -64,8 +64,8 @@
 	}
 	
 	.nav-btn {
-		width: 36px;
-		height: 36px;
+		width: 40px;
+		height: 40px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -85,8 +85,8 @@
 	}
 	
 	.nav-icon {
-		width: 20px;
-		height: 20px;
+		width: 24px;
+		height: 24px;
 	}
 	
 	.nav-btn:not(.active) .nav-icon {
