@@ -56,7 +56,7 @@
 </script>
 
 <div class="ai-welcome">
-	<div style="flex: 1; min-height: 0; max-height: 70vh; width: 100%;">
+	<div class="slider-container">
 		<BeforeAfterSlider
 			beforeImage="/images/ai-intro-before.png"
 			afterImage="/images/ai-intro-after.png"
@@ -112,9 +112,12 @@
 		width: 100%;
 	}
 	
-	:global(.before-after-container) {
-		height: 100%;
-		overflow: hidden;
+	.slider-container {
+		width: 100%;
+		aspect-ratio: 9 / 16;
+		flex: 1;
+		min-height: 0;
+		max-height: 70vh;
 	}
 	
 	.input-panel {
