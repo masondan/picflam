@@ -58,7 +58,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: var(--space-0.5) 0;
+		padding: var(--space-0.1) 0;
 		margin-bottom: var(--space-0.0);
 	}
 	
