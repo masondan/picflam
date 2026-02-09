@@ -23,7 +23,7 @@ const GRADIENT_DIRECTIONS = {
 
 const initialSlideState = {
 	canvasSize: '1/1',
-	background: { type: 'solid', value: '#FFFFFF', direction: 'down', gradientColors: ['#5422b0', '#4B0082'] },
+	background: { type: 'gradient', value: 'linear-gradient(135deg, #5422b0 0%, #4B0082 100%)', direction: 'down', gradientColors: ['#5422b0', '#4B0082'] },
 	text1: '',
 	text1Font: 'Inter',
 	text1Size: 5,

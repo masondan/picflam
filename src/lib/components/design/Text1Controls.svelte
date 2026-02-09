@@ -420,8 +420,8 @@
 	}
 
 	.icon-btn.active {
-		border-color: var(--color-primary);
-		background: var(--color-primary);
+		border-color: #555555;
+		background: #555555;
 		color: white;
 	}
 
@@ -463,7 +463,7 @@
 		background: none;
 		cursor: pointer;
 		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-medium);
+		font-weight: 500;
 		color: #555555;
 		transition: color var(--transition-fast);
 	}
@@ -474,7 +474,7 @@
 
 	.slider-tab.active {
 		color: var(--color-primary);
-		font-weight: var(--font-weight-bold);
+		font-weight: 700;
 	}
 
 	.slider-row {
@@ -505,7 +505,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		cursor: pointer;
 		transition: transform var(--transition-fast);
 	}
@@ -518,7 +518,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		border: none;
 		cursor: pointer;
 	}
@@ -575,12 +575,12 @@
 		justify-content: center;
 		width: 38px;
 		height: 38px;
-		border: 1px solid #777777;
+		border: 1px solid #555555;
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		cursor: pointer;
 		transition: all var(--transition-fast);
-		color: #777777;
+		color: #555555;
 	}
 
 	.style-btn:hover:not(.active) {
@@ -588,8 +588,8 @@
 	}
 
 	.style-btn.active {
-		border-color: #777777;
-		background: #777777;
+		border-color: #555555;
+		background: #555555;
 		color: white;
 	}
 
@@ -633,16 +633,17 @@
 		background: none;
 		cursor: pointer;
 		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-medium);
-		color: #777777;
+		font-weight: 500;
+		color: #555555;
 		transition: color var(--transition-fast);
 	}
 
 	.color-tab:hover {
-		color: #666666;
+		color: var(--color-text-primary);
 	}
 
 	.color-tab.active {
 		color: var(--color-primary);
+		font-weight: 700;
 	}
 </style>

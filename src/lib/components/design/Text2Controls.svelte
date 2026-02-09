@@ -372,8 +372,8 @@
 	}
 
 	.icon-btn.active {
-		border-color: var(--color-primary);
-		background: var(--color-primary);
+		border-color: #555555;
+		background: #555555;
 		color: white;
 	}
 
@@ -413,7 +413,7 @@
 		background: none;
 		cursor: pointer;
 		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-medium);
+		font-weight: 500;
 		color: #555555;
 		transition: color var(--transition-fast);
 	}
@@ -424,7 +424,7 @@
 
 	.slider-tab.active {
 		color: var(--color-primary);
-		font-weight: var(--font-weight-bold);
+		font-weight: 700;
 	}
 
 	.slider-row {
@@ -454,7 +454,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		cursor: pointer;
 		transition: transform var(--transition-fast);
 	}
@@ -467,7 +467,7 @@
 		width: 20px;
 		height: 20px;
 		border-radius: var(--radius-full);
-		background: var(--color-text-secondary);
+		background: var(--color-primary);
 		border: none;
 		cursor: pointer;
 	}
@@ -508,16 +508,17 @@
 		background: none;
 		cursor: pointer;
 		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-medium);
-		color: #777777;
+		font-weight: 500;
+		color: #555555;
 		transition: color var(--transition-fast);
 	}
 
 	.color-tab:hover {
-		color: #666666;
+		color: var(--color-text-primary);
 	}
 
 	.color-tab.active {
 		color: var(--color-primary);
+		font-weight: 700;
 	}
 </style>

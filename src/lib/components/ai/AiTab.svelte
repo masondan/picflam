@@ -18,8 +18,8 @@
 	}
 	
 	const subMenuTabs = [
-		{ id: 'upscale', label: 'Upscale' },
-		{ id: 'background', label: 'Remove background' }
+		{ id: 'background', label: 'Remove background' },
+		{ id: 'upscale', label: 'Upscale' }
 	];
 	
 	function handleImageImport(dataUrl) {

@@ -57,24 +57,26 @@
 	}
 	
 	const subMenuTabs = [
-		{ id: 'ratio', label: 'Ratio' },
 		{ id: 'background', label: 'Background' },
 		{ id: 'text1', label: 'Text 1' },
 		{ id: 'text2', label: 'Text 2' },
-		{ id: 'image', label: 'Image' }
+		{ id: 'image', label: 'Image' },
+		{ id: 'ratio', label: 'Ratio' }
 	];
 	
 	function selectTemplate(templateId) {
 		if (templateId === 'blank') {
 			slideState.reset();
+			showTemplatePicker.set(false);
+			activeDesignMenu.set('background');
 		} else {
 			const template = templatesData.templates.find(t => t.id === templateId);
 			if (template) {
 				slideState.set(JSON.parse(JSON.stringify(template.state)));
 			}
+			showTemplatePicker.set(false);
+			activeDesignMenu.set('ratio');
 		}
-		showTemplatePicker.set(false);
-		activeDesignMenu.set('ratio');
 	}
 
 	function handleSaveTemplate() {

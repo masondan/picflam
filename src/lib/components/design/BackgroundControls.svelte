@@ -1,9 +1,54 @@
 <script>
+	import { onMount, onDestroy } from 'svelte';
+	import '@melloware/coloris/dist/coloris.css';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
 	import { CANVAS_COLORS, GRADIENT_DIRECTIONS } from '$lib/stores/designStore.js';
 
 	export let background = { type: 'solid', value: '#FFFFFF', direction: 'down', gradientColors: ['#5422b0', '#4B0082'] };
 	export let onBackgroundChange = (bg) => {};
+
+	let colorInput1El;
+	let colorInput2El;
+	let inputId1 = `gradient-color-1-${Math.random().toString(36).substr(2, 9)}`;
+	let inputId2 = `gradient-color-2-${Math.random().toString(36).substr(2, 9)}`;
+
+	function handleColorPick1(event) {
+		handleGradientColorChange(0, event.detail.color);
+	}
+
+	function handleColorPick2(event) {
+		handleGradientColorChange(1, event.detail.color);
+	}
+
+	onMount(async () => {
+		if (colorInput1El && colorInput2El) {
+			const { default: Coloris, init } = await import('@melloware/coloris');
+			init();
+			Coloris({
+				el: `#${inputId1}`,
+				parent: '.app',
+				wrap: false,
+				theme: 'polaroid',
+				alpha: false
+			});
+			Coloris({
+				el: `#${inputId2}`,
+				parent: '.app',
+				wrap: false,
+				theme: 'polaroid',
+				alpha: false
+			});
+			document.addEventListener('coloris:pick', handleColorPick1);
+			document.addEventListener('coloris:pick', handleColorPick2);
+		}
+	});
+
+	onDestroy(() => {
+		if (typeof document !== 'undefined') {
+			document.removeEventListener('coloris:pick', handleColorPick1);
+			document.removeEventListener('coloris:pick', handleColorPick2);
+		}
+	});
 
 	const gradientPresets = CANVAS_COLORS.gradients.map(g => {
 		const match = g.match(/#[A-Fa-f0-9]{6}/g);
@@ -90,15 +135,17 @@
 			<button 
 				class="gradient-endpoint"
 				style="background-color: {background.gradientColors?.[0] || '#5422b0'};"
-				on:click={() => {
-					const input = document.createElement('input');
-					input.type = 'color';
-					input.value = background.gradientColors?.[0] || '#5422b0';
-					input.addEventListener('input', (e) => handleGradientColorChange(0, e.target.value));
-					input.click();
-				}}
+				on:click={() => colorInput1El?.click()}
 				aria-label="Edit start color"
 			></button>
+			
+			<input 
+				bind:this={colorInput1El}
+				id={inputId1}
+				type="text" 
+				value={background.gradientColors?.[0] || '#5422b0'}
+				class="hidden-color-input"
+			/>
 			
 			<div 
 				class="gradient-preview"
@@ -108,15 +155,17 @@
 			<button 
 				class="gradient-endpoint"
 				style="background-color: {background.gradientColors?.[1] || '#4B0082'};"
-				on:click={() => {
-					const input = document.createElement('input');
-					input.type = 'color';
-					input.value = background.gradientColors?.[1] || '#4B0082';
-					input.addEventListener('input', (e) => handleGradientColorChange(1, e.target.value));
-					input.click();
-				}}
+				on:click={() => colorInput2El?.click()}
 				aria-label="Edit end color"
 			></button>
+			
+			<input 
+				bind:this={colorInput2El}
+				id={inputId2}
+				type="text" 
+				value={background.gradientColors?.[1] || '#4B0082'}
+				class="hidden-color-input"
+			/>
 		</div>
 	</div>
 
@@ -182,6 +231,10 @@
 		max-width: 280px;
 	}
 
+	.gradient-preview-row {
+		max-width: 260px;
+	}
+
 	.gradient-swatch {
 		width: 36px;
 		height: 36px;
@@ -240,9 +293,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 40px;
-		height: 40px;
-		border: 1px solid #777777;
+		width: 38px;
+		height: 38px;
+		border: 1px solid #555555;
 		background: transparent;
 		cursor: pointer;
 		transition: all var(--transition-fast);
@@ -254,8 +307,8 @@
 	}
 
 	.direction-icon {
-		width: 24px;
-		height: 24px;
+		width: 22px;
+		height: 22px;
 		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 
@@ -277,5 +330,21 @@
 
 	.direction-row.inactive .direction-icon {
 		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
+	}
+
+	.hidden-color-input {
+		display: none;
+	}
+
+	:global(.clr-picker::before) {
+		display: none !important;
+	}
+
+	:global(.clr-picker) {
+		position: fixed !important;
+		top: 50% !important;
+		left: 50% !important;
+		transform: translate(-50%, -50%) !important;
+		z-index: 1000 !important;
 	}
 </style>

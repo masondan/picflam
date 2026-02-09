@@ -61,6 +61,6 @@ function createStore() {
 
 export const aiState = createStore();
 
-export const activeAiMenu = writable('enhance');
+export const activeAiMenu = writable('background');
 
 export const hasAiImage = derived(aiState, $state => $state.currentImage !== null);
