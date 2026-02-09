@@ -61,8 +61,8 @@
 	}
 	
 	.toggle-btn.active {
-		border-color: var(--color-primary);
-		background-color: var(--color-surface);
+		border-color: #555555;
+		background-color: #555555;
 	}
 	
 	.toggle-icon {
@@ -75,7 +75,7 @@
 	}
 	
 	.toggle-btn.active .toggle-icon {
-		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
+		filter: brightness(0) invert(1);
 	}
 	
 	.toggle-label {
@@ -84,6 +84,6 @@
 	}
 	
 	.toggle-item.active .toggle-label {
-		color: var(--color-primary);
+		color: #555555;
 	}
 </style>

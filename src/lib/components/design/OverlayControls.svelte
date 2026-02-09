@@ -19,9 +19,14 @@
 	export let onChange = (key, value) => {};
 
 	let showPexelsDrawer = false;
+	let fileInput;
 
 	function handlePexelsImageSelect(imageUrl) {
 		onChange('overlay', imageUrl);
+	}
+
+	function handleUploadClick() {
+		fileInput?.click();
 	}
 
 	const BORDER_COLORS = CANVAS_COLORS.solids;
@@ -152,32 +157,41 @@
 	{/if}
 
 	{#if !overlay}
-		<div 
-			class="import-box"
-			on:drop={handleDrop}
-			on:dragover={handleDragOver}
-			role="button"
-			tabindex="0"
-		>
-			<label class="import-area">
-				<input 
-					type="file" 
-					accept="image/*" 
-					on:change={handleFileSelect}
-					class="file-input"
-				/>
-				<img src="/icons/icon-upload.svg" alt="" class="upload-icon" />
-				<span class="import-text">Import, drag or<br>paste an image</span>
-			</label>
-			<button class="paste-btn" on:click={handlePaste}>
-				Paste
-			</button>
+		<div class="input-panel">
+			<div
+				class="upload-border"
+				on:click={handleUploadClick}
+				on:drop={handleDrop}
+				on:dragover={handleDragOver}
+				role="button"
+				tabindex="0"
+				on:keypress={(e) => e.key === 'Enter' && handleUploadClick()}
+			>
+				<div class="upload-button">
+					<img src="/icons/icon-upload.svg" alt="" class="upload-icon" />
+				</div>
+			</div>
+			
+			<div class="button-row">
+				<button class="action-button" on:click={() => showPexelsDrawer = true}>
+					<span class="button-text">Search</span>
+					<img src="/icons/icon-search.svg" alt="" class="button-icon" />
+				</button>
+				
+				<button class="action-button" on:click={handlePaste}>
+					<span class="button-text">Paste</span>
+					<img src="/icons/icon-paste.svg" alt="" class="button-icon" />
+				</button>
+			</div>
 		</div>
 		
-		<button class="pexels-link" on:click={() => showPexelsDrawer = true}>
-			<span class="pexels-text">Search for free images online</span>
-			<img src="/icons/icon-search.svg" alt="" class="pexels-icon" />
-		</button>
+		<input 
+			type="file" 
+			accept="image/*" 
+			bind:this={fileInput}
+			on:change={handleFileSelect}
+			class="sr-only"
+		/>
 	{:else}
 		<div class="control-row fit-fill-row">
 			<div class="button-group">
@@ -367,91 +381,108 @@
 		gap: var(--space-4);
 	}
 
-	.import-box {
+	.input-panel {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: var(--space-3);
-		padding: var(--space-6);
-		border: 2px dotted var(--color-border);
-		border-radius: var(--radius-lg);
-		background: var(--color-surface);
+		gap: 5px;
+		padding: 5px 0;
+		width: 100%;
+		flex: 0 0 auto;
+		margin-top: -12px;
 	}
 
-	.import-area {
+	.upload-border {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: var(--space-2);
+		justify-content: center;
+		padding: 4px;
+		margin: 5px 0;
+		border: 1px dashed var(--color-primary);
+		border-radius: var(--radius-xl);
 		cursor: pointer;
+		transition: all var(--transition-fast);
 	}
 
-	.file-input {
-		display: none;
+	.upload-border:hover {
+		opacity: 0.9;
+	}
+
+	.upload-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 56px;
+		background-color: var(--color-primary);
+		border: none;
+		border-radius: var(--radius-lg);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.upload-button:hover {
+		opacity: 0.9;
 	}
 
 	.upload-icon {
-		width: 32px;
-		height: 32px;
-		opacity: 0.6;
+		width: 24px;
+		height: 24px;
+		filter: brightness(0) saturate(100%) invert(100%);
 	}
 
-	.import-text {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-muted);
-		text-align: center;
-		line-height: var(--line-height-normal);
+	.button-row {
+		display: flex;
+		gap: var(--space-4);
+		padding: 0 2px;
 	}
 
-	.paste-btn {
-		padding: var(--space-2) var(--space-4);
+	.action-button {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 38px;
+		padding: 0 var(--space-4);
+		background-color: var(--color-primary-light);
 		border: 1px solid var(--color-primary);
-		border-radius: var(--radius-md);
-		background: transparent;
+		border-radius: var(--radius-lg);
 		color: var(--color-primary);
-		font-size: var(--font-size-sm);
+		font-size: 12px;
 		font-weight: var(--font-weight-medium);
 		cursor: pointer;
 		transition: all var(--transition-fast);
 	}
 
-	.paste-btn:hover {
-		background: var(--color-primary-light);
+	.action-button:hover {
+		background-color: #e6d5f0;
 	}
 
-	.pexels-link {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: var(--space-2);
-		padding: var(--space-3) 0;
-		border: none;
-		background: transparent;
-		cursor: pointer;
-		transition: color var(--transition-fast);
+	.action-button:active {
+		opacity: 0.8;
 	}
 
-	.pexels-link:hover {
-		color: var(--color-primary);
+	.button-text {
+		flex: 1;
+		text-align: left;
 	}
 
-	.pexels-text {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-secondary);
-	}
-
-	.pexels-link:hover .pexels-text {
-		color: var(--color-primary);
-	}
-
-	.pexels-icon {
-		width: 18px;
-		height: 18px;
-		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
-	}
-
-	.pexels-link:hover .pexels-icon {
+	.button-icon {
+		width: 22px;
+		height: 22px;
+		flex-shrink: 0;
 		filter: brightness(0) saturate(100%) invert(22%) sepia(97%) saturate(3000%) hue-rotate(254deg) brightness(90%) contrast(105%);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border-width: 0;
 	}
 
 	.control-row {

@@ -23,9 +23,12 @@ function Header($$renderer, $$props) {
 function ActionBar($$renderer, $$props) {
   let canUndo = fallback($$props["canUndo"], false);
   let canRedo = fallback($$props["canRedo"], false);
+  let cropPending = fallback($$props["cropPending"], false);
   let onUndo = fallback($$props["onUndo"], () => {
   });
   let onRedo = fallback($$props["onRedo"], () => {
+  });
+  let onApply = fallback($$props["onApply"], () => {
   });
   let onStartAgain = fallback($$props["onStartAgain"], () => {
   });
@@ -33,12 +36,21 @@ function ActionBar($$renderer, $$props) {
   });
   let onExport = fallback($$props["onExport"], () => {
   });
-  $$renderer.push(`<div class="action-bar svelte-96zw02"><div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02"${attr("disabled", !canUndo, true)} aria-label="Undo"><img src="/icons/icon-undo.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02"${attr("disabled", !canRedo, true)} aria-label="Redo"><img src="/icons/icon-redo.svg" alt="" class="action-icon svelte-96zw02"/></button></div> <div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02" aria-label="Start again"><img src="/icons/icon-startagain.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Copy to clipboard"><img src="/icons/icon-copy.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Export"><img src="/icons/icon-export.svg" alt="" class="action-icon svelte-96zw02"/></button></div></div>`);
+  $$renderer.push(`<div class="action-bar svelte-96zw02"><div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02"${attr("disabled", !canUndo, true)} aria-label="Undo"><img src="/icons/icon-undo.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02"${attr("disabled", !canRedo, true)} aria-label="Redo"><img src="/icons/icon-redo.svg" alt="" class="action-icon svelte-96zw02"/></button></div> `);
+  if (cropPending) {
+    $$renderer.push("<!--[-->");
+    $$renderer.push(`<button class="apply-btn svelte-96zw02" aria-label="Apply crop">Apply crop</button>`);
+  } else {
+    $$renderer.push("<!--[!-->");
+  }
+  $$renderer.push(`<!--]--> <div class="action-group svelte-96zw02"><button class="action-btn svelte-96zw02" aria-label="Start again"><img src="/icons/icon-startagain.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Copy to clipboard"><img src="/icons/icon-copy.svg" alt="" class="action-icon svelte-96zw02"/></button> <button class="action-btn svelte-96zw02" aria-label="Export"><img src="/icons/icon-export.svg" alt="" class="action-icon svelte-96zw02"/></button></div></div>`);
   bind_props($$props, {
     canUndo,
     canRedo,
+    cropPending,
     onUndo,
     onRedo,
+    onApply,
     onStartAgain,
     onCopy,
     onExport
@@ -532,14 +544,7 @@ function CropControls($$renderer, $$props) {
       step: 1,
       onChange: onScaleChange
     });
-    $$renderer2.push(`<!----></div> <button class="reset-btn svelte-17iy3mz" aria-label="Reset scale to 100%"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-17iy3mz"/></button></div> `);
-    if (cropPending) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="apply-row svelte-17iy3mz"><button class="btn-apply svelte-17iy3mz">Apply</button></div>`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></div>`);
+    $$renderer2.push(`<!----></div> <button class="reset-btn svelte-17iy3mz" aria-label="Reset scale to 100%"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-17iy3mz"/></button></div></div>`);
     bind_props($$props, {
       aspectRatio,
       cropWidth,
@@ -605,7 +610,7 @@ function EditControls($$renderer, $$props) {
       { id: "brightness", label: "Brightness" },
       { id: "shadows", label: "Shadows" },
       { id: "contrast", label: "Contrast" },
-      { id: "hdr", label: "HDR" }
+      { id: "hdr", label: "Vivid" }
     ];
     const blurControls = [
       { id: "brushSize", label: "Brush size" },
@@ -1395,8 +1400,10 @@ function CropTab($$renderer, $$props) {
       ActionBar($$renderer2, {
         canUndo: store_get($$store_subs ??= {}, "$undoState", undoState).canUndo,
         canRedo: store_get($$store_subs ??= {}, "$undoState", undoState).canRedo,
+        cropPending: store_get($$store_subs ??= {}, "$cropState", cropState).cropPending,
         onUndo: handleUndo,
         onRedo: handleRedo,
+        onApply: handleApplyCrop,
         onStartAgain: handleStartAgain,
         onCopy: handleCopy,
         onExport: handleExport
@@ -1423,13 +1430,20 @@ function CropTab($$renderer, $$props) {
         blurMask: store_get($$store_subs ??= {}, "$cropState", cropState).blurMask || [],
         showBrushPreview: store_get($$store_subs ??= {}, "$cropState", cropState).showBrushPreview
       });
-      $$renderer2.push(`<!----> `);
+      $$renderer2.push(`<!----> <div class="submenu-wrapper svelte-c9tnuw">`);
       SubMenuTabs($$renderer2, {
         tabs: subMenuTabs,
         activeTab: store_get($$store_subs ??= {}, "$activeSubMenu", activeSubMenu),
         onTabChange: handleSubMenuChange
       });
       $$renderer2.push(`<!----> `);
+      if (store_get($$store_subs ??= {}, "$cropState", cropState).cropPending) {
+        $$renderer2.push("<!--[-->");
+        $$renderer2.push(`<button class="cancel-btn svelte-c9tnuw">Cancel</button>`);
+      } else {
+        $$renderer2.push("<!--[!-->");
+      }
+      $$renderer2.push(`<!--]--></div> `);
       if (store_get($$store_subs ??= {}, "$activeSubMenu", activeSubMenu) === "crop") {
         $$renderer2.push("<!--[-->");
         CropControls($$renderer2, {
@@ -1506,7 +1520,7 @@ function CropTab($$renderer, $$props) {
     if (modalType === "save") {
       $$renderer2.push("<!--[-->");
       ConfirmModal($$renderer2, {
-        message: "<span class='modal-message-first'>Apply changes?</span><br /><span class='modal-message-second'>Before downloading</span>",
+        message: "<span class='modal-message-first'>Apply changes?</span>",
         confirmText: "Yes",
         cancelText: "Cancel",
         onConfirm: handleSaveConfirm,
@@ -1554,25 +1568,6 @@ function CropTab($$renderer, $$props) {
     if ($$store_subs) unsubscribe_stores($$store_subs);
   });
 }
-function ImportArea($$renderer, $$props) {
-  $$renderer.component(($$renderer2) => {
-    let title = fallback($$props["title"], "Import an image");
-    let subtitle = fallback($$props["subtitle"], "");
-    let hint = fallback($$props["hint"], "Import, drag or paste an image");
-    let onImageImport = fallback($$props["onImageImport"], (dataUrl) => {
-    });
-    let isDragging = false;
-    $$renderer2.push(`<div${attr_class("import-area svelte-f1bndr", void 0, { "dragging": isDragging })} role="button" tabindex="0"><p class="import-title svelte-f1bndr">${escape_html(title)}`);
-    if (subtitle) {
-      $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<br/>${escape_html(subtitle)}`);
-    } else {
-      $$renderer2.push("<!--[!-->");
-    }
-    $$renderer2.push(`<!--]--></p> <img src="/icons/icon-upload.svg" alt="" class="import-icon svelte-f1bndr"/> <p class="import-hint svelte-f1bndr">${escape_html(hint)}</p> <button class="btn-paste svelte-f1bndr">Paste</button> <input type="file" accept="image/*" class="sr-only"/></div>`);
-    bind_props($$props, { title, subtitle, hint, onImageImport });
-  });
-}
 function BeforeAfterSlider($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let beforeImage = fallback($$props["beforeImage"], "");
@@ -1582,6 +1577,28 @@ function BeforeAfterSlider($$renderer, $$props) {
     });
     $$renderer2.push(`<div class="before-after-container svelte-1i0ztfp" role="slider" aria-label="Before and after comparison" tabindex="0"><div class="before-image svelte-1i0ztfp"><img${attr("src", beforeImage)} alt="Before" class="svelte-1i0ztfp"/></div> <div class="after-image svelte-1i0ztfp"${attr_style(`clip-path: inset(0 ${stringify(100 - position)}% 0 0)`)}><img${attr("src", afterImage)} alt="After" class="svelte-1i0ztfp"/></div> <div class="slider-handle svelte-1i0ztfp"${attr_style(`left: ${stringify(position)}%`)} role="presentation"><div class="slider-line svelte-1i0ztfp"></div> <div class="slider-thumb svelte-1i0ztfp"><img src="/icons/icon-ai-slider.svg" alt="" class="slider-icon svelte-1i0ztfp"/></div></div></div>`);
     bind_props($$props, { beforeImage, afterImage, position, onChange });
+  });
+}
+function AIWelcome($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    let onImageImport = fallback($$props["onImageImport"], (dataUrl) => {
+    });
+    let onSearchClick = fallback($$props["onSearchClick"], () => {
+    });
+    let isDragging = false;
+    let sliderPosition = 50;
+    function handleSliderChange(newPosition) {
+      sliderPosition = newPosition;
+    }
+    $$renderer2.push(`<div class="ai-welcome svelte-zzbgnd"><div class="slider-container svelte-zzbgnd">`);
+    BeforeAfterSlider($$renderer2, {
+      beforeImage: "/images/ai-intro-before.png",
+      afterImage: "/images/ai-intro-after.png",
+      position: sliderPosition,
+      onChange: handleSliderChange
+    });
+    $$renderer2.push(`<!----></div> <div class="input-panel svelte-zzbgnd"><div${attr_class("upload-border svelte-zzbgnd", void 0, { "dragging": isDragging })} role="button" tabindex="0"><div class="upload-button svelte-zzbgnd"><img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-zzbgnd"/></div></div> <div class="button-row svelte-zzbgnd"><button class="action-button svelte-zzbgnd"><span class="button-text svelte-zzbgnd">Search</span> <img src="/icons/icon-search.svg" alt="" class="button-icon svelte-zzbgnd"/></button> <button class="action-button svelte-zzbgnd"><span class="button-text svelte-zzbgnd">Paste</span> <img src="/icons/icon-paste.svg" alt="" class="button-icon svelte-zzbgnd"/></button></div></div> <input type="file" accept="image/*" class="sr-only svelte-zzbgnd"/></div>`);
+    bind_props($$props, { onImageImport, onSearchClick });
   });
 }
 const initialAiState = {
@@ -1641,7 +1658,7 @@ function createStore() {
   };
 }
 const aiState = createStore();
-const activeAiMenu = writable("enhance");
+const activeAiMenu = writable("background");
 const hasAiImage = derived(aiState, ($state) => $state.currentImage !== null);
 function UpscaleControls($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
@@ -1707,16 +1724,21 @@ function AiTab($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     var $$store_subs;
     let comparisonPosition = 50;
+    let showPexelsDrawer = false;
     function handleComparisonChange(newPosition) {
       comparisonPosition = newPosition;
       aiState.setComparisonPosition(newPosition);
     }
     const subMenuTabs = [
-      { id: "upscale", label: "Upscale" },
-      { id: "background", label: "Remove background" }
+      { id: "background", label: "Remove background" },
+      { id: "upscale", label: "Upscale" }
     ];
     function handleImageImport(dataUrl) {
       aiState.setImage(dataUrl);
+    }
+    function handlePexelsImageSelect(imageUrl) {
+      handleImageImport(imageUrl);
+      showPexelsDrawer = false;
     }
     function handleSubMenuChange(tab) {
       activeAiMenu.set(tab);
@@ -1735,13 +1757,21 @@ function AiTab($$renderer, $$props) {
       }
     }
     $$renderer2.push(`<div class="ai-tab svelte-17agwu4">`);
+    if (showPexelsDrawer) {
+      $$renderer2.push("<!--[-->");
+      PexelsDrawer($$renderer2, {
+        onClose: () => showPexelsDrawer = false,
+        onImageSelect: handlePexelsImageSelect
+      });
+    } else {
+      $$renderer2.push("<!--[!-->");
+    }
+    $$renderer2.push(`<!--]--> `);
     if (!store_get($$store_subs ??= {}, "$hasAiImage", hasAiImage)) {
       $$renderer2.push("<!--[-->");
-      ImportArea($$renderer2, {
-        title: "Remove backgrounds,",
-        subtitle: "upscale images with AI",
-        hint: "Import, drag or paste an image",
-        onImageImport: handleImageImport
+      AIWelcome($$renderer2, {
+        onImageImport: handleImageImport,
+        onSearchClick: () => showPexelsDrawer = true
       });
     } else {
       $$renderer2.push("<!--[!-->");
@@ -1876,7 +1906,7 @@ const GRADIENT_DIRECTIONS = {
 };
 const initialSlideState = {
   canvasSize: "1/1",
-  background: { type: "solid", value: "#FFFFFF", direction: "down", gradientColors: ["#5422b0", "#4B0082"] },
+  background: { type: "gradient", value: "linear-gradient(135deg, #5422b0 0%, #4B0082 100%)", direction: "down", gradientColors: ["#5422b0", "#4B0082"] },
   text1: "",
   text1Font: "Inter",
   text1Size: 5,
@@ -1987,12 +2017,37 @@ function BackgroundControls($$renderer, $$props) {
     );
     let onBackgroundChange = fallback($$props["onBackgroundChange"], (bg) => {
     });
+    let inputId1 = `gradient-color-1-${Math.random().toString(36).substr(2, 9)}`;
+    let inputId2 = `gradient-color-2-${Math.random().toString(36).substr(2, 9)}`;
+    function handleColorPick1(event) {
+      handleGradientColorChange(0, event.detail.color);
+    }
+    function handleColorPick2(event) {
+      handleGradientColorChange(1, event.detail.color);
+    }
+    onDestroy(() => {
+      if (typeof document !== "undefined") {
+        document.removeEventListener("coloris:pick", handleColorPick1);
+        document.removeEventListener("coloris:pick", handleColorPick2);
+      }
+    });
     const gradientPresets = CANVAS_COLORS.gradients.map((g) => {
       const match = g.match(/#[A-Fa-f0-9]{6}/g);
       return match ? [match[0], match[1]] : ["#5422b0", "#4B0082"];
     });
     function selectSolidColor(color) {
       onBackgroundChange({ ...background, type: "solid", value: color });
+    }
+    function handleGradientColorChange(index, color) {
+      const colors = [...background.gradientColors || ["#5422b0", "#4B0082"]];
+      colors[index] = color;
+      const direction = GRADIENT_DIRECTIONS[background.direction] || "to bottom";
+      onBackgroundChange({
+        ...background,
+        type: "gradient",
+        value: `linear-gradient(${direction}, ${colors[0]} 0%, ${colors[1]} 100%)`,
+        gradientColors: colors
+      });
     }
     currentGradientValue = background.type === "gradient" ? `linear-gradient(${GRADIENT_DIRECTIONS[background.direction] || "to bottom"}, ${background.gradientColors?.[0] || "#5422b0"} 0%, ${background.gradientColors?.[1] || "#4B0082"} 100%)` : `linear-gradient(to bottom, ${gradientPresets[0][0]} 0%, ${gradientPresets[0][1]} 100%)`;
     $$renderer2.push(`<div class="background-controls svelte-18tfgkp"><div class="section svelte-18tfgkp"><div class="color-row svelte-18tfgkp">`);
@@ -2009,7 +2064,7 @@ function BackgroundControls($$renderer, $$props) {
       const isActive = background.type === "gradient" && background.gradientColors?.[0] === colors[0] && background.gradientColors?.[1] === colors[1];
       $$renderer2.push(`<button${attr_class("gradient-swatch svelte-18tfgkp", void 0, { "active": isActive })}${attr_style(`background: linear-gradient(135deg, ${stringify(colors[0])} 0%, ${stringify(colors[1])} 100%); border-color: ${stringify(colors[0])}; ${stringify(isActive ? `box-shadow: inset 0 0 0 2px white;` : "")}`)} aria-label="Select gradient"></button>`);
     }
-    $$renderer2.push(`<!--]--></div></div> <div class="section svelte-18tfgkp"><div class="gradient-preview-row svelte-18tfgkp"><button class="gradient-endpoint svelte-18tfgkp"${attr_style(`background-color: ${stringify(background.gradientColors?.[0] || "#5422b0")};`)} aria-label="Edit start color"></button> <div class="gradient-preview svelte-18tfgkp"${attr_style(`background: ${stringify(currentGradientValue)};`)}></div> <button class="gradient-endpoint svelte-18tfgkp"${attr_style(`background-color: ${stringify(background.gradientColors?.[1] || "#4B0082")};`)} aria-label="Edit end color"></button></div></div> <div class="section svelte-18tfgkp"><div${attr_class("direction-row svelte-18tfgkp", void 0, { "inactive": background.type !== "gradient" })}><button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "up" })} aria-label="Gradient direction up"><img src="/icons/icon-nudge-up.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "down" })} aria-label="Gradient direction down"><img src="/icons/icon-nudge-down.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "left" })} aria-label="Gradient direction left"><img src="/icons/icon-nudge-left.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "right" })} aria-label="Gradient direction right"><img src="/icons/icon-nudge-right.svg" alt="" class="direction-icon svelte-18tfgkp"/></button></div></div></div>`);
+    $$renderer2.push(`<!--]--></div></div> <div class="section svelte-18tfgkp"><div class="gradient-preview-row svelte-18tfgkp"><button class="gradient-endpoint svelte-18tfgkp"${attr_style(`background-color: ${stringify(background.gradientColors?.[0] || "#5422b0")};`)} aria-label="Edit start color"></button> <input${attr("id", inputId1)} type="text"${attr("value", background.gradientColors?.[0] || "#5422b0")} class="hidden-color-input svelte-18tfgkp"/> <div class="gradient-preview svelte-18tfgkp"${attr_style(`background: ${stringify(currentGradientValue)};`)}></div> <button class="gradient-endpoint svelte-18tfgkp"${attr_style(`background-color: ${stringify(background.gradientColors?.[1] || "#4B0082")};`)} aria-label="Edit end color"></button> <input${attr("id", inputId2)} type="text"${attr("value", background.gradientColors?.[1] || "#4B0082")} class="hidden-color-input svelte-18tfgkp"/></div></div> <div class="section svelte-18tfgkp"><div${attr_class("direction-row svelte-18tfgkp", void 0, { "inactive": background.type !== "gradient" })}><button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "up" })} aria-label="Gradient direction up"><img src="/icons/icon-nudge-up.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "down" })} aria-label="Gradient direction down"><img src="/icons/icon-nudge-down.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "left" })} aria-label="Gradient direction left"><img src="/icons/icon-nudge-left.svg" alt="" class="direction-icon svelte-18tfgkp"/></button> <button${attr_class("direction-btn svelte-18tfgkp", void 0, { "active": background.direction === "right" })} aria-label="Gradient direction right"><img src="/icons/icon-nudge-right.svg" alt="" class="direction-icon svelte-18tfgkp"/></button></div></div></div>`);
     bind_props($$props, { background, onBackgroundChange });
   });
 }
@@ -2042,8 +2097,8 @@ function Text1Controls($$renderer, $$props) {
         label: "Slab quote"
       }
     ];
-    let colorMode = "text";
     let sliderMode = "size";
+    let highlightColorInputId = `text1-highlight-${Math.random().toString(36).substr(2, 9)}`;
     function handleClickOutside(event) {
     }
     onDestroy(() => {
@@ -2052,6 +2107,14 @@ function Text1Controls($$renderer, $$props) {
     function handleColorChange(color) {
       onChange("text1Color", color);
     }
+    function handleHighlightColorPick(event) {
+      onChange("text1HighlightColor", event.detail.color);
+    }
+    onDestroy(() => {
+      if (typeof document !== "undefined") {
+        document.removeEventListener("coloris:pick", handleHighlightColorPick);
+      }
+    });
     $$renderer2.push(`<div class="text1-controls svelte-fspusj"><div class="text-input-container svelte-fspusj"><textarea class="text-input svelte-fspusj" placeholder="Add text (with ==highlights==)">`);
     const $$body = escape_html(text1);
     if ($$body) {
@@ -2066,17 +2129,16 @@ function Text1Controls($$renderer, $$props) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<input type="range" class="inline-slider svelte-fspusj"${attr("min", 1)}${attr("max", 9)}${attr("value", text1Size)}/>`);
     }
-    $$renderer2.push(`<!--]--></div> <button class="reset-btn svelte-fspusj" aria-label="Reset slider"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <div class="color-section svelte-fspusj"><div class="color-mode-tabs svelte-fspusj"><button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-fspusj", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
-    {
-      $$renderer2.push("<!--[-->");
-      ColorSwatch($$renderer2, {
-        colors: TEXT_COLORS,
-        value: text1Color,
-        onChange: handleColorChange,
-        showRainbow: true
-      });
-    }
-    $$renderer2.push(`<!--]--></div> <div class="quote-row svelte-fspusj"><span class="row-label svelte-fspusj">Quotes</span> <div class="style-row svelte-fspusj"><!--[-->`);
+    $$renderer2.push(`<!--]--></div> <button class="reset-btn svelte-fspusj" aria-label="Reset slider"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-fspusj"/></button></div> <span class="color-label svelte-fspusj">Text &amp; Highlights</span> <div class="color-row svelte-fspusj">`);
+    ColorSwatch($$renderer2, {
+      colors: TEXT_COLORS,
+      value: text1Color,
+      onChange: handleColorChange,
+      showRainbow: true
+    });
+    $$renderer2.push(`<!----> <div class="color-separator svelte-fspusj"></div> <button${attr_class("swatch svelte-fspusj", void 0, { "active": text1HighlightColor === "#FFD700" })}${attr_style(`background-color: #FFD700; ${stringify(text1HighlightColor === "#FFD700" ? "box-shadow: 0 0 0 3px #FFD700;" : "")}`)} aria-label="Select yellow highlight"></button> <input${attr("id", highlightColorInputId)} type="text"${attr("value", text1HighlightColor !== "#FFD700" && text1HighlightColor !== "transparent" ? text1HighlightColor : "#FFD700")}${attr_class("swatch rainbow svelte-fspusj", void 0, {
+      "active": text1HighlightColor && text1HighlightColor !== "#FFD700" && text1HighlightColor !== "transparent"
+    })}${attr_style(`border-color: ${stringify(text1HighlightColor && text1HighlightColor !== "#FFD700" && text1HighlightColor !== "transparent" ? text1HighlightColor : "#999999")};`)}/></div> <div class="quote-row svelte-fspusj"><span class="row-label svelte-fspusj">Quotes</span> <div class="style-row svelte-fspusj"><!--[-->`);
     const each_array_1 = ensure_array_like(QUOTE_STYLES);
     for (let $$index_1 = 0, $$length = each_array_1.length; $$index_1 < $$length; $$index_1++) {
       let style = each_array_1[$$index_1];
@@ -2131,8 +2193,16 @@ function Text2Controls($$renderer, $$props) {
     function handleColorChange(color) {
       onChange("text2Color", color);
     }
-    let colorMode = "text";
     let sliderMode = "size";
+    let highlightColorInputId = `text2-highlight-${Math.random().toString(36).substr(2, 9)}`;
+    function handleHighlightColorPick(event) {
+      onChange("text2LabelColor", event.detail.color);
+    }
+    onDestroy(() => {
+      if (typeof document !== "undefined") {
+        document.removeEventListener("coloris:pick", handleHighlightColorPick);
+      }
+    });
     $$renderer2.push(`<div class="text2-controls svelte-n6z268"><div class="text-input-container svelte-n6z268"><textarea class="text-input svelte-n6z268" placeholder="Add text (with ==highlights==)">`);
     const $$body = escape_html(text2);
     if ($$body) {
@@ -2147,17 +2217,16 @@ function Text2Controls($$renderer, $$props) {
       $$renderer2.push("<!--[-->");
       $$renderer2.push(`<input type="range" class="inline-slider svelte-n6z268"${attr("min", 1)}${attr("max", 10)}${attr("value", text2Size)}/>`);
     }
-    $$renderer2.push(`<!--]--></div> <button class="reset-btn svelte-n6z268" aria-label="Reset slider"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <div class="color-section svelte-n6z268"><div class="color-mode-tabs svelte-n6z268"><button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "text" })}>Text colour</button> <button${attr_class("color-tab svelte-n6z268", void 0, { "active": colorMode === "highlight" })}>Highlight colour</button></div> `);
-    {
-      $$renderer2.push("<!--[-->");
-      ColorSwatch($$renderer2, {
-        colors: TEXT_COLORS,
-        value: text2Color,
-        onChange: handleColorChange,
-        showRainbow: true
-      });
-    }
-    $$renderer2.push(`<!--]--></div></div>`);
+    $$renderer2.push(`<!--]--></div> <button class="reset-btn svelte-n6z268" aria-label="Reset slider"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-n6z268"/></button></div> <span class="color-label svelte-n6z268">Text &amp; Highlights</span> <div class="color-row svelte-n6z268">`);
+    ColorSwatch($$renderer2, {
+      colors: TEXT_COLORS,
+      value: text2Color,
+      onChange: handleColorChange,
+      showRainbow: true
+    });
+    $$renderer2.push(`<!----> <div class="color-separator svelte-n6z268"></div> <button${attr_class("swatch svelte-n6z268", void 0, { "active": text2LabelColor === "#FFD700" })}${attr_style(`background-color: #FFD700; ${stringify(text2LabelColor === "#FFD700" ? "box-shadow: 0 0 0 3px #FFD700;" : "")}`)} aria-label="Select yellow highlight"></button> <input${attr("id", highlightColorInputId)} type="text"${attr("value", text2LabelColor !== "#FFD700" && text2LabelColor !== "transparent" ? text2LabelColor : "#FFD700")}${attr_class("swatch rainbow svelte-n6z268", void 0, {
+      "active": text2LabelColor && text2LabelColor !== "#FFD700" && text2LabelColor !== "transparent"
+    })}${attr_style(`border-color: ${stringify(text2LabelColor && text2LabelColor !== "#FFD700" && text2LabelColor !== "transparent" ? text2LabelColor : "#999999")};`)}/></div></div>`);
     bind_props($$props, {
       text2,
       text2Font,
@@ -2197,7 +2266,7 @@ function OverlayControls($$renderer, $$props) {
     $$renderer2.push(`<!--]--> `);
     if (!overlay) {
       $$renderer2.push("<!--[-->");
-      $$renderer2.push(`<div class="import-box svelte-qirtgp" role="button" tabindex="0"><label class="import-area svelte-qirtgp"><input type="file" accept="image/*" class="file-input svelte-qirtgp"/> <img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-qirtgp"/> <span class="import-text svelte-qirtgp">Import, drag or<br/>paste an image</span></label> <button class="paste-btn svelte-qirtgp">Paste</button></div> <button class="pexels-link svelte-qirtgp"><span class="pexels-text svelte-qirtgp">Search for free images online</span> <img src="/icons/icon-search.svg" alt="" class="pexels-icon svelte-qirtgp"/></button>`);
+      $$renderer2.push(`<div class="input-panel svelte-qirtgp"><div class="upload-border svelte-qirtgp" role="button" tabindex="0"><div class="upload-button svelte-qirtgp"><img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-qirtgp"/></div></div> <div class="button-row svelte-qirtgp"><button class="action-button svelte-qirtgp"><span class="button-text svelte-qirtgp">Search</span> <img src="/icons/icon-search.svg" alt="" class="button-icon svelte-qirtgp"/></button> <button class="action-button svelte-qirtgp"><span class="button-text svelte-qirtgp">Paste</span> <img src="/icons/icon-paste.svg" alt="" class="button-icon svelte-qirtgp"/></button></div></div> <input type="file" accept="image/*" class="sr-only svelte-qirtgp"/>`);
     } else {
       $$renderer2.push("<!--[!-->");
       $$renderer2.push(`<div class="control-row fit-fill-row svelte-qirtgp"><div class="button-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Fit &amp; Fill</span> <button class="icon-btn svelte-qirtgp" title="Fit image to canvas" aria-label="Fit"><img src="/icons/icon-fit.svg" alt="Fit" class="control-icon svelte-qirtgp"/></button> <button class="icon-btn svelte-qirtgp" title="Fill canvas with image" aria-label="Fill"><img src="/icons/icon-fill.svg" alt="Fill" class="control-icon svelte-qirtgp"/></button></div> <div class="button-group right-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Layers</span> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} title="Image on front layer" aria-label="Front"><img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon svelte-qirtgp"/></button> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} title="Image on back layer" aria-label="Back"><img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Opacity</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 100)}${attr("value", overlayOpacity)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset opacity"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 3)}${attr("step", 1)}${attr("value", overlayBorderWidth)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset border"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="color-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Colour</span> <div class="color-buttons svelte-qirtgp">`);
@@ -2249,11 +2318,11 @@ function DesignTab($$renderer, $$props) {
     onDestroy(() => {
     });
     const subMenuTabs = [
-      { id: "ratio", label: "Ratio" },
       { id: "background", label: "Background" },
       { id: "text1", label: "Text 1" },
       { id: "text2", label: "Text 2" },
-      { id: "image", label: "Image" }
+      { id: "image", label: "Image" },
+      { id: "ratio", label: "Ratio" }
     ];
     function handleSubMenuChange(tab) {
       activeDesignMenu.set(tab);

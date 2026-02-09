@@ -1,6 +1,6 @@
 {
   ".svelte-kit/generated/client-optimized/app.js": {
-    "file": "_app/immutable/entry/app.BnvLrC2E.js",
+    "file": "_app/immutable/entry/app.B5M7Ahe3.js",
     "name": "entry/app",
     "src": ".svelte-kit/generated/client-optimized/app.js",
     "isEntry": true,
@@ -33,7 +33,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/1.js": {
-    "file": "_app/immutable/nodes/1.D5UogK1V.js",
+    "file": "_app/immutable/nodes/1.CLXx3PNh.js",
     "name": "nodes/1",
     "src": ".svelte-kit/generated/client-optimized/nodes/1.js",
     "isEntry": true,
@@ -44,11 +44,11 @@
       "_D7DYR7IZ.js",
       "_DgmTrjkO.js",
       "_DYPRnUuQ.js",
-      "_ic5Hg1-F.js"
+      "_v3CL4Nxw.js"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/2.js": {
-    "file": "_app/immutable/nodes/2.DPyOVX0o.js",
+    "file": "_app/immutable/nodes/2.rdgJZ0oL.js",
     "name": "nodes/2",
     "src": ".svelte-kit/generated/client-optimized/nodes/2.js",
     "isEntry": true,
@@ -64,10 +64,13 @@
     ],
     "dynamicImports": [
       "node_modules/@huggingface/transformers/dist/transformers.web.js",
+      "node_modules/@melloware/coloris/dist/esm/coloris.js",
+      "node_modules/@melloware/coloris/dist/esm/coloris.js",
+      "node_modules/@melloware/coloris/dist/esm/coloris.js",
       "node_modules/@melloware/coloris/dist/esm/coloris.js"
     ],
     "css": [
-      "_app/immutable/assets/2.CgiwFsVz.css"
+      "_app/immutable/assets/2.BP6o-d5n.css"
     ]
   },
   "_-4YIK25C.js": {
@@ -118,8 +121,8 @@
       "_BOM9bC5J.js"
     ]
   },
-  "_ic5Hg1-F.js": {
-    "file": "_app/immutable/chunks/ic5Hg1-F.js",
+  "_v3CL4Nxw.js": {
+    "file": "_app/immutable/chunks/v3CL4Nxw.js",
     "name": "entry",
     "imports": [
       "_D7DYR7IZ.js",
@@ -146,12 +149,12 @@
     "isDynamicEntry": true
   },
   "node_modules/@sveltejs/kit/src/runtime/client/entry.js": {
-    "file": "_app/immutable/entry/start.CYiDXZXy.js",
+    "file": "_app/immutable/entry/start.Dd1F9bLo.js",
     "name": "entry/start",
     "src": "node_modules/@sveltejs/kit/src/runtime/client/entry.js",
     "isEntry": true,
     "imports": [
-      "_ic5Hg1-F.js"
+      "_v3CL4Nxw.js"
     ]
   }
 }
