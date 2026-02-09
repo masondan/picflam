@@ -627,6 +627,7 @@
 		align-items: center;
 		gap: var(--space-2);
 		justify-content: flex-start;
+		margin-top: var(--space-2);
 	}
 
 	.style-row {
