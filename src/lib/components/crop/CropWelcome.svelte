@@ -101,7 +101,6 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		max-height: calc(100dvh - 140px);
 	}
 	
 	.welcome-image {
@@ -111,6 +110,7 @@
 		object-position: center;
 		flex: 1;
 		min-height: 0;
+		max-height: 55vh;
 	}
 	
 	.input-panel {
