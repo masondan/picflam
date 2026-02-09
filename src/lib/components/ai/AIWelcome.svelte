@@ -120,6 +120,20 @@
 		max-height: 70vh;
 	}
 	
+	.slider-container :global(.before-after-container) {
+		height: 100%;
+		width: 100%;
+	}
+	
+	.slider-container :global(.before-image),
+	.slider-container :global(.before-image img),
+	.slider-container :global(.after-image img) {
+		height: 100%;
+		width: 100%;
+		object-fit: cover;
+		object-position: center;
+	}
+	
 	.input-panel {
 		display: flex;
 		flex-direction: column;
