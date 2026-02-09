@@ -352,10 +352,18 @@
 			</div>
 			
 			<div class="nudge-buttons">
-				<button class="nudge-btn" on:click={() => handleNudge('up')}>↑</button>
-				<button class="nudge-btn" on:click={() => handleNudge('down')}>↓</button>
-				<button class="nudge-btn" on:click={() => handleNudge('left')}>←</button>
-				<button class="nudge-btn" on:click={() => handleNudge('right')}>→</button>
+				<button class="nudge-btn" on:click={() => handleNudge('up')} aria-label="Nudge up">
+					<img src="/icons/icon-nudge-up.svg" alt="" class="nudge-icon" />
+				</button>
+				<button class="nudge-btn" on:click={() => handleNudge('down')} aria-label="Nudge down">
+					<img src="/icons/icon-nudge-down.svg" alt="" class="nudge-icon" />
+				</button>
+				<button class="nudge-btn" on:click={() => handleNudge('left')} aria-label="Nudge left">
+					<img src="/icons/icon-nudge-left.svg" alt="" class="nudge-icon" />
+				</button>
+				<button class="nudge-btn" on:click={() => handleNudge('right')} aria-label="Nudge right">
+					<img src="/icons/icon-nudge-right.svg" alt="" class="nudge-icon" />
+				</button>
 			</div>
 			
 			<div class="drawer-footer">
@@ -593,7 +601,7 @@
 		background-color: var(--color-border-light);
 	}
 
-	.nudge-btn img {
+	.nudge-icon {
 		width: 22px;
 		height: 22px;
 		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
