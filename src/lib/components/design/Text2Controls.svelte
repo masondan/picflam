@@ -1,5 +1,6 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
+	import '@melloware/coloris/dist/coloris.css';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
 	import { CANVAS_COLORS, FONTS } from '$lib/stores/designStore.js';
@@ -67,20 +68,38 @@
 		onChange('text2Color', color);
 	}
 
-	function handleHighlightChange(color) {
-		onChange('text2LabelColor', color === text2LabelColor ? 'transparent' : color);
-	}
-
-	let colorMode = 'text'; // 'text' or 'highlight'
 	let sliderMode = 'size'; // 'size', 'position', or 'linespacing'
+	let highlightColorInputEl;
+	let highlightColorInputId = `text2-highlight-${Math.random().toString(36).substr(2, 9)}`;
 
-	function toggleColorMode(mode) {
-		colorMode = mode;
+	function handleHighlightColorPick(event) {
+		onChange('text2LabelColor', event.detail.color);
 	}
 
 	function resetSlider(key) {
 		onChange(key, DEFAULTS[key]);
 	}
+
+	onMount(async () => {
+		if (highlightColorInputEl) {
+			const { default: Coloris, init } = await import('@melloware/coloris');
+			init();
+			Coloris({
+				el: `#${highlightColorInputId}`,
+				parent: '.app',
+				wrap: false,
+				theme: 'polaroid',
+				alpha: false
+			});
+			document.addEventListener('coloris:pick', handleHighlightColorPick);
+		}
+	});
+
+	onDestroy(() => {
+		if (typeof document !== 'undefined') {
+			document.removeEventListener('coloris:pick', handleHighlightColorPick);
+		}
+	});
 </script>
 
 <div class="text2-controls">
@@ -207,38 +226,31 @@
 		</button>
 	</div>
 
-	<div class="color-section">
-		<div class="color-mode-tabs">
-			<button 
-				class="color-tab"
-				class:active={colorMode === 'text'}
-				on:click={() => toggleColorMode('text')}
-			>
-				Text colour
-			</button>
-			<button 
-				class="color-tab"
-				class:active={colorMode === 'highlight'}
-				on:click={() => toggleColorMode('highlight')}
-			>
-				Highlight colour
-			</button>
-		</div>
-		{#if colorMode === 'text'}
-			<ColorSwatch 
-				colors={TEXT_COLORS}
-				value={text2Color}
-				onChange={handleColorChange}
-				showRainbow={true}
-			/>
-		{:else}
-			<ColorSwatch 
-				colors={HIGHLIGHT_COLORS}
-				value={text2LabelColor}
-				onChange={handleHighlightChange}
-				showRainbow={true}
-			/>
-		{/if}
+	<span class="color-label">Text & Highlights</span>
+	<div class="color-row">
+		<ColorSwatch 
+			colors={TEXT_COLORS}
+			value={text2Color}
+			onChange={handleColorChange}
+			showRainbow={true}
+		/>
+		<div class="color-separator"></div>
+		<button 
+			class="swatch"
+			class:active={text2LabelColor === '#FFD700'}
+			style="background-color: #FFD700; {text2LabelColor === '#FFD700' ? 'box-shadow: 0 0 0 3px #FFD700;' : ''}"
+			on:click={() => onChange('text2LabelColor', '#FFD700')}
+			aria-label="Select yellow highlight"
+		/>
+		<input 
+			bind:this={highlightColorInputEl}
+			id={highlightColorInputId}
+			type="text" 
+			value={text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#FFD700'}
+			class="swatch rainbow"
+			class:active={text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent'}
+			style="border-color: {text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#999999'};"
+		/>
 	</div>
 </div>
 
@@ -496,29 +508,75 @@
 		opacity: 1;
 	}
 
-	.color-mode-tabs {
-		display: flex;
-		gap: var(--space-4);
-		margin-bottom: var(--space-1);
-	}
-
-	.color-tab {
-		padding: 0;
-		border: none;
-		background: none;
-		cursor: pointer;
+	.color-label {
 		font-size: var(--font-size-sm);
 		font-weight: 500;
 		color: #555555;
-		transition: color var(--transition-fast);
+		display: block;
+		margin-bottom: 0px;
 	}
 
-	.color-tab:hover {
-		color: var(--color-text-primary);
+	.color-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		justify-content: flex-start;
+		flex-wrap: nowrap;
+		min-width: 0;
+		margin-top: -6px;
 	}
 
-	.color-tab.active {
-		color: var(--color-primary);
-		font-weight: 700;
+	.color-row :global(.color-swatches) {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: nowrap;
+		min-width: 0;
+	}
+
+	.color-row .swatch {
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-full);
+		border: 3px solid transparent;
+		cursor: pointer;
+		transition: all var(--transition-fast);
+		padding: 0;
+		box-sizing: border-box;
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.color-row .swatch.active {
+		border-color: white;
+	}
+
+	.color-separator {
+		width: 1px;
+		height: 36px;
+		background-color: #cccccc;
+		flex-shrink: 0;
+	}
+
+	.swatch.rainbow {
+		background: conic-gradient(
+			red, yellow, lime, aqua, blue, magenta, red
+		) !important;
+		color: transparent !important;
+		font-size: 0 !important;
+		padding: 0;
+		appearance: none;
+		-webkit-appearance: none;
+	}
+
+	:global(.clr-picker::before) {
+		display: none !important;
+	}
+
+	:global(.clr-picker) {
+		position: fixed !important;
+		top: 50% !important;
+		left: 50% !important;
+		transform: translate(-50%, -50%) !important;
+		z-index: 1000 !important;
 	}
 </style>
