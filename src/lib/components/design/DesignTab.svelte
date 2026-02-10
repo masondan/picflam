@@ -1109,7 +1109,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		pointer-events: none;
+		cursor: grab;
+	}
+
+	.text1-drag-handle:active {
+		cursor: grabbing;
 	}
 
 	.drag-arrows {
@@ -1117,9 +1121,6 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 2px;
-		border: 1px dotted #cccccc;
-		padding: 4px 2px;
-		border-radius: 2px;
 		font-size: 12px;
 		color: #cccccc;
 		line-height: 1;
@@ -1160,7 +1161,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		pointer-events: none;
+		cursor: grab;
+	}
+
+	.text2-drag-handle:active {
+		cursor: grabbing;
 	}
 
 	.canvas-text.text2 {
