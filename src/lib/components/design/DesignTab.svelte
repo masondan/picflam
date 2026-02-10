@@ -84,7 +84,7 @@
 				slideState.set(templateState);
 			}
 			showTemplatePicker.set(false);
-			activeDesignMenu.set('ratio');
+			activeDesignMenu.set('text1');
 		}
 	}
 
