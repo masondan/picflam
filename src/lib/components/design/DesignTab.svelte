@@ -516,6 +516,7 @@
 	function handleText1DragStart(e) {
 		if (e.touches && e.touches.length > 1) return;
 		e.preventDefault();
+		activeDesignMenu.set('text1');
 		isDraggingText1 = true;
 		const touch = e.touches?.[0] || e;
 		textDragStartY = touch.clientY;
@@ -553,6 +554,7 @@
 	function handleText2DragStart(e) {
 		if (e.touches && e.touches.length > 1) return;
 		e.preventDefault();
+		activeDesignMenu.set('text2');
 		isDraggingText2 = true;
 		const touch = e.touches?.[0] || e;
 		textDragStartY = touch.clientY;
