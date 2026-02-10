@@ -81,7 +81,7 @@ function ConfirmModal($$renderer, $$props) {
     });
     let onCancel = fallback($$props["onCancel"], () => {
     });
-    $$renderer2.push(`<div class="modal-overlay svelte-qik81a" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-qik81a" role="document"><p class="modal-message svelte-qik81a">${html(message)}</p> <div class="modal-actions svelte-qik81a"><button class="btn-text svelte-qik81a">${escape_html(cancelText)}</button> <button class="btn-text btn-confirm svelte-qik81a">${escape_html(confirmText)}</button></div></div></div>`);
+    $$renderer2.push(`<div class="modal-overlay" role="dialog" aria-modal="true" tabindex="-1"><div class="modal" role="document"><p class="modal-message">${html(message)}</p> <div class="modal-actions"><button class="modal-btn">${escape_html(cancelText)}</button> <button class="modal-btn">${escape_html(confirmText)}</button></div></div></div>`);
     bind_props($$props, { message, confirmText, cancelText, onConfirm, onCancel });
   });
 }
@@ -91,7 +91,7 @@ function AlertModal($$renderer, $$props) {
     let actionText = fallback($$props["actionText"], "Got it");
     let onAction = fallback($$props["onAction"], () => {
     });
-    $$renderer2.push(`<div class="modal-overlay svelte-199npzs" role="dialog" aria-modal="true" tabindex="-1"><div class="modal svelte-199npzs" role="document"><p class="modal-message svelte-199npzs">${html(message)}</p> <div class="modal-actions svelte-199npzs"><button class="btn-action svelte-199npzs">${escape_html(actionText)}</button></div></div></div>`);
+    $$renderer2.push(`<div class="modal-overlay" role="dialog" aria-modal="true" tabindex="-1"><div class="modal" role="document"><p class="modal-message">${html(message)}</p> <div class="modal-actions"><button class="modal-btn">${escape_html(actionText)}</button></div></div></div>`);
     bind_props($$props, { message, actionText, onAction });
   });
 }

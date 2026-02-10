@@ -1,6 +1,6 @@
 {
   ".svelte-kit/generated/client-optimized/app.js": {
-    "file": "_app/immutable/entry/app.CSKAtFke.js",
+    "file": "_app/immutable/entry/app.D2oMRr-c.js",
     "name": "entry/app",
     "src": ".svelte-kit/generated/client-optimized/app.js",
     "isEntry": true,
@@ -33,7 +33,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/1.js": {
-    "file": "_app/immutable/nodes/1.cX3LgcXq.js",
+    "file": "_app/immutable/nodes/1.Cx12KV51.js",
     "name": "nodes/1",
     "src": ".svelte-kit/generated/client-optimized/nodes/1.js",
     "isEntry": true,
@@ -44,11 +44,11 @@
       "_lEh-PZk4.js",
       "_BDunHu8Z.js",
       "_CUZYsDJh.js",
-      "_C51snegS.js"
+      "_cvw16U2X.js"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/2.js": {
-    "file": "_app/immutable/nodes/2.CyTo6qio.js",
+    "file": "_app/immutable/nodes/2.B_EvWXq3.js",
     "name": "nodes/2",
     "src": ".svelte-kit/generated/client-optimized/nodes/2.js",
     "isEntry": true,
@@ -70,7 +70,7 @@
       "node_modules/@melloware/coloris/dist/esm/coloris.js"
     ],
     "css": [
-      "_app/immutable/assets/2.CEJOKqyT.css"
+      "_app/immutable/assets/2.xvXLLCYG.css"
     ]
   },
   "_BDunHu8Z.js": {
@@ -79,14 +79,6 @@
     "imports": [
       "_lEh-PZk4.js",
       "_juJXt7hG.js"
-    ]
-  },
-  "_C51snegS.js": {
-    "file": "_app/immutable/chunks/C51snegS.js",
-    "name": "entry",
-    "imports": [
-      "_lEh-PZk4.js",
-      "_Dka6wEB2.js"
     ]
   },
   "_CUZYsDJh.js": {
@@ -109,6 +101,14 @@
     "name": "index-client",
     "imports": [
       "_lEh-PZk4.js"
+    ]
+  },
+  "_cvw16U2X.js": {
+    "file": "_app/immutable/chunks/cvw16U2X.js",
+    "name": "entry",
+    "imports": [
+      "_lEh-PZk4.js",
+      "_Dka6wEB2.js"
     ]
   },
   "_frtuFzeQ.js": {
@@ -149,12 +149,12 @@
     "isDynamicEntry": true
   },
   "node_modules/@sveltejs/kit/src/runtime/client/entry.js": {
-    "file": "_app/immutable/entry/start.CzWAS09G.js",
+    "file": "_app/immutable/entry/start.C5jkbMK7.js",
     "name": "entry/start",
     "src": "node_modules/@sveltejs/kit/src/runtime/client/entry.js",
     "isEntry": true,
     "imports": [
-      "_C51snegS.js"
+      "_cvw16U2X.js"
     ]
   }
 }

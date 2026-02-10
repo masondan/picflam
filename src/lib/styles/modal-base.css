@@ -1,0 +1,82 @@
+/* Shared modal styles - imported by all modal components */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: var(--space-4);
+}
+
+.modal {
+  width: fit-content;
+  max-width: 340px;
+  min-width: 200px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.modal-message {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--space-2) 0;
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space-0);
+  margin-top: var(--space-1);
+  justify-content: space-between;
+}
+
+/* Single button: align to right */
+.modal-actions:has(> :only-child) {
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  background: none;
+  border: none;
+  padding: var(--space-0) var(--space-5);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.modal-btn:hover {
+  color: var(--color-text-primary);
+}
+
+/* First button (Cancel) - control left padding */
+.modal-actions > .modal-btn:first-child {
+  padding-left: var(--space-4);
+}
+
+/* Last button (Yes/Confirm) - control right padding */
+.modal-actions > .modal-btn:last-child {
+  padding-right: var(--space-4);
+}
+
+/* Single button - not so far right */
+.modal-actions:has(> :only-child) > .modal-btn {
+  padding-right: var(--space-8);
+}
