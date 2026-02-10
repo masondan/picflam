@@ -17,9 +17,11 @@
 	export let overlayNaturalHeight = 0;
 	export let getCanvasDimensions = () => ({ width: 300, height: 300 });
 	export let onChange = (key, value) => {};
+	export let onPreviewToggle = (value) => {};
 
 	let showPexelsDrawer = false;
 	let fileInput;
+	let isPreviewActive = false;
 
 	function handlePexelsImageSelect(imageUrl) {
 		onChange('overlay', imageUrl);
@@ -233,6 +235,21 @@
 					aria-label="Back"
 				>
 					<img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon" />
+				</button>
+				
+				<div class="separator"></div>
+				
+				<button 
+					class="layer-btn"
+					class:active={isPreviewActive}
+					on:click={() => {
+						isPreviewActive = !isPreviewActive;
+						onPreviewToggle(isPreviewActive);
+					}}
+					title="Preview - hide bounding box"
+					aria-label="Preview"
+				>
+					<img src="/icons/icon-preview.svg" alt="Preview" class="layer-icon" />
 				</button>
 			</div>
 		</div>
@@ -506,7 +523,13 @@
 		justify-content: space-between;
 	}
 
-	.icon-btn,
+	.separator {
+		width: 1px;
+		height: 24px;
+		background-color: #555555;
+		margin: 0 var(--space-1);
+	}
+
 	.layer-btn {
 		display: flex;
 		align-items: center;

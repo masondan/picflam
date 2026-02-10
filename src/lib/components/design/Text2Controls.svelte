@@ -11,7 +11,7 @@
 	export let text2YPosition = 8;
 	export let text2LineSpacing = 5;
 	export let text2LetterSpacing = 0;
-	export let text2Color = '#000000';
+	export let text2Color = '#FFFFFF';
 	export let text2LabelColor = 'transparent';
 	export let text2IsBold = false;
 	export let text2Align = 'center';

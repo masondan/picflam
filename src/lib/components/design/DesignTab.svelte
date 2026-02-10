@@ -35,6 +35,7 @@
 	let textDragStartPosition = 0;
 	let isText1PreviewActive = false;
 	let isText2PreviewActive = false;
+	let isOverlayPreviewActive = false;
 	
 	onMount(() => {
 		if (canvasEl) {
@@ -790,7 +791,7 @@
 				{#if $slideState.overlay && overlayDimensions}
 					<div 
 						class="overlay-wrapper"
-						class:active={$activeDesignMenu === 'image'}
+						class:active={$activeDesignMenu === 'image' && !isOverlayPreviewActive}
 						style="
 							left: {$slideState.overlayX}%;
 							top: {$slideState.overlayY}%;
@@ -815,6 +816,7 @@
 							class:mask-rounded={$slideState.overlayMask === 'rounded'}
 							class:mask-circle={$slideState.overlayMask === 'circle'}
 							class:mask-diamond={$slideState.overlayMask === 'diamond'}
+							class:preview-mode={isOverlayPreviewActive}
 							style="
 								border-width: {$slideState.overlayBorderWidth * 2}px;
 								border-color: {$slideState.overlayBorderColor};
@@ -822,21 +824,23 @@
 								--diamond-border-color: {$slideState.overlayBorderColor};
 							"
 						>
-							<button 
-								class="delete-btn"
-								on:click={handleDeleteImage}
-								aria-label="Delete image"
-							>
-								<img src="/icons/icon-close.svg" alt="" class="delete-icon" />
-							</button>
-							<button
-								class="resize-handle"
-								on:mousedown={handleResizeStart}
-								on:touchstart={handleResizeStart}
-								aria-label="Resize image"
-							>
-								<img src="/icons/icon-resize.svg" alt="" class="resize-icon" />
-							</button>
+							{#if !isOverlayPreviewActive}
+								<button 
+									class="delete-btn"
+									on:click={handleDeleteImage}
+									aria-label="Delete image"
+								>
+									<img src="/icons/icon-close.svg" alt="" class="delete-icon" />
+								</button>
+								<button
+									class="resize-handle"
+									on:mousedown={handleResizeStart}
+									on:touchstart={handleResizeStart}
+									aria-label="Resize image"
+								>
+									<img src="/icons/icon-resize.svg" alt="" class="resize-icon" />
+								</button>
+							{/if}
 							<div 
 								class="overlay-image-container"
 								class:mask-rounded={$slideState.overlayMask === 'rounded'}
@@ -908,6 +912,7 @@
 					getCanvasDimensions={getCanvasDimensions}
 					onChange={handleImageChange}
 					onDelete={handleDeleteImage}
+					onPreviewToggle={(isActive) => isOverlayPreviewActive = isActive}
 				/>
 			{:else if $activeDesignMenu === 'ratio'}
 				<SizeControls 
@@ -1235,7 +1240,7 @@
 		z-index: 1;
 	}
 
-	.overlay-wrapper.active .overlay-bounding-box {
+	.overlay-wrapper.active .overlay-bounding-box:not(.preview-mode) {
 		outline: 1px dashed var(--color-text-muted);
 		outline-offset: 2px;
 	}

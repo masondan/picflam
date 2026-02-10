@@ -1914,7 +1914,7 @@ const initialSlideState = {
   text1YPosition: 5,
   text1LineSpacing: 3,
   text1LetterSpacing: 0,
-  text1Color: "#000000",
+  text1Color: "#FFFFFF",
   text1HighlightColor: "#FFD700",
   text1IsBold: true,
   text1Align: "center",
@@ -1926,7 +1926,7 @@ const initialSlideState = {
   text2YPosition: 8,
   text2LineSpacing: 3,
   text2LetterSpacing: 0,
-  text2Color: "#000000",
+  text2Color: "#FFFFFF",
   text2LabelColor: "#FFD700",
   text2IsBold: false,
   text2Align: "center",
@@ -2079,7 +2079,7 @@ function Text1Controls($$renderer, $$props) {
     let text1YPosition = fallback($$props["text1YPosition"], 3);
     let text1LineSpacing = fallback($$props["text1LineSpacing"], 5);
     let text1LetterSpacing = fallback($$props["text1LetterSpacing"], 0);
-    let text1Color = fallback($$props["text1Color"], "#000000");
+    let text1Color = fallback($$props["text1Color"], "#FFFFFF");
     let text1HighlightColor = fallback($$props["text1HighlightColor"], "transparent");
     let text1IsBold = fallback($$props["text1IsBold"], true);
     let text1Align = fallback($$props["text1Align"], "center");
@@ -2188,7 +2188,7 @@ function Text2Controls($$renderer, $$props) {
     let text2YPosition = fallback($$props["text2YPosition"], 8);
     let text2LineSpacing = fallback($$props["text2LineSpacing"], 5);
     let text2LetterSpacing = fallback($$props["text2LetterSpacing"], 0);
-    let text2Color = fallback($$props["text2Color"], "#000000");
+    let text2Color = fallback($$props["text2Color"], "#FFFFFF");
     let text2LabelColor = fallback($$props["text2LabelColor"], "transparent");
     let text2IsBold = fallback($$props["text2IsBold"], false);
     let text2Align = fallback($$props["text2Align"], "center");
@@ -2273,6 +2273,9 @@ function OverlayControls($$renderer, $$props) {
     let getCanvasDimensions = fallback($$props["getCanvasDimensions"], () => ({ width: 300, height: 300 }));
     let onChange = fallback($$props["onChange"], (key, value) => {
     });
+    let onPreviewToggle = fallback($$props["onPreviewToggle"], (value) => {
+    });
+    let isPreviewActive = false;
     const BORDER_COLORS = CANVAS_COLORS.solids;
     $$renderer2.push(`<div class="overlay-controls svelte-qirtgp">`);
     {
@@ -2284,7 +2287,7 @@ function OverlayControls($$renderer, $$props) {
       $$renderer2.push(`<div class="input-panel svelte-qirtgp"><div class="upload-border svelte-qirtgp" role="button" tabindex="0"><div class="upload-button svelte-qirtgp"><img src="/icons/icon-upload.svg" alt="" class="upload-icon svelte-qirtgp"/></div></div> <div class="button-row svelte-qirtgp"><button class="action-button svelte-qirtgp"><span class="button-text svelte-qirtgp">Search</span> <img src="/icons/icon-search.svg" alt="" class="button-icon svelte-qirtgp"/></button> <button class="action-button svelte-qirtgp"><span class="button-text svelte-qirtgp">Paste</span> <img src="/icons/icon-paste.svg" alt="" class="button-icon svelte-qirtgp"/></button></div></div> <input type="file" accept="image/*" class="sr-only svelte-qirtgp"/>`);
     } else {
       $$renderer2.push("<!--[!-->");
-      $$renderer2.push(`<div class="control-row fit-fill-row svelte-qirtgp"><div class="button-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Fit &amp; Fill</span> <button class="icon-btn svelte-qirtgp" title="Fit image to canvas" aria-label="Fit"><img src="/icons/icon-fit.svg" alt="Fit" class="control-icon svelte-qirtgp"/></button> <button class="icon-btn svelte-qirtgp" title="Fill canvas with image" aria-label="Fill"><img src="/icons/icon-fill.svg" alt="Fill" class="control-icon svelte-qirtgp"/></button></div> <div class="button-group right-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Layers</span> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} title="Image on front layer" aria-label="Front"><img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon svelte-qirtgp"/></button> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} title="Image on back layer" aria-label="Back"><img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Opacity</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 100)}${attr("value", overlayOpacity)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset opacity"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 3)}${attr("step", 1)}${attr("value", overlayBorderWidth)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset border"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="color-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border colour</span> <div class="color-buttons svelte-qirtgp">`);
+      $$renderer2.push(`<div class="control-row fit-fill-row svelte-qirtgp"><div class="button-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Fit &amp; Fill</span> <button class="icon-btn svelte-qirtgp" title="Fit image to canvas" aria-label="Fit"><img src="/icons/icon-fit.svg" alt="Fit" class="control-icon svelte-qirtgp"/></button> <button class="icon-btn svelte-qirtgp" title="Fill canvas with image" aria-label="Fill"><img src="/icons/icon-fill.svg" alt="Fill" class="control-icon svelte-qirtgp"/></button></div> <div class="button-group right-group svelte-qirtgp"><span class="row-label svelte-qirtgp">Layers</span> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "above" })} title="Image on front layer" aria-label="Front"><img src="/icons/icon-layer-above.svg" alt="Front" class="layer-icon svelte-qirtgp"/></button> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": overlayLayer === "below" })} title="Image on back layer" aria-label="Back"><img src="/icons/icon-layer-below.svg" alt="Back" class="layer-icon svelte-qirtgp"/></button> <div class="separator svelte-qirtgp"></div> <button${attr_class("layer-btn svelte-qirtgp", void 0, { "active": isPreviewActive })} title="Preview - hide bounding box" aria-label="Preview"><img src="/icons/icon-preview.svg" alt="Preview" class="layer-icon svelte-qirtgp"/></button></div></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Opacity</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 100)}${attr("value", overlayOpacity)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset opacity"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="slider-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border</span> <div class="slider-wrapper svelte-qirtgp"><input type="range" class="inline-slider svelte-qirtgp"${attr("min", 0)}${attr("max", 3)}${attr("step", 1)}${attr("value", overlayBorderWidth)}/></div> <button class="reset-btn svelte-qirtgp" aria-label="Reset border"><img src="/icons/icon-reset.svg" alt="" class="reset-icon svelte-qirtgp"/></button></div> <div class="color-row svelte-qirtgp"><span class="row-label svelte-qirtgp">Border colour</span> <div class="color-buttons svelte-qirtgp">`);
       ColorSwatch($$renderer2, {
         colors: BORDER_COLORS,
         value: overlayBorderColor,
@@ -2315,7 +2318,8 @@ function OverlayControls($$renderer, $$props) {
       overlayNaturalWidth,
       overlayNaturalHeight,
       getCanvasDimensions,
-      onChange
+      onChange,
+      onPreviewToggle
     });
   });
 }
@@ -2332,6 +2336,7 @@ function DesignTab($$renderer, $$props) {
     let canvasHeight = 300;
     let isText1PreviewActive = false;
     let isText2PreviewActive = false;
+    let isOverlayPreviewActive = false;
     onDestroy(() => {
     });
     const subMenuTabs = [
@@ -2519,13 +2524,21 @@ function DesignTab($$renderer, $$props) {
       if (store_get($$store_subs ??= {}, "$slideState", slideState).overlay && overlayDimensions) {
         $$renderer2.push("<!--[-->");
         $$renderer2.push(`<div${attr_class("overlay-wrapper svelte-fxk5n4", void 0, {
-          "active": store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "image"
+          "active": store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "image" && !isOverlayPreviewActive
         })}${attr_style(` left: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayX)}%; top: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayY)}%; width: ${stringify(overlayDimensions.width)}%; opacity: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayOpacity / 100)}; z-index: ${stringify(store_get($$store_subs ??= {}, "$activeDesignMenu", activeDesignMenu) === "image" ? 11 : store_get($$store_subs ??= {}, "$slideState", slideState).overlayLayer === "below" ? 1 : 10)}; `)} role="button" tabindex="0"><div${attr_class("overlay-bounding-box svelte-fxk5n4", void 0, {
           "mask-none": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "none",
           "mask-rounded": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "rounded",
           "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle",
-          "mask-diamond": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond"
-        })}${attr_style(` border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; --diamond-border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; --diamond-border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; `)}><button class="delete-btn svelte-fxk5n4" aria-label="Delete image"><img src="/icons/icon-close.svg" alt="" class="delete-icon svelte-fxk5n4"/></button> <button class="resize-handle svelte-fxk5n4" aria-label="Resize image"><img src="/icons/icon-resize.svg" alt="" class="resize-icon svelte-fxk5n4"/></button> <div${attr_class("overlay-image-container svelte-fxk5n4", void 0, {
+          "mask-diamond": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond",
+          "preview-mode": isOverlayPreviewActive
+        })}${attr_style(` border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; --diamond-border-width: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderWidth * 2)}px; --diamond-border-color: ${stringify(store_get($$store_subs ??= {}, "$slideState", slideState).overlayBorderColor)}; `)}>`);
+        if (!isOverlayPreviewActive) {
+          $$renderer2.push("<!--[-->");
+          $$renderer2.push(`<button class="delete-btn svelte-fxk5n4" aria-label="Delete image"><img src="/icons/icon-close.svg" alt="" class="delete-icon svelte-fxk5n4"/></button> <button class="resize-handle svelte-fxk5n4" aria-label="Resize image"><img src="/icons/icon-resize.svg" alt="" class="resize-icon svelte-fxk5n4"/></button>`);
+        } else {
+          $$renderer2.push("<!--[!-->");
+        }
+        $$renderer2.push(`<!--]--> <div${attr_class("overlay-image-container svelte-fxk5n4", void 0, {
           "mask-rounded": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "rounded",
           "mask-circle": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "circle",
           "mask-diamond": store_get($$store_subs ??= {}, "$slideState", slideState).overlayMask === "diamond"
@@ -2570,7 +2583,8 @@ function DesignTab($$renderer, $$props) {
           overlayNaturalHeight: store_get($$store_subs ??= {}, "$slideState", slideState).overlayNaturalHeight,
           getCanvasDimensions,
           onChange: handleImageChange,
-          onDelete: handleDeleteImage
+          onDelete: handleDeleteImage,
+          onPreviewToggle: (isActive) => isOverlayPreviewActive = isActive
         });
       } else {
         $$renderer2.push("<!--[!-->");
