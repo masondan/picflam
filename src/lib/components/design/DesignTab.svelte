@@ -72,7 +72,9 @@
 		} else {
 			const template = templatesData.templates.find(t => t.id === templateId);
 			if (template) {
-				slideState.set(JSON.parse(JSON.stringify(template.state)));
+				const templateState = JSON.parse(JSON.stringify(template.state));
+				templateState.templateNativeSize = templateState.canvasSize;
+				slideState.set(templateState);
 			}
 			showTemplatePicker.set(false);
 			activeDesignMenu.set('ratio');
@@ -607,6 +609,9 @@
 				role="button"
 				tabindex="0"
 			>
+				<div class="template-constraint-wrapper" class:constrained={$slideState.canvasSize !== $slideState.templateNativeSize}>
+					<div class="template-constraint-box" class:constrained={$slideState.canvasSize !== $slideState.templateNativeSize} style={$slideState.canvasSize !== $slideState.templateNativeSize ? `aspect-ratio: ${$slideState.templateNativeSize};` : ''}>
+				
 				{#if $slideState.text1}
 					{@const textFontSizePx = (canvasMinDim * 0.072 * $slideState.text1Size) / 5}
 					{@const textLineHeightPx = textFontSizePx * (1 + $slideState.text1LineSpacing * 0.1)}
@@ -757,6 +762,9 @@
 						</div>
 					</div>
 				{/if}
+				
+					</div>
+				</div>
 			</div>
 		</div>
 		
@@ -928,6 +936,43 @@
 		border-radius: var(--radius-sm);
 		position: relative;
 		overflow: hidden;
+	}
+
+	.template-constraint-wrapper {
+		position: static;
+		width: 100%;
+		height: 100%;
+	}
+
+	.template-constraint-wrapper {
+		position: static;
+		width: 100%;
+		height: 100%;
+	}
+
+	.template-constraint-wrapper.constrained {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.template-constraint-box {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		pointer-events: auto;
+	}
+
+	.template-constraint-box.constrained {
+		max-width: 100%;
+		max-height: 100%;
+		pointer-events: auto;
 	}
 
 	.text1-flow-container {
