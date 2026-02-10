@@ -705,6 +705,7 @@
 						style="top: {textYPosPct}%;"
 						on:mousedown={handleText1DragStart}
 						on:touchstart={handleText1DragStart}
+						on:click={() => activeDesignMenu.set('text1')}
 						role="button"
 						tabindex="0"
 					>
@@ -752,6 +753,7 @@
 						style="top: {$slideState.text2YPosition * 10}%;"
 						on:mousedown={handleText2DragStart}
 						on:touchstart={handleText2DragStart}
+						on:click={() => activeDesignMenu.set('text2')}
 						role="button"
 						tabindex="0"
 					>
