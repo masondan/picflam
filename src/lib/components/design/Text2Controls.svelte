@@ -167,13 +167,6 @@
 		</button>
 		<button 
 			class="slider-tab"
-			class:active={sliderMode === 'position'}
-			on:click={() => sliderMode = 'position'}
-		>
-			Position
-		</button>
-		<button 
-			class="slider-tab"
 			class:active={sliderMode === 'linespacing'}
 			on:click={() => sliderMode = 'linespacing'}
 		>
@@ -192,16 +185,6 @@
 					value={text2Size}
 					on:input={(e) => onChange('text2Size', Number(e.target.value))}
 				/>
-			{:else if sliderMode === 'position'}
-				<input 
-					type="range"
-					class="inline-slider"
-					min={0}
-					max={10}
-					step={0.1}
-					value={text2YPosition}
-					on:input={(e) => onChange('text2YPosition', Number(e.target.value))}
-				/>
 			{:else if sliderMode === 'linespacing'}
 				<input 
 					type="range"
@@ -217,7 +200,6 @@
 			class="reset-btn" 
 			on:click={() => {
 				if (sliderMode === 'size') resetSlider('text2Size');
-				else if (sliderMode === 'position') resetSlider('text2YPosition');
 				else if (sliderMode === 'linespacing') resetSlider('text2LineSpacing');
 			}}
 			aria-label="Reset slider"

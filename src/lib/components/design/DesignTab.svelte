@@ -29,6 +29,10 @@
 	let resizeStartY = 0;
 	let resizeStartSize = 0;
 	let lastTouchDistance = 0;
+	let isDraggingText1 = false;
+	let isDraggingText2 = false;
+	let textDragStartY = 0;
+	let textDragStartPosition = 0;
 	
 	onMount(() => {
 		if (canvasEl) {
@@ -509,13 +513,87 @@
 		}
 	}
 
+	function handleText1DragStart(e) {
+		if (e.touches && e.touches.length > 1) return;
+		e.preventDefault();
+		isDraggingText1 = true;
+		const touch = e.touches?.[0] || e;
+		textDragStartY = touch.clientY;
+		textDragStartPosition = $slideState.text1YPosition;
+		
+		window.addEventListener('mousemove', handleText1DragMove);
+		window.addEventListener('mouseup', handleText1DragEnd);
+		window.addEventListener('touchmove', handleText1DragMove, { passive: false });
+		window.addEventListener('touchend', handleText1DragEnd);
+	}
+
+	function handleText1DragMove(e) {
+		if (!isDraggingText1) return;
+		e.preventDefault();
+		const touch = e.touches?.[0] || e;
+		const deltaY = touch.clientY - textDragStartY;
+		const deltaYPercent = (deltaY / canvasHeight) * 10;
+		
+		const newPosition = Math.max(0, Math.min(10, textDragStartPosition + deltaYPercent));
+		
+		slideState.update(state => ({
+			...state,
+			text1YPosition: newPosition
+		}));
+	}
+
+	function handleText1DragEnd() {
+		isDraggingText1 = false;
+		window.removeEventListener('mousemove', handleText1DragMove);
+		window.removeEventListener('mouseup', handleText1DragEnd);
+		window.removeEventListener('touchmove', handleText1DragMove);
+		window.removeEventListener('touchend', handleText1DragEnd);
+	}
+
+	function handleText2DragStart(e) {
+		if (e.touches && e.touches.length > 1) return;
+		e.preventDefault();
+		isDraggingText2 = true;
+		const touch = e.touches?.[0] || e;
+		textDragStartY = touch.clientY;
+		textDragStartPosition = $slideState.text2YPosition;
+		
+		window.addEventListener('mousemove', handleText2DragMove);
+		window.addEventListener('mouseup', handleText2DragEnd);
+		window.addEventListener('touchmove', handleText2DragMove, { passive: false });
+		window.addEventListener('touchend', handleText2DragEnd);
+	}
+
+	function handleText2DragMove(e) {
+		if (!isDraggingText2) return;
+		e.preventDefault();
+		const touch = e.touches?.[0] || e;
+		const deltaY = touch.clientY - textDragStartY;
+		const deltaYPercent = (deltaY / canvasHeight) * 10;
+		
+		const newPosition = Math.max(0, Math.min(10, textDragStartPosition + deltaYPercent));
+		
+		slideState.update(state => ({
+			...state,
+			text2YPosition: newPosition
+		}));
+	}
+
+	function handleText2DragEnd() {
+		isDraggingText2 = false;
+		window.removeEventListener('mousemove', handleText2DragMove);
+		window.removeEventListener('mouseup', handleText2DragEnd);
+		window.removeEventListener('touchmove', handleText2DragMove);
+		window.removeEventListener('touchend', handleText2DragEnd);
+	}
+
 	function handleCanvasClick(e) {
 		const target = e.target;
 		if (target.closest('.overlay-wrapper')) {
 			activeDesignMenu.set('image');
-		} else if (target.closest('.text1-flow-container')) {
+		} else if (target.closest('.text1-flow-container') || target.closest('.text1-drag-handle')) {
 			activeDesignMenu.set('text1');
-		} else if (target.closest('.canvas-text.text2')) {
+		} else if (target.closest('.canvas-text.text2') || target.closest('.text2-drag-handle')) {
 			activeDesignMenu.set('text2');
 		} else if (target.closest('.canvas-quote')) {
 			activeDesignMenu.set('text1');
@@ -625,7 +703,20 @@
 					<div 
 						class="text1-flow-container"
 						style="top: {textYPosPct}%;"
+						on:mousedown={handleText1DragStart}
+						on:touchstart={handleText1DragStart}
+						role="button"
+						tabindex="0"
 					>
+						{#if $activeDesignMenu === 'text1'}
+							<div class="text1-drag-handle">
+								<div class="drag-arrows">
+									<span class="arrow-up">↑</span>
+									<span class="arrow-down">↓</span>
+								</div>
+							</div>
+						{/if}
+						
 						{#if $slideState.text1QuoteStyle !== 'none'}
 							<div 
 								class="canvas-quote"
@@ -657,18 +748,35 @@
 				{/if}
 				{#if $slideState.text2}
 					<div 
-						class="canvas-text text2"
-						style="
-							font-family: '{$slideState.text2Font}';
-							font-size: {$slideState.text2Size * 0.5}em;
-							font-weight: {$slideState.text2IsBold ? 'bold' : 'normal'};
-							color: {$slideState.text2Color};
-							text-align: {$slideState.text2Align};
-							top: {$slideState.text2YPosition * 10}%;
-							line-height: {1 + $slideState.text2LineSpacing * 0.1};
-						"
+						class="text2-container"
+						style="top: {$slideState.text2YPosition * 10}%;"
+						on:mousedown={handleText2DragStart}
+						on:touchstart={handleText2DragStart}
+						role="button"
+						tabindex="0"
 					>
-						{@html $slideState.text2.replace(/==(.+?)==/g, `<span style="color: ${$slideState.text2LabelColor};">$1</span>`).replace(/\n/g, '<br>')}
+						{#if $activeDesignMenu === 'text2'}
+							<div class="text2-drag-handle">
+								<div class="drag-arrows">
+									<span class="arrow-up">↑</span>
+									<span class="arrow-down">↓</span>
+								</div>
+							</div>
+						{/if}
+						
+						<div 
+							class="canvas-text text2"
+							style="
+								font-family: '{$slideState.text2Font}';
+								font-size: {$slideState.text2Size * 0.5}em;
+								font-weight: {$slideState.text2IsBold ? 'bold' : 'normal'};
+								color: {$slideState.text2Color};
+								text-align: {$slideState.text2Align};
+								line-height: {1 + $slideState.text2LineSpacing * 0.1};
+							"
+						>
+							{@html $slideState.text2.replace(/==(.+?)==/g, `<span style="color: ${$slideState.text2LabelColor};">$1</span>`).replace(/\n/g, '<br>')}
+						</div>
 					</div>
 				{/if}
 				{#if $slideState.overlay && overlayDimensions}
@@ -985,6 +1093,36 @@
 		overflow: visible;
 		display: flex;
 		flex-direction: column;
+		cursor: grab;
+	}
+
+	.text1-flow-container:active {
+		cursor: grabbing;
+	}
+
+	.text1-drag-handle {
+		position: absolute;
+		left: -20px;
+		top: 0;
+		width: 16px;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.drag-arrows {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		border: 1px dotted #cccccc;
+		padding: 4px 2px;
+		border-radius: 2px;
+		font-size: 12px;
+		color: #cccccc;
+		line-height: 1;
 	}
 
 	.canvas-quote {
@@ -996,12 +1134,37 @@
 		overflow-wrap: break-word;
 	}
 
-	.canvas-text.text2 {
+	.text2-container {
 		position: absolute;
 		left: 7.5%;
 		right: 7.5%;
 		width: 85%;
+		transform: translateY(-50%);
 		z-index: 5;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+		cursor: grab;
+	}
+
+	.text2-container:active {
+		cursor: grabbing;
+	}
+
+	.text2-drag-handle {
+		position: absolute;
+		right: -20px;
+		top: 0;
+		width: 16px;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.canvas-text.text2 {
+		width: 100%;
 	}
 
 	.overlay-wrapper {
