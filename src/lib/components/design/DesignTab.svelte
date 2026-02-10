@@ -33,6 +33,8 @@
 	let isDraggingText2 = false;
 	let textDragStartY = 0;
 	let textDragStartPosition = 0;
+	let isText1PreviewActive = false;
+	let isText2PreviewActive = false;
 	
 	onMount(() => {
 		if (canvasEl) {
@@ -711,7 +713,7 @@
 						role="button"
 						tabindex="0"
 					>
-						{#if $activeDesignMenu === 'text1'}
+						{#if $activeDesignMenu === 'text1' && !isText1PreviewActive}
 							<div class="text1-drag-handle">
 								<div class="drag-arrows">
 									<span class="arrow-up">↑</span>
@@ -743,6 +745,7 @@
 								color: {$slideState.text1Color};
 								text-align: {$slideState.text1Align};
 								line-height: {1 + $slideState.text1LineSpacing * 0.1};
+								letter-spacing: {$slideState.text1LetterSpacing * 0.05}em;
 							"
 						>
 							{@html $slideState.text1.replace(/==(.+?)==/g, `<span style="color: ${$slideState.text1HighlightColor};">$1</span>`).replace(/\n/g, '<br>')}
@@ -759,7 +762,7 @@
 						role="button"
 						tabindex="0"
 					>
-						{#if $activeDesignMenu === 'text2'}
+						{#if $activeDesignMenu === 'text2' && !isText2PreviewActive}
 							<div class="text2-drag-handle">
 								<div class="drag-arrows">
 									<span class="arrow-up">↑</span>
@@ -777,6 +780,7 @@
 								color: {$slideState.text2Color};
 								text-align: {$slideState.text2Align};
 								line-height: {1 + $slideState.text2LineSpacing * 0.1};
+								letter-spacing: {$slideState.text2LetterSpacing * 0.05}em;
 							"
 						>
 							{@html $slideState.text2.replace(/==(.+?)==/g, `<span style="color: ${$slideState.text2LabelColor};">$1</span>`).replace(/\n/g, '<br>')}
@@ -922,6 +926,7 @@
 					text1Size={$slideState.text1Size}
 					text1YPosition={$slideState.text1YPosition}
 					text1LineSpacing={$slideState.text1LineSpacing}
+					text1LetterSpacing={$slideState.text1LetterSpacing}
 					text1Color={$slideState.text1Color}
 					text1HighlightColor={$slideState.text1HighlightColor}
 					text1IsBold={$slideState.text1IsBold}
@@ -929,6 +934,7 @@
 					text1QuoteStyle={$slideState.text1QuoteStyle}
 					text1QuoteSize={$slideState.text1QuoteSize}
 					onChange={handleText1Change}
+					onPreviewToggle={(isActive) => isText1PreviewActive = isActive}
 				/>
 			{:else if $activeDesignMenu === 'text2'}
 				<Text2Controls 
@@ -937,11 +943,13 @@
 					text2Size={$slideState.text2Size}
 					text2YPosition={$slideState.text2YPosition}
 					text2LineSpacing={$slideState.text2LineSpacing}
+					text2LetterSpacing={$slideState.text2LetterSpacing}
 					text2Color={$slideState.text2Color}
 					text2LabelColor={$slideState.text2LabelColor}
 					text2IsBold={$slideState.text2IsBold}
 					text2Align={$slideState.text2Align}
 					onChange={handleText2Change}
+					onPreviewToggle={(isActive) => isText2PreviewActive = isActive}
 				/>
 			{/if}
 		</div>

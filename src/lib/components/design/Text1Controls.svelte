@@ -10,6 +10,7 @@
 	export let text1Size = 5;
 	export let text1YPosition = 3;
 	export let text1LineSpacing = 5;
+	export let text1LetterSpacing = 0;
 	export let text1Color = '#000000';
 	export let text1HighlightColor = 'transparent';
 	export let text1IsBold = true;
@@ -17,6 +18,7 @@
 	export let text1QuoteStyle = 'none';
 	export let text1QuoteSize = 5;
 	export let onChange = (key, value) => {};
+	export let onPreviewToggle = (value) => {};
 
 	const TEXT_COLORS = CANVAS_COLORS.solids;
 	const HIGHLIGHT_COLORS = ['#FFD700', '#000000', '#007C1F', '#00679D', '#B20715'];
@@ -31,10 +33,12 @@
 		text1Size: 5,
 		text1YPosition: 5,
 		text1LineSpacing: 3,
+		text1LetterSpacing: 0,
 		text1QuoteSize: 3
 	};
 
-	let sliderMode = 'size'; // 'size', 'position', or 'linespacing'
+	let spacingMode = 'line'; // 'line' or 'letter'
+	let isPreviewActive = false;
 	let highlightColorInputEl;
 	let highlightColorInputId = `text1-highlight-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -128,6 +132,27 @@
 		></textarea>
 	</div>
 
+	<div class="size-row">
+		<span class="row-label">Text size</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={1}
+				max={9}
+				value={text1Size}
+				on:input={(e) => onChange('text1Size', Number(e.target.value))}
+			/>
+		</div>
+		<button 
+			class="reset-btn" 
+			on:click={() => resetSlider('text1Size')}
+			aria-label="Reset text size"
+		>
+			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+		</button>
+	</div>
+
 	<div class="font-row">
 		<span class="row-label">Font</span>
 		<div class="font-dropdown-wrapper" bind:this={fontDropdownRef}>
@@ -171,37 +196,40 @@
 		>
 			<img src="/icons/icon-align-{text1Align}.svg" alt="" class="btn-icon" />
 		</button>
+
+		<button 
+			class="icon-btn"
+			class:active={isPreviewActive}
+			on:click={() => {
+				isPreviewActive = !isPreviewActive;
+				onPreviewToggle(isPreviewActive);
+			}}
+			aria-label="Preview"
+		>
+			<img src="/icons/icon-preview.svg" alt="" class="btn-icon" />
+		</button>
 	</div>
 
-	<div class="slider-tabs">
+	<div class="spacing-label-row">
 		<button 
-			class="slider-tab"
-			class:active={sliderMode === 'size'}
-			on:click={() => sliderMode = 'size'}
-		>
-			Size
-		</button>
-		<button 
-			class="slider-tab"
-			class:active={sliderMode === 'linespacing'}
-			on:click={() => sliderMode = 'linespacing'}
+			class="spacing-label"
+			class:active={spacingMode === 'line'}
+			on:click={() => spacingMode = 'line'}
 		>
 			Line spacing
 		</button>
+		<button 
+			class="spacing-label"
+			class:active={spacingMode === 'letter'}
+			on:click={() => spacingMode = 'letter'}
+		>
+			Letter spacing
+		</button>
 	</div>
 
-	<div class="slider-row">
+	<div class="spacing-row">
 		<div class="slider-wrapper">
-			{#if sliderMode === 'size'}
-				<input 
-					type="range"
-					class="inline-slider"
-					min={1}
-					max={9}
-					value={text1Size}
-					on:input={(e) => onChange('text1Size', Number(e.target.value))}
-				/>
-			{:else if sliderMode === 'linespacing'}
+			{#if spacingMode === 'line'}
 				<input 
 					type="range"
 					class="inline-slider"
@@ -210,15 +238,24 @@
 					value={text1LineSpacing}
 					on:input={(e) => onChange('text1LineSpacing', Number(e.target.value))}
 				/>
+			{:else if spacingMode === 'letter'}
+				<input 
+					type="range"
+					class="inline-slider"
+					min={-2}
+					max={5}
+					value={text1LetterSpacing}
+					on:input={(e) => onChange('text1LetterSpacing', Number(e.target.value))}
+				/>
 			{/if}
 		</div>
 		<button 
 			class="reset-btn" 
 			on:click={() => {
-				if (sliderMode === 'size') resetSlider('text1Size');
-				else if (sliderMode === 'linespacing') resetSlider('text1LineSpacing');
+				if (spacingMode === 'line') resetSlider('text1LineSpacing');
+				else if (spacingMode === 'letter') resetSlider('text1LetterSpacing');
 			}}
-			aria-label="Reset slider"
+			aria-label="Reset spacing"
 		>
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
@@ -498,13 +535,20 @@
 		flex-shrink: 0;
 	}
 
-	.slider-tabs {
+	.size-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding-bottom: 0;
+	}
+
+	.spacing-label-row {
 		display: flex;
 		gap: var(--space-4);
 		margin-bottom: 0;
 	}
 
-	.slider-tab {
+	.spacing-label {
 		padding: 0;
 		border: none;
 		background: none;
@@ -515,16 +559,16 @@
 		transition: color var(--transition-fast);
 	}
 
-	.slider-tab:hover {
+	.spacing-label:hover {
 		color: var(--color-text-primary);
 	}
 
-	.slider-tab.active {
+	.spacing-label.active {
 		color: var(--color-primary);
 		font-weight: 700;
 	}
 
-	.slider-row {
+	.spacing-row {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);

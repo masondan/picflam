@@ -10,11 +10,13 @@
 	export let text2Size = 3;
 	export let text2YPosition = 8;
 	export let text2LineSpacing = 5;
+	export let text2LetterSpacing = 0;
 	export let text2Color = '#000000';
 	export let text2LabelColor = 'transparent';
 	export let text2IsBold = false;
 	export let text2Align = 'center';
 	export let onChange = (key, value) => {};
+	export let onPreviewToggle = (value) => {};
 
 	const TEXT_COLORS = CANVAS_COLORS.solids;
 	const HIGHLIGHT_COLORS = ['#FFD700', '#000000', '#007C1F', '#00679D', '#B20715'];
@@ -23,9 +25,12 @@
 	const DEFAULTS = {
 		text2Size: 2,
 		text2YPosition: 8,
-		text2LineSpacing: 3
+		text2LineSpacing: 3,
+		text2LetterSpacing: 0
 	};
 
+	let spacingMode = 'line'; // 'line' or 'letter'
+	let isPreviewActive = false;
 	let showFontDropdown = false;
 	let fontDropdownRef;
 
@@ -68,7 +73,6 @@
 		onChange('text2Color', color);
 	}
 
-	let sliderMode = 'size'; // 'size', 'position', or 'linespacing'
 	let highlightColorInputEl;
 	let highlightColorInputId = `text2-highlight-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -110,6 +114,27 @@
 			value={text2}
 			on:input={handleTextChange}
 		></textarea>
+	</div>
+
+	<div class="size-row">
+		<span class="row-label">Text size</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={1}
+				max={10}
+				value={text2Size}
+				on:input={(e) => onChange('text2Size', Number(e.target.value))}
+			/>
+		</div>
+		<button 
+			class="reset-btn" 
+			on:click={() => resetSlider('text2Size')}
+			aria-label="Reset text size"
+		>
+			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
+		</button>
 	</div>
 
 	<div class="font-row">
@@ -155,37 +180,40 @@
 		>
 			<img src="/icons/icon-align-{text2Align}.svg" alt="" class="btn-icon" />
 		</button>
+
+		<button 
+			class="icon-btn"
+			class:active={isPreviewActive}
+			on:click={() => {
+				isPreviewActive = !isPreviewActive;
+				onPreviewToggle(isPreviewActive);
+			}}
+			aria-label="Preview"
+		>
+			<img src="/icons/icon-preview.svg" alt="" class="btn-icon" />
+		</button>
 	</div>
 
-	<div class="slider-tabs">
+	<div class="spacing-label-row">
 		<button 
-			class="slider-tab"
-			class:active={sliderMode === 'size'}
-			on:click={() => sliderMode = 'size'}
-		>
-			Size
-		</button>
-		<button 
-			class="slider-tab"
-			class:active={sliderMode === 'linespacing'}
-			on:click={() => sliderMode = 'linespacing'}
+			class="spacing-label"
+			class:active={spacingMode === 'line'}
+			on:click={() => spacingMode = 'line'}
 		>
 			Line spacing
 		</button>
+		<button 
+			class="spacing-label"
+			class:active={spacingMode === 'letter'}
+			on:click={() => spacingMode = 'letter'}
+		>
+			Letter spacing
+		</button>
 	</div>
 
-	<div class="slider-row">
+	<div class="spacing-row">
 		<div class="slider-wrapper">
-			{#if sliderMode === 'size'}
-				<input 
-					type="range"
-					class="inline-slider"
-					min={1}
-					max={10}
-					value={text2Size}
-					on:input={(e) => onChange('text2Size', Number(e.target.value))}
-				/>
-			{:else if sliderMode === 'linespacing'}
+			{#if spacingMode === 'line'}
 				<input 
 					type="range"
 					class="inline-slider"
@@ -194,15 +222,24 @@
 					value={text2LineSpacing}
 					on:input={(e) => onChange('text2LineSpacing', Number(e.target.value))}
 				/>
+			{:else if spacingMode === 'letter'}
+				<input 
+					type="range"
+					class="inline-slider"
+					min={-2}
+					max={5}
+					value={text2LetterSpacing}
+					on:input={(e) => onChange('text2LetterSpacing', Number(e.target.value))}
+				/>
 			{/if}
 		</div>
 		<button 
 			class="reset-btn" 
 			on:click={() => {
-				if (sliderMode === 'size') resetSlider('text2Size');
-				else if (sliderMode === 'linespacing') resetSlider('text2LineSpacing');
+				if (spacingMode === 'line') resetSlider('text2LineSpacing');
+				else if (spacingMode === 'letter') resetSlider('text2LetterSpacing');
 			}}
-			aria-label="Reset slider"
+			aria-label="Reset spacing"
 		>
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
@@ -395,13 +432,20 @@
 		color: var(--color-text-secondary);
 	}
 
-	.slider-tabs {
+	.size-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding-bottom: 0;
+	}
+
+	.spacing-label-row {
 		display: flex;
 		gap: var(--space-4);
 		margin-bottom: 0;
 	}
 
-	.slider-tab {
+	.spacing-label {
 		padding: 0;
 		border: none;
 		background: none;
@@ -412,16 +456,16 @@
 		transition: color var(--transition-fast);
 	}
 
-	.slider-tab:hover {
+	.spacing-label:hover {
 		color: var(--color-text-primary);
 	}
 
-	.slider-tab.active {
+	.spacing-label.active {
 		color: var(--color-primary);
 		font-weight: 700;
 	}
 
-	.slider-row {
+	.spacing-row {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
