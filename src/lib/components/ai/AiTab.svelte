@@ -49,7 +49,8 @@
 	
 	function handleExport() {
 		if ($aiState.currentImage) {
-			downloadImage($aiState.currentImage, 'picflam-ai.png');
+			const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+	downloadImage($aiState.currentImage, `picflam-ai-${timestamp}.png`);
 		}
 	}
 </script>

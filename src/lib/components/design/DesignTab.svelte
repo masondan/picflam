@@ -298,7 +298,8 @@
 			if (mode === 'copy') {
 				await copyImageToClipboard(dataUrl);
 			} else {
-				downloadImage(dataUrl, 'picflam-design.png');
+				const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+			downloadImage(dataUrl, `picflam-design-${timestamp}.png`);
 			}
 		} catch (err) {
 			console.error('Failed to export canvas:', err);

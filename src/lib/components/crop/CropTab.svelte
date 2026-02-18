@@ -107,7 +107,8 @@
 		}
 		if ($cropState.currentImage) {
 			const finalImage = await getFinalImage();
-			downloadImage(finalImage, 'picflam-export.png');
+			const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+	downloadImage(finalImage, `picflam-crop-${timestamp}.png`);
 		}
 	}
 	
