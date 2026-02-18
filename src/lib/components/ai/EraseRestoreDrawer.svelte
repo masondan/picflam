@@ -128,6 +128,38 @@
 			saveToHistory();
 		}
 	}
+
+	function handleTouchStart(e) {
+		e.preventDefault();
+		if (e.touches.length !== 1) return;
+		isDrawing = true;
+		const touch = e.touches[0];
+		const { x, y } = getCanvasCoordinates({ clientX: touch.clientX, clientY: touch.clientY });
+		paint(x, y);
+	}
+
+	function handleTouchMove(e) {
+		e.preventDefault();
+		if (!isDrawing || e.touches.length !== 1) return;
+		const touch = e.touches[0];
+		const rect = canvasWrapper.getBoundingClientRect();
+		brushPosition = {
+			x: touch.clientX - rect.left,
+			y: touch.clientY - rect.top,
+			visible: true
+		};
+		const { x, y } = getCanvasCoordinates({ clientX: touch.clientX, clientY: touch.clientY });
+		paint(x, y);
+	}
+
+	function handleTouchEnd(e) {
+		e.preventDefault();
+		if (isDrawing) {
+			isDrawing = false;
+			saveToHistory();
+		}
+		brushPosition = { ...brushPosition, visible: false };
+	}
 	
 	function paint(x, y) {
 		const scaleX = canvasElement.width / canvasWrapper.getBoundingClientRect().width;
@@ -270,6 +302,9 @@
 				on:mousemove={handleMouseMove}
 				on:mouseup={handleMouseUp}
 				on:mouseleave={handleMouseLeave}
+				on:touchstart={handleTouchStart}
+				on:touchmove={handleTouchMove}
+				on:touchend={handleTouchEnd}
 				style="transform: scale({zoomLevel}) translate({offsetX}px, {offsetY}px)"
 				role="presentation"
 			>
