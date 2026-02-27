@@ -72,8 +72,15 @@
 	];
 	
 	function selectTemplate(templateId) {
-		if (templateId === 'blank') {
+		if (templateId === 'blank' || templateId === 'blank-vertical') {
 			slideState.reset();
+			if (templateId === 'blank-vertical') {
+				slideState.update(state => {
+					state.canvasSize = '9/16';
+					state.templateNativeSize = '9/16';
+					return state;
+				});
+			}
 			showTemplatePicker.set(false);
 			activeDesignMenu.set('background');
 		} else {
@@ -639,6 +646,7 @@
 		<div class="template-picker">
 			<p class="picker-title">Create quotes & cards with<br>a template or blank canvas</p>
 			
+			<!-- Square templates grid -->
 			<div class="template-grid">
 				<button 
 					class="blank-canvas-btn"
@@ -647,7 +655,36 @@
 					<img src="/icons/icon-add.svg" alt="" class="add-icon" />
 				</button>
 				
-				{#each templatesData.templates as template (template.id)}
+				{#each templatesData.templates.filter(t => t.state.canvasSize === '1/1') as template (template.id)}
+					<button 
+						class="template-card"
+						on:click={() => selectTemplate(template.id)}
+					>
+						{#if template.preview}
+							<img 
+								src={template.preview} 
+								alt={template.name}
+								class="template-preview"
+							/>
+						{:else}
+							<div class="template-placeholder">
+								{template.name}
+							</div>
+						{/if}
+					</button>
+				{/each}
+			</div>
+			
+			<!-- Vertical templates grid -->
+			<div class="template-grid">
+				<button 
+					class="blank-canvas-btn blank-vertical-btn"
+					on:click={() => selectTemplate('blank-vertical')}
+				>
+					<img src="/icons/icon-add.svg" alt="" class="add-icon" />
+				</button>
+				
+				{#each templatesData.templates.filter(t => t.state.canvasSize === '9/16') as template (template.id)}
 					<button 
 						class="template-card"
 						on:click={() => selectTemplate(template.id)}
@@ -1009,6 +1046,10 @@
 		background-color: var(--color-primary-light);
 	}
 	
+	.blank-vertical-btn {
+		aspect-ratio: 9/16;
+	}
+	
 	.add-icon {
 		width: 32px;
 		height: 32px;
@@ -1032,6 +1073,10 @@
 	
 	.template-card:hover {
 		transform: scale(1.02);
+	}
+	
+	.template-grid:last-of-type .template-card {
+		aspect-ratio: 9/16;
 	}
 	
 	.template-preview {
