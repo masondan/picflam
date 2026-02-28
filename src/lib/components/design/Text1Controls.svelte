@@ -510,7 +510,7 @@
 		height: 36px;
 		background-color: #cccccc;
 		flex-shrink: 0;
-		margin: 0 var(--space-3);
+		margin: 0 var(--space-2);
 	}
 
 	.size-row {
@@ -524,7 +524,7 @@
 	.spacing-label-row {
 		display: flex;
 		gap: var(--space-4);
-		margin-bottom: 0;
+		margin-bottom: var(--space-0);
 	}
 
 	.spacing-label {
