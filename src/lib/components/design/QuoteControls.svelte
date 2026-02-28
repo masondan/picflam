@@ -1,6 +1,4 @@
 <script>
-	import Slider from '$lib/components/ui/Slider.svelte';
-
 	export let quoteStyle = 'none';
 	export let quoteSize = 5;
 	export let onChange = (key, value) => {};
@@ -40,13 +38,18 @@
 	</div>
 
 	<div class="slider-row" class:disabled={quoteStyle === 'none'}>
-		<Slider 
-			label="Size"
-			min={1}
-			max={10}
-			value={quoteSize}
-			onChange={(val) => quoteStyle !== 'none' && onChange('text1QuoteSize', val)}
-		/>
+		<span class="row-label">Quote size</span>
+		<div class="slider-wrapper">
+			<input 
+				type="range"
+				class="inline-slider"
+				min={1}
+				max={10}
+				value={quoteSize}
+				on:input={(e) => quoteStyle !== 'none' && onChange('text1QuoteSize', Number(e.target.value))}
+				disabled={quoteStyle === 'none'}
+			/>
+		</div>
 		<button class="reset-btn" on:click={() => resetSlider('quoteSize')} aria-label="Reset size" disabled={quoteStyle === 'none'}>
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
@@ -92,20 +95,66 @@
 		height: 20px;
 	}
 
+	.row-label {
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: #555555;
+		white-space: nowrap;
+	}
+
+	.slider-wrapper {
+		flex: 1;
+		display: flex;
+		align-items: center;
+	}
+
+	.inline-slider {
+		width: 100%;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--color-border);
+		appearance: none;
+		cursor: pointer;
+	}
+
+	.inline-slider::-webkit-slider-thumb {
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-primary);
+		cursor: pointer;
+		transition: transform var(--transition-fast);
+	}
+
+	.inline-slider::-webkit-slider-thumb:hover {
+		transform: scale(1.15);
+	}
+
+	.inline-slider::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		border-radius: var(--radius-full);
+		background: var(--color-primary);
+		border: none;
+		cursor: pointer;
+	}
+
+	.inline-slider:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
 	.slider-row {
 		display: flex;
-		align-items: flex-end;
-		gap: var(--space-3);
-		padding-bottom: var(--space-1);
+		align-items: center;
+		gap: var(--space-2);
+		padding-bottom: 0;
 	}
 
 	.slider-row.disabled {
 		opacity: 0.4;
 		pointer-events: none;
-	}
-
-	.slider-row :global(.slider-container) {
-		flex: 1;
 	}
 
 	.reset-btn {
@@ -119,7 +168,11 @@
 		cursor: pointer;
 		padding: 0;
 		flex-shrink: 0;
-		margin-bottom: -6px;
+	}
+
+	.reset-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
 	.reset-icon {
@@ -128,7 +181,7 @@
 		opacity: 0.5;
 	}
 
-	.reset-btn:hover .reset-icon {
+	.reset-btn:hover:not(:disabled) .reset-icon {
 		opacity: 1;
 	}
 </style>

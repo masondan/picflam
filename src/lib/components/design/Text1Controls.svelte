@@ -284,13 +284,13 @@
 
 	{#if text1QuoteStyle !== 'none'}
 		<div class="slider-row quote-slider-row">
-			<span class="row-label">Size</span>
+			<span class="row-label">Quote size</span>
 			<div class="slider-wrapper">
 				<input 
 					type="range"
 					class="inline-slider"
 					min={1}
-					max={5}
+					max={10}
 					value={text1QuoteSize}
 					on:input={(e) => onChange('text1QuoteSize', Number(e.target.value))}
 				/>
@@ -518,6 +518,7 @@
 		align-items: center;
 		gap: var(--space-2);
 		padding-bottom: 0;
+		flex-wrap: nowrap;
 	}
 
 	.spacing-label-row {
@@ -551,6 +552,7 @@
 		align-items: center;
 		gap: var(--space-2);
 		padding-bottom: 0;
+		flex-wrap: nowrap;
 	}
 
 	.slider-wrapper {
@@ -676,7 +678,11 @@
 	}
 
 	.quote-slider-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 		padding-bottom: 0;
+		flex-wrap: nowrap;
 	}
 
 	.quote-slider-row.disabled {
