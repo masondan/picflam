@@ -1,15 +1,22 @@
 <script>
+	import ColorPickerPopup from './ColorPickerPopup.svelte';
+
 	export let colors = [];
 	export let value = '';
 	export let onChange = (color) => {};
 	export let showRainbow = true;
 
+	let pickerOpen = false;
 	let customColor = '#5422b0';
-	let colorInputEl;
 
-	function handleNativePick(e) {
-		customColor = e.target.value;
-		onChange(e.target.value);
+	function openPicker() {
+		customColor = (value && !colors.includes(value) && value !== 'transparent') ? value : customColor;
+		pickerOpen = true;
+	}
+
+	function handlePickerChange(color) {
+		customColor = color;
+		onChange(color);
 	}
 </script>
 
@@ -30,15 +37,14 @@
 			class="swatch rainbow"
 			class:active={value && !colors.includes(value) && value !== 'transparent'}
 			style="border-color: {value && !colors.includes(value) && value !== 'transparent' ? customColor : '#999999'}; {value && !colors.includes(value) && value !== 'transparent' ? `box-shadow: inset 0 0 0 2px white;` : ''}"
-			on:click={() => colorInputEl?.click()}
+			on:click={openPicker}
 			aria-label="Custom color picker"
 		/>
-		<input 
-			bind:this={colorInputEl}
-			type="color"
-			value={customColor}
-			on:input={handleNativePick}
-			class="hidden-color-input"
+		<ColorPickerPopup
+			color={customColor}
+			open={pickerOpen}
+			onColorChange={handlePickerChange}
+			onClose={() => pickerOpen = false}
 		/>
 	{/if}
 </div>
@@ -89,13 +95,5 @@
 		padding: 0;
 		appearance: none;
 		-webkit-appearance: none;
-	}
-
-	.hidden-color-input {
-		position: absolute;
-		opacity: 0;
-		width: 0;
-		height: 0;
-		pointer-events: none;
 	}
 </style>

@@ -1,9 +1,13 @@
 <script>
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
+	import ColorPickerPopup from '$lib/components/ui/ColorPickerPopup.svelte';
 	import { CANVAS_COLORS, GRADIENT_DIRECTIONS } from '$lib/stores/designStore.js';
 
 	export let background = { type: 'solid', value: '#FFFFFF', direction: 'down', gradientColors: ['#5422b0', '#4B0082'] };
 	export let onBackgroundChange = (bg) => {};
+
+	let picker1Open = false;
+	let picker2Open = false;
 
 	const gradientPresets = CANVAS_COLORS.gradients.map(g => {
 		const match = g.match(/#[A-Fa-f0-9]{6}/g);
@@ -87,27 +91,38 @@
 
 	<div class="section">
 		<div class="gradient-preview-row">
-			<input 
-				type="color"
+			<button 
 				class="gradient-endpoint"
-				value={background.gradientColors?.[0] || '#5422b0'}
-				on:input={(e) => handleGradientColorChange(0, e.target.value)}
+				style="background-color: {background.gradientColors?.[0] || '#5422b0'};"
+				on:click={() => picker1Open = true}
 				aria-label="Edit start color"
-			/>
+			></button>
 			
 			<div 
 				class="gradient-preview"
 				style="background: {currentGradientValue};"
 			></div>
 			
-			<input 
-				type="color"
+			<button 
 				class="gradient-endpoint"
-				value={background.gradientColors?.[1] || '#4B0082'}
-				on:input={(e) => handleGradientColorChange(1, e.target.value)}
+				style="background-color: {background.gradientColors?.[1] || '#4B0082'};"
+				on:click={() => picker2Open = true}
 				aria-label="Edit end color"
-			/>
+			></button>
 		</div>
+
+		<ColorPickerPopup
+			color={background.gradientColors?.[0] || '#5422b0'}
+			open={picker1Open}
+			onColorChange={(color) => handleGradientColorChange(0, color)}
+			onClose={() => picker1Open = false}
+		/>
+		<ColorPickerPopup
+			color={background.gradientColors?.[1] || '#4B0082'}
+			open={picker2Open}
+			onColorChange={(color) => handleGradientColorChange(1, color)}
+			onClose={() => picker2Open = false}
+		/>
 	</div>
 
 	<div class="section">
@@ -210,24 +225,6 @@
 		flex-shrink: 0;
 		overflow: hidden;
 		padding: 0;
-		background-clip: padding-box;
-		appearance: none;
-		-webkit-appearance: none;
-		box-sizing: border-box;
-	}
-
-	.gradient-endpoint::-webkit-color-swatch-wrapper {
-		padding: 0;
-	}
-
-	.gradient-endpoint::-webkit-color-swatch {
-		border: none;
-		border-radius: var(--radius-full);
-	}
-
-	.gradient-endpoint::-moz-color-swatch {
-		border: none;
-		border-radius: var(--radius-full);
 	}
 
 	.gradient-endpoint:hover {

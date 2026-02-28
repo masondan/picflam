@@ -25,6 +25,7 @@
     "@huggingface/transformers": "^3.8.1",
     "@melloware/coloris": "^0.25.0",
     "html2canvas": "^1.4.1",
-    "onnxruntime-web": "^1.23.2"
+    "onnxruntime-web": "^1.23.2",
+    "vanilla-colorful": "^0.7.2"
   }
 }

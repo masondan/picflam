@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
+	import ColorPickerPopup from '$lib/components/ui/ColorPickerPopup.svelte';
 	import { CANVAS_COLORS, FONTS } from '$lib/stores/designStore.js';
 
 	export let text1 = '';
@@ -37,7 +38,7 @@
 
 	let spacingMode = 'line'; // 'line' or 'letter'
 	let isPreviewActive = false;
-	let highlightColorInputEl;
+	let highlightPickerOpen = false;
 	let showFontDropdown = false;
 	let fontDropdownRef;
 
@@ -253,15 +254,14 @@
 			class="swatch rainbow"
 			class:active={text1HighlightColor && text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent'}
 			style="border-color: {text1HighlightColor && text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? text1HighlightColor : '#999999'}; {text1HighlightColor && text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? 'box-shadow: inset 0 0 0 2px white;' : ''}"
-			on:click={() => highlightColorInputEl?.click()}
+			on:click={() => highlightPickerOpen = true}
 			aria-label="Custom highlight color"
 		/>
-		<input
-			bind:this={highlightColorInputEl}
-			type="color"
-			value={text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? text1HighlightColor : '#FFD700'}
-			on:input={(e) => onChange('text1HighlightColor', e.target.value)}
-			class="hidden-highlight-input"
+		<ColorPickerPopup
+			color={text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? text1HighlightColor : '#FFD700'}
+			open={highlightPickerOpen}
+			onColorChange={(color) => onChange('text1HighlightColor', color)}
+			onClose={() => highlightPickerOpen = false}
 		/>
 	</div>
 
@@ -705,14 +705,6 @@
 		background: conic-gradient(
 			red, yellow, lime, aqua, blue, magenta, red
 		) !important;
-	}
-
-	.hidden-highlight-input {
-		position: absolute;
-		opacity: 0;
-		width: 0;
-		height: 0;
-		pointer-events: none;
 	}
 
 	.color-section {

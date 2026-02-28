@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
+	import ColorPickerPopup from '$lib/components/ui/ColorPickerPopup.svelte';
 	import { CANVAS_COLORS, FONTS } from '$lib/stores/designStore.js';
 
 	export let text2 = '';
@@ -29,7 +30,7 @@
 
 	let spacingMode = 'line'; // 'line' or 'letter'
 	let isPreviewActive = false;
-	let highlightColorInputEl;
+	let highlightPickerOpen = false;
 	let showFontDropdown = false;
 	let fontDropdownRef;
 
@@ -237,15 +238,14 @@
 			class="swatch rainbow"
 			class:active={text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent'}
 			style="border-color: {text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#999999'}; {text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? 'box-shadow: inset 0 0 0 2px white;' : ''}"
-			on:click={() => highlightColorInputEl?.click()}
+			on:click={() => highlightPickerOpen = true}
 			aria-label="Custom highlight color"
 		/>
-		<input
-			bind:this={highlightColorInputEl}
-			type="color"
-			value={text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#FFD700'}
-			on:input={(e) => onChange('text2LabelColor', e.target.value)}
-			class="hidden-highlight-input"
+		<ColorPickerPopup
+			color={text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#FFD700'}
+			open={highlightPickerOpen}
+			onColorChange={(color) => onChange('text2LabelColor', color)}
+			onClose={() => highlightPickerOpen = false}
 		/>
 	</div>
 </div>
@@ -561,14 +561,6 @@
 
 	.swatch:hover {
 		transform: scale(1.1);
-	}
-
-	.hidden-highlight-input {
-		position: absolute;
-		opacity: 0;
-		width: 0;
-		height: 0;
-		pointer-events: none;
 	}
 
 	.color-separator {
