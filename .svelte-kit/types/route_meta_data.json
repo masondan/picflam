@@ -1,9 +1,0 @@
-{
-	"/": [],
-	"/api/face-enhance": [
-		"src/routes/api/face-enhance/+server.js"
-	],
-	"/api/upscale": [
-		"src/routes/api/upscale/+server.js"
-	]
-}
