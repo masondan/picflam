@@ -376,6 +376,17 @@
 				
 				return newState;
 			});
+		} else if (key === 'overlayImageOffsetX' || key === 'overlayImageOffsetY') {
+			slideState.update(state => ({ ...state, [key]: value }));
+		} else if (key === 'overlaySize') {
+			slideState.update(state => ({ 
+				...state, 
+				[key]: value,
+				overlayX: 50,
+				overlayY: 50,
+				overlayImageOffsetX: 0,
+				overlayImageOffsetY: 0
+			}));
 		} else {
 			slideState.update(state => ({ ...state, [key]: value }));
 		}

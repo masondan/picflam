@@ -148,6 +148,14 @@
 		onChange('overlayImageOffsetX', newOffsetX);
 		onChange('overlayImageOffsetY', newOffsetY);
 	}
+
+	function handleFit() {
+		onChange('overlaySize', calculateFitSize());
+	}
+
+	function handleFill() {
+		onChange('overlaySize', calculateFillSize());
+	}
 </script>
 
 <div class="overlay-controls">
@@ -197,18 +205,18 @@
 	{:else}
 		<div class="control-row fit-fill-row">
 			<div class="button-group">
-				<span class="row-label">Fit & Fill</span>
+				<span class="row-label">Fit | Fill</span>
 				<button 
-					class="icon-btn"
-					on:click={() => onChange('overlaySize', calculateFitSize())}
+					class="fit-fill-btn"
+					on:click={handleFit}
 					title="Fit image to canvas"
 					aria-label="Fit"
 				>
 					<img src="/icons/icon-fit.svg" alt="Fit" class="control-icon" />
 				</button>
 				<button 
-					class="icon-btn"
-					on:click={() => onChange('overlaySize', calculateFillSize())}
+					class="fit-fill-btn"
+					on:click={handleFill}
 					title="Fill canvas with image"
 					aria-label="Fill"
 				>
@@ -542,6 +550,38 @@
 		background: var(--color-surface);
 		cursor: pointer;
 		transition: all var(--transition-fast);
+	}
+
+	.fit-fill-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		padding: 0;
+		border: 1px solid #555555;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.fit-fill-btn:hover:not(.active) {
+		background: var(--color-surface);
+	}
+
+	.fit-fill-btn.active {
+		background: #555555;
+		border-color: #555555;
+		color: white;
+	}
+
+	.fit-fill-btn:not(.active) .control-icon {
+		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+	}
+
+	.fit-fill-btn.active .control-icon {
+		filter: brightness(0) invert(1);
 	}
 
 	.icon-btn:hover:not(.active),
