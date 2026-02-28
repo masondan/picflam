@@ -1,6 +1,5 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
-	import '@melloware/coloris/dist/coloris.css';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
 	import { CANVAS_COLORS, FONTS } from '$lib/stores/designStore.js';
@@ -21,7 +20,6 @@
 	export let onPreviewToggle = (value) => {};
 
 	const TEXT_COLORS = CANVAS_COLORS.solids;
-	const HIGHLIGHT_COLORS = ['#FFD700', '#000000', '#007C1F', '#00679D', '#B20715'];
 	const ALIGNMENTS = ['left', 'center', 'right'];
 	const QUOTE_STYLES = [
 		{ id: 'none', icon: '/icons/icon-none.svg', label: 'No quote' },
@@ -40,8 +38,6 @@
 	let spacingMode = 'line'; // 'line' or 'letter'
 	let isPreviewActive = false;
 	let highlightColorInputEl;
-	let highlightColorInputId = `text1-highlight-${Math.random().toString(36).substr(2, 9)}`;
-
 	let showFontDropdown = false;
 	let fontDropdownRef;
 
@@ -92,34 +88,10 @@
 		onChange('text1QuoteStyle', style);
 	}
 
-	function handleHighlightColorPick(event) {
-		onChange('text1HighlightColor', event.detail.color);
-	}
-
 	function resetSlider(key) {
 		onChange(key, DEFAULTS[key]);
 	}
 
-	onMount(async () => {
-		if (highlightColorInputEl) {
-			const { default: Coloris, init } = await import('@melloware/coloris');
-			init();
-			Coloris({
-				el: `#${highlightColorInputId}`,
-				parent: '.app',
-				wrap: false,
-				theme: 'polaroid',
-				alpha: false
-			});
-			document.addEventListener('coloris:pick', handleHighlightColorPick);
-		}
-	});
-
-	onDestroy(() => {
-		if (typeof document !== 'undefined') {
-			document.removeEventListener('coloris:pick', handleHighlightColorPick);
-		}
-	});
 </script>
 
 <div class="text1-controls">
@@ -270,21 +242,26 @@
 			showRainbow={true}
 		/>
 		<div class="color-separator"></div>
-		<button 
+		<button
 			class="swatch"
 			class:active={text1HighlightColor === '#FFD700'}
 			style="background-color: #FFD700; {text1HighlightColor === '#FFD700' ? 'box-shadow: 0 0 0 3px #FFD700;' : ''}"
-			on:click={() => onChange('text1HighlightColor', '#FFD700')}
+			on:click={() => onChange('text1HighlightColor', text1HighlightColor === '#FFD700' ? 'transparent' : '#FFD700')}
 			aria-label="Select yellow highlight"
 		/>
-		<input 
-			bind:this={highlightColorInputEl}
-			id={highlightColorInputId}
-			type="text" 
-			value={text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? text1HighlightColor : '#FFD700'}
+		<button
 			class="swatch rainbow"
 			class:active={text1HighlightColor && text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent'}
-			style="border-color: {text1HighlightColor && text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? text1HighlightColor : '#999999'};"
+			style="border-color: {text1HighlightColor && text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? text1HighlightColor : '#999999'}; {text1HighlightColor && text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? 'box-shadow: inset 0 0 0 2px white;' : ''}"
+			on:click={() => highlightColorInputEl?.click()}
+			aria-label="Custom highlight color"
+		/>
+		<input
+			bind:this={highlightColorInputEl}
+			type="color"
+			value={text1HighlightColor !== '#FFD700' && text1HighlightColor !== 'transparent' ? text1HighlightColor : '#FFD700'}
+			on:input={(e) => onChange('text1HighlightColor', e.target.value)}
+			class="hidden-highlight-input"
 		/>
 	</div>
 
@@ -706,32 +683,41 @@
 		pointer-events: none;
 	}
 
-	.color-section {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
+	.swatch {
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-full);
+		border: 3px solid transparent;
+		cursor: pointer;
+		transition: all var(--transition-fast);
+		padding: 0;
+		box-sizing: border-box;
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.swatch:hover {
+		transform: scale(1.1);
 	}
 
 	.swatch.rainbow {
 		background: conic-gradient(
 			red, yellow, lime, aqua, blue, magenta, red
 		) !important;
-		color: transparent !important;
-		font-size: 0 !important;
-		padding: 0;
-		appearance: none;
-		-webkit-appearance: none;
 	}
 
-	:global(.clr-picker::before) {
-		display: none !important;
+	.hidden-highlight-input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
 	}
 
-	:global(.clr-picker) {
-		position: fixed !important;
-		top: 50% !important;
-		left: 50% !important;
-		transform: translate(-50%, -50%) !important;
-		z-index: 1000 !important;
+	.color-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
 	}
+
 </style>

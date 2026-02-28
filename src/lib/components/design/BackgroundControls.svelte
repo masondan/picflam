@@ -1,54 +1,9 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
-	import '@melloware/coloris/dist/coloris.css';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
 	import { CANVAS_COLORS, GRADIENT_DIRECTIONS } from '$lib/stores/designStore.js';
 
 	export let background = { type: 'solid', value: '#FFFFFF', direction: 'down', gradientColors: ['#5422b0', '#4B0082'] };
 	export let onBackgroundChange = (bg) => {};
-
-	let colorInput1El;
-	let colorInput2El;
-	let inputId1 = `gradient-color-1-${Math.random().toString(36).substr(2, 9)}`;
-	let inputId2 = `gradient-color-2-${Math.random().toString(36).substr(2, 9)}`;
-
-	function handleColorPick1(event) {
-		handleGradientColorChange(0, event.detail.color);
-	}
-
-	function handleColorPick2(event) {
-		handleGradientColorChange(1, event.detail.color);
-	}
-
-	onMount(async () => {
-		if (colorInput1El && colorInput2El) {
-			const { default: Coloris, init } = await import('@melloware/coloris');
-			init();
-			Coloris({
-				el: `#${inputId1}`,
-				parent: '.app',
-				wrap: false,
-				theme: 'polaroid',
-				alpha: false
-			});
-			Coloris({
-				el: `#${inputId2}`,
-				parent: '.app',
-				wrap: false,
-				theme: 'polaroid',
-				alpha: false
-			});
-			document.addEventListener('coloris:pick', handleColorPick1);
-			document.addEventListener('coloris:pick', handleColorPick2);
-		}
-	});
-
-	onDestroy(() => {
-		if (typeof document !== 'undefined') {
-			document.removeEventListener('coloris:pick', handleColorPick1);
-			document.removeEventListener('coloris:pick', handleColorPick2);
-		}
-	});
 
 	const gradientPresets = CANVAS_COLORS.gradients.map(g => {
 		const match = g.match(/#[A-Fa-f0-9]{6}/g);
@@ -132,19 +87,12 @@
 
 	<div class="section">
 		<div class="gradient-preview-row">
-			<button 
-				class="gradient-endpoint"
-				style="background-color: {background.gradientColors?.[0] || '#5422b0'};"
-				on:click={() => colorInput1El?.click()}
-				aria-label="Edit start color"
-			></button>
-			
 			<input 
-				bind:this={colorInput1El}
-				id={inputId1}
-				type="text" 
+				type="color"
+				class="gradient-endpoint"
 				value={background.gradientColors?.[0] || '#5422b0'}
-				class="hidden-color-input"
+				on:input={(e) => handleGradientColorChange(0, e.target.value)}
+				aria-label="Edit start color"
 			/>
 			
 			<div 
@@ -152,19 +100,12 @@
 				style="background: {currentGradientValue};"
 			></div>
 			
-			<button 
-				class="gradient-endpoint"
-				style="background-color: {background.gradientColors?.[1] || '#4B0082'};"
-				on:click={() => colorInput2El?.click()}
-				aria-label="Edit end color"
-			></button>
-			
 			<input 
-				bind:this={colorInput2El}
-				id={inputId2}
-				type="text" 
+				type="color"
+				class="gradient-endpoint"
 				value={background.gradientColors?.[1] || '#4B0082'}
-				class="hidden-color-input"
+				on:input={(e) => handleGradientColorChange(1, e.target.value)}
+				aria-label="Edit end color"
 			/>
 		</div>
 	</div>
@@ -270,6 +211,23 @@
 		overflow: hidden;
 		padding: 0;
 		background-clip: padding-box;
+		appearance: none;
+		-webkit-appearance: none;
+		box-sizing: border-box;
+	}
+
+	.gradient-endpoint::-webkit-color-swatch-wrapper {
+		padding: 0;
+	}
+
+	.gradient-endpoint::-webkit-color-swatch {
+		border: none;
+		border-radius: var(--radius-full);
+	}
+
+	.gradient-endpoint::-moz-color-swatch {
+		border: none;
+		border-radius: var(--radius-full);
 	}
 
 	.gradient-endpoint:hover {
@@ -332,19 +290,4 @@
 		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
 	}
 
-	.hidden-color-input {
-		display: none;
-	}
-
-	:global(.clr-picker::before) {
-		display: none !important;
-	}
-
-	:global(.clr-picker) {
-		position: fixed !important;
-		top: 50% !important;
-		left: 50% !important;
-		transform: translate(-50%, -50%) !important;
-		z-index: 1000 !important;
-	}
 </style>

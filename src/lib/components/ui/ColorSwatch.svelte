@@ -1,41 +1,16 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
-	import '@melloware/coloris/dist/coloris.css';
-
 	export let colors = [];
 	export let value = '';
 	export let onChange = (color) => {};
 	export let showRainbow = true;
-	
+
 	let customColor = '#5422b0';
 	let colorInputEl;
-	let inputId = `color-picker-${Math.random().toString(36).substr(2, 9)}`;
 
-	function handleColorPick(event) {
-		customColor = event.detail.color;
-		onChange(event.detail.color);
+	function handleNativePick(e) {
+		customColor = e.target.value;
+		onChange(e.target.value);
 	}
-
-	onMount(async () => {
-		if (colorInputEl && showRainbow) {
-			const { default: Coloris, init } = await import('@melloware/coloris');
-			init();
-			Coloris({
-				el: `#${inputId}`,
-				parent: '.app',
-				wrap: false,
-				theme: 'polaroid',
-				alpha: false
-			});
-			document.addEventListener('coloris:pick', handleColorPick);
-		}
-	});
-
-	onDestroy(() => {
-		if (typeof document !== 'undefined') {
-			document.removeEventListener('coloris:pick', handleColorPick);
-		}
-	});
 </script>
 
 <div class="color-swatches">
@@ -51,14 +26,19 @@
 	{/each}
 	
 	{#if showRainbow}
-		<input 
-			bind:this={colorInputEl}
-			id={inputId}
-			type="text" 
-			value={customColor}
+		<button 
 			class="swatch rainbow"
 			class:active={value && !colors.includes(value) && value !== 'transparent'}
 			style="border-color: {value && !colors.includes(value) && value !== 'transparent' ? customColor : '#999999'}; {value && !colors.includes(value) && value !== 'transparent' ? `box-shadow: inset 0 0 0 2px white;` : ''}"
+			on:click={() => colorInputEl?.click()}
+			aria-label="Custom color picker"
+		/>
+		<input 
+			bind:this={colorInputEl}
+			type="color"
+			value={customColor}
+			on:input={handleNativePick}
+			class="hidden-color-input"
 		/>
 	{/if}
 </div>
@@ -81,6 +61,7 @@
 		padding: 0;
 		box-sizing: border-box;
 		overflow: hidden;
+		flex-shrink: 0;
 	}
 	
 	.swatch:hover {
@@ -110,15 +91,11 @@
 		-webkit-appearance: none;
 	}
 
-	:global(.clr-picker::before) {
-		display: none !important;
-	}
-
-	:global(.clr-picker) {
-		position: fixed !important;
-		top: 50% !important;
-		left: 50% !important;
-		transform: translate(-50%, -50%) !important;
-		z-index: 1000 !important;
+	.hidden-color-input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
 	}
 </style>

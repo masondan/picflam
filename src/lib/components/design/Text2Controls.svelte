@@ -1,6 +1,5 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
-	import '@melloware/coloris/dist/coloris.css';
 	import Slider from '$lib/components/ui/Slider.svelte';
 	import ColorSwatch from '$lib/components/ui/ColorSwatch.svelte';
 	import { CANVAS_COLORS, FONTS } from '$lib/stores/designStore.js';
@@ -19,7 +18,6 @@
 	export let onPreviewToggle = (value) => {};
 
 	const TEXT_COLORS = CANVAS_COLORS.solids;
-	const HIGHLIGHT_COLORS = ['#FFD700', '#000000', '#007C1F', '#00679D', '#B20715'];
 	const ALIGNMENTS = ['left', 'center', 'right'];
 
 	const DEFAULTS = {
@@ -31,6 +29,7 @@
 
 	let spacingMode = 'line'; // 'line' or 'letter'
 	let isPreviewActive = false;
+	let highlightColorInputEl;
 	let showFontDropdown = false;
 	let fontDropdownRef;
 
@@ -73,37 +72,10 @@
 		onChange('text2Color', color);
 	}
 
-	let highlightColorInputEl;
-	let highlightColorInputId = `text2-highlight-${Math.random().toString(36).substr(2, 9)}`;
-
-	function handleHighlightColorPick(event) {
-		onChange('text2LabelColor', event.detail.color);
-	}
-
 	function resetSlider(key) {
 		onChange(key, DEFAULTS[key]);
 	}
 
-	onMount(async () => {
-		if (highlightColorInputEl) {
-			const { default: Coloris, init } = await import('@melloware/coloris');
-			init();
-			Coloris({
-				el: `#${highlightColorInputId}`,
-				parent: '.app',
-				wrap: false,
-				theme: 'polaroid',
-				alpha: false
-			});
-			document.addEventListener('coloris:pick', handleHighlightColorPick);
-		}
-	});
-
-	onDestroy(() => {
-		if (typeof document !== 'undefined') {
-			document.removeEventListener('coloris:pick', handleHighlightColorPick);
-		}
-	});
 </script>
 
 <div class="text2-controls">
@@ -252,23 +224,28 @@
 			value={text2Color}
 			onChange={handleColorChange}
 			showRainbow={true}
-		/>
+			/>
 		<div class="color-separator"></div>
-		<button 
+		<button
 			class="swatch"
 			class:active={text2LabelColor === '#FFD700'}
 			style="background-color: #FFD700; {text2LabelColor === '#FFD700' ? 'box-shadow: 0 0 0 3px #FFD700;' : ''}"
-			on:click={() => onChange('text2LabelColor', '#FFD700')}
+			on:click={() => onChange('text2LabelColor', text2LabelColor === '#FFD700' ? 'transparent' : '#FFD700')}
 			aria-label="Select yellow highlight"
 		/>
-		<input 
-			bind:this={highlightColorInputEl}
-			id={highlightColorInputId}
-			type="text" 
-			value={text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#FFD700'}
+		<button
 			class="swatch rainbow"
 			class:active={text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent'}
-			style="border-color: {text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#999999'};"
+			style="border-color: {text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#999999'}; {text2LabelColor && text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? 'box-shadow: inset 0 0 0 2px white;' : ''}"
+			on:click={() => highlightColorInputEl?.click()}
+			aria-label="Custom highlight color"
+		/>
+		<input
+			bind:this={highlightColorInputEl}
+			type="color"
+			value={text2LabelColor !== '#FFD700' && text2LabelColor !== 'transparent' ? text2LabelColor : '#FFD700'}
+			on:input={(e) => onChange('text2LabelColor', e.target.value)}
+			class="hidden-highlight-input"
 		/>
 	</div>
 </div>
@@ -576,6 +553,24 @@
 		border-color: white;
 	}
 
+	.swatch.rainbow {
+		background: conic-gradient(
+			red, yellow, lime, aqua, blue, magenta, red
+		) !important;
+	}
+
+	.swatch:hover {
+		transform: scale(1.1);
+	}
+
+	.hidden-highlight-input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
 	.color-separator {
 		width: 1px;
 		height: 36px;
@@ -583,26 +578,4 @@
 		flex-shrink: 0;
 	}
 
-	.swatch.rainbow {
-		background: conic-gradient(
-			red, yellow, lime, aqua, blue, magenta, red
-		) !important;
-		color: transparent !important;
-		font-size: 0 !important;
-		padding: 0;
-		appearance: none;
-		-webkit-appearance: none;
-	}
-
-	:global(.clr-picker::before) {
-		display: none !important;
-	}
-
-	:global(.clr-picker) {
-		position: fixed !important;
-		top: 50% !important;
-		left: 50% !important;
-		transform: translate(-50%, -50%) !important;
-		z-index: 1000 !important;
-	}
 </style>
