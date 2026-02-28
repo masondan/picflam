@@ -233,7 +233,7 @@
 		</button>
 	</div>
 
-	<span class="color-label">Text & Highlights</span>
+	<span class="color-label">Text | Highlights</span>
 	<div class="color-row">
 		<ColorSwatch 
 			colors={TEXT_COLORS}
@@ -510,6 +510,7 @@
 		height: 36px;
 		background-color: #cccccc;
 		flex-shrink: 0;
+		margin: 0 var(--space-3);
 	}
 
 	.size-row {
