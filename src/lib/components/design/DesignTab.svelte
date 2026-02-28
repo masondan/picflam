@@ -655,7 +655,7 @@
 <div class="design-tab">
 	{#if $showTemplatePicker}
 		<div class="template-picker">
-			<p class="picker-title">Create quotes & cards with<br>a template or blank canvas</p>
+			<p class="picker-title">Create quotes & cards for social media</p>
 			
 			<!-- Square templates grid -->
 			<div class="template-grid">

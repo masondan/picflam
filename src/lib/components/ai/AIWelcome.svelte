@@ -65,6 +65,8 @@
 		/>
 	</div>
 	
+	<p class="helper-text">Remove backgrounds & upscale images</p>
+	
 	<div class="input-panel">
 		<div
 			class="upload-border"
@@ -138,7 +140,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		padding: 5px 0;
+		padding: 0;
 		width: 100%;
 		flex: 0 0 auto;
 	}
@@ -227,6 +229,16 @@
 		height: 22px;
 		flex-shrink: 0;
 		filter: brightness(0) saturate(100%) invert(22%) sepia(97%) saturate(3000%) hue-rotate(254deg) brightness(90%) contrast(105%);
+	}
+	
+	.helper-text {
+		color: var(--color-primary);
+		font-weight: var(--font-weight-medium);
+		font-size: var(--font-size-lg);
+		text-align: center;
+		line-height: var(--line-height-tight);
+		margin-top: var(--space-4);
+		margin-bottom: var(--space-2);
 	}
 	
 	.sr-only {
