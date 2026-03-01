@@ -1,7 +1,15 @@
 /* PicFlam Design System Tokens */
 /* Single source of truth - see DESIGN_SYSTEM.md */
 
-@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;500;600;700&family=Lora:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto+Slab:wght@400;700&family=Saira+Condensed:wght@400;700&family=Special+Elite&display=swap');
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Lora:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto+Slab:wght@400;700&family=Saira+Condensed:wght@400;700&family=Special+Elite&display=swap');
 
 :root {
   /* Colors - UI */
