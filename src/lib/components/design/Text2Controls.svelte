@@ -291,7 +291,8 @@
 
 	.row-label {
 		font-size: var(--font-size-sm);
-		color: var(--color-text-secondary);
+		font-weight: 500;
+		color: #1f1f1f;
 		flex-shrink: 0;
 	}
 
@@ -419,7 +420,8 @@
 	.spacing-label-row {
 		display: flex;
 		gap: var(--space-4);
-		margin-bottom: 0;
+		margin-top: var(--space-3);
+		margin-bottom: var(--space-0);
 	}
 
 	.spacing-label {
@@ -514,7 +516,7 @@
 	.color-label {
 		font-size: var(--font-size-sm);
 		font-weight: 500;
-		color: #555555;
+		color: #1f1f1f;
 		display: block;
 		margin-bottom: 0px;
 	}

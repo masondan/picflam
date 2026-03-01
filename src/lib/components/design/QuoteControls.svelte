@@ -98,7 +98,7 @@
 	.row-label {
 		font-size: var(--font-size-sm);
 		font-weight: 500;
-		color: #555555;
+		color: #1f1f1f;
 		white-space: nowrap;
 	}
 

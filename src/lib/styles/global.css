@@ -41,6 +41,10 @@ body {
   .app {
     box-shadow: var(--shadow-lg);
   }
+
+  body {
+    background-color: #efefef;
+  }
 }
 
 /* Interactive Elements Reset */
