@@ -20,7 +20,8 @@
 	.sub-menu-tabs {
 		display: flex;
 		gap: var(--space-4);
-		padding: var(--space-3) 0;
+		padding: 0 0 var(--space-5) 0;
+		margin-top: calc(var(--space-2) * -1);
 	}
 	
 	.sub-menu-tab {

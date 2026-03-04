@@ -83,13 +83,27 @@ export async function copyImageToClipboard(dataUrl) {
 	}
 }
 
-export function downloadImage(dataUrl, filename = 'picflam-export.png') {
+export async function downloadImage(dataUrl, filename = 'picflam-export.png') {
+	let url = dataUrl;
+	let objectUrl = null;
+
+	if (!dataUrl.startsWith('data:') && !dataUrl.startsWith('blob:')) {
+		const response = await fetch(dataUrl);
+		const blob = await response.blob();
+		objectUrl = URL.createObjectURL(blob);
+		url = objectUrl;
+	}
+
 	const link = document.createElement('a');
-	link.href = dataUrl;
+	link.href = url;
 	link.download = filename;
 	document.body.appendChild(link);
 	link.click();
 	document.body.removeChild(link);
+
+	if (objectUrl) {
+		URL.revokeObjectURL(objectUrl);
+	}
 }
 
 export function hexToRgba(hex, alpha = 1) {

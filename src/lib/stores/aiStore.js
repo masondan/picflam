@@ -1,4 +1,5 @@
 import { writable, derived } from 'svelte/store';
+import { getGenerationCount, getStoredMonth } from '$lib/utils/generationStorage.js';
 
 const initialAiState = {
 	originalImage: null,
@@ -64,3 +65,25 @@ export const aiState = createStore();
 export const activeAiMenu = writable('background');
 
 export const hasAiImage = derived(aiState, $state => $state.currentImage !== null);
+
+const initialImageGen = {
+	prompt: '',
+	quality: 'fast',
+	aspectRatio: '1:1',
+	generatedImage: null,
+	loading: false,
+	error: null,
+	generationsThisMonth: typeof window !== 'undefined' ? getGenerationCount() : 0
+};
+
+export const imageGen = writable(initialImageGen);
+
+export function resetImageGen() {
+	imageGen.update(state => ({
+		...state,
+		prompt: '',
+		generatedImage: null,
+		error: null,
+		loading: false
+	}));
+}

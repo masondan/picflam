@@ -1,6 +1,7 @@
 <script>
 	export let canUndo = false;
 	export let canRedo = false;
+	export let showUndoRedo = true;
 	export let cropPending = false;
 	export let onUndo = () => {};
 	export let onRedo = () => {};
@@ -11,6 +12,7 @@
 </script>
 
 <div class="action-bar">
+	{#if showUndoRedo}
 	<div class="action-group">
 		<button 
 			class="action-btn" 
@@ -29,6 +31,7 @@
 			<img src="/icons/icon-redo.svg" alt="" class="action-icon" />
 		</button>
 	</div>
+	{/if}
 	
 	{#if cropPending}
 		<button 
@@ -40,7 +43,7 @@
 		</button>
 	{/if}
 	
-	<div class="action-group">
+	<div class="action-group right">
 		<button 
 			class="action-btn"
 			on:click={onStartAgain}
@@ -78,6 +81,10 @@
 	.action-group {
 		display: flex;
 		gap: var(--space-2);
+	}
+	
+	.action-group.right {
+		margin-left: auto;
 	}
 	
 	.action-btn {

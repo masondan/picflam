@@ -5,8 +5,9 @@
 	import AIWelcome from '$lib/components/ai/AIWelcome.svelte';
 	import UpscaleControls from '$lib/components/ai/UpscaleControls.svelte';
 	import RemoveBackgroundControls from '$lib/components/ai/RemoveBackgroundControls.svelte';
+	import ImageGenControls from '$lib/components/ai/ImageGenControls.svelte';
 	import PexelsDrawer from '$lib/components/design/PexelsDrawer.svelte';
-	import { aiState, activeAiMenu, hasAiImage } from '$lib/stores/aiStore.js';
+	import { aiState, activeAiMenu, hasAiImage, imageGen, resetImageGen } from '$lib/stores/aiStore.js';
 	import { copyImageToClipboard, downloadImage, fileToDataUrl, resizeImage } from '$lib/utils/imageUtils.js';
 
 	let comparisonPosition = 50;
@@ -18,8 +19,9 @@
 	}
 	
 	const subMenuTabs = [
-		{ id: 'background', label: 'Remove background' },
-		{ id: 'upscale', label: 'Upscale' }
+		{ id: 'background', label: 'BG remove' },
+		{ id: 'upscale', label: 'Upscale' },
+		{ id: 'imageGen', label: 'Image gen' }
 	];
 	
 	function handleImageImport(dataUrl) {
@@ -63,7 +65,15 @@
 		/>
 	{/if}
 
-	{#if !$hasAiImage}
+	<SubMenuTabs 
+		tabs={subMenuTabs}
+		activeTab={$activeAiMenu}
+		onTabChange={handleSubMenuChange}
+	/>
+
+	{#if $activeAiMenu === 'imageGen'}
+		<ImageGenControls />
+	{:else if !$hasAiImage}
 		<AIWelcome 
 			onImageImport={handleImageImport}
 			onSearchClick={() => showPexelsDrawer = true}
@@ -96,12 +106,6 @@
 			{/if}
 		</div>
 		
-		<SubMenuTabs 
-			tabs={subMenuTabs}
-			activeTab={$activeAiMenu}
-			onTabChange={handleSubMenuChange}
-		/>
-		
 		{#if $activeAiMenu === 'upscale'}
 			<UpscaleControls />
 		{:else if $activeAiMenu === 'background'}
@@ -119,7 +123,6 @@
 	
 	.image-container {
 		width: 100%;
-		margin-top: var(--space-3);
 	}
 	
 	.working-image {

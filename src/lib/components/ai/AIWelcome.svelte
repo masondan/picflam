@@ -1,13 +1,14 @@
 <script>
 	import { pasteImageFromClipboard, fileToDataUrl, resizeImage } from '$lib/utils/imageUtils.js';
 	import BeforeAfterSlider from '$lib/components/ui/BeforeAfterSlider.svelte';
-	
+	import { activeAiMenu } from '$lib/stores/aiStore.js';
 	export let onImageImport = (dataUrl) => {};
 	export let onSearchClick = () => {};
 	
 	let isDragging = false;
 	let fileInput;
 	let sliderPosition = 50;
+	let upscaleSliderPosition = 50;
 	
 	async function handleFile(file) {
 		if (!file || !file.type.startsWith('image/')) return;
@@ -53,19 +54,30 @@
 	function handleSliderChange(newPosition) {
 		sliderPosition = newPosition;
 	}
+	
+	function handleUpscaleSliderChange(newPosition) {
+		upscaleSliderPosition = newPosition;
+	}
 </script>
 
 <div class="ai-welcome">
 	<div class="slider-container">
-		<BeforeAfterSlider
-			beforeImage="/images/ai-intro-before.png"
-			afterImage="/images/ai-intro-after.png"
-			position={sliderPosition}
-			onChange={handleSliderChange}
-		/>
+		{#if $activeAiMenu === 'upscale'}
+			<BeforeAfterSlider
+				beforeImage="/images/ai-upscale-before.png"
+				afterImage="/images/ai-upscale-after.png"
+				position={upscaleSliderPosition}
+				onChange={handleUpscaleSliderChange}
+			/>
+		{:else}
+			<BeforeAfterSlider
+				beforeImage="/images/ai-intro-before.png"
+				afterImage="/images/ai-intro-after.png"
+				position={sliderPosition}
+				onChange={handleSliderChange}
+			/>
+		{/if}
 	</div>
-	
-	<p class="helper-text">Remove backgrounds & upscale images</p>
 	
 	<div class="input-panel">
 		<div
@@ -141,6 +153,7 @@
 		flex-direction: column;
 		gap: 5px;
 		padding: 0;
+		margin-top: var(--space-4);
 		width: 100%;
 		flex: 0 0 auto;
 	}
@@ -229,16 +242,6 @@
 		height: 22px;
 		flex-shrink: 0;
 		filter: brightness(0) saturate(100%) invert(22%) sepia(97%) saturate(3000%) hue-rotate(254deg) brightness(90%) contrast(105%);
-	}
-	
-	.helper-text {
-		color: var(--color-primary);
-		font-weight: var(--font-weight-medium);
-		font-size: var(--font-size-lg);
-		text-align: center;
-		line-height: var(--line-height-tight);
-		margin-top: var(--space-4);
-		margin-bottom: var(--space-2);
 	}
 	
 	.sr-only {
