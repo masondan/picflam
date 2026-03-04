@@ -20,13 +20,13 @@
 	.sub-menu-tabs {
 		display: flex;
 		gap: var(--space-4);
-		padding: 0 0 var(--space-5) 0;
-		margin-top: calc(var(--space-2) * -1);
+		padding: 0 0 var(--space-3) 0;
+		margin-top: calc(var(--space-1) * -1);
 	}
 	
 	.sub-menu-tab {
 		padding: var(--space-1) 0;
-		font-size: var(--font-size-base);
+		font-size: var(--font-size-lg);
 		font-weight: var(--font-weight-medium);
 		color: var(--color-text-secondary);
 		background: none;

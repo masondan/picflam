@@ -50,13 +50,13 @@
 </script>
 
 <div class="crop-welcome">
+	<p class="helper-text">Crop, edit and add filters to images</p>
+
 	<img 
 		src="/images/crop-intro.png" 
 		alt="Welcome to Crop" 
 		class="welcome-image"
 	/>
-	
-	<p class="helper-text">Crop, edit and add filters to images</p>
 	
 	<div class="input-panel">
 		<div
@@ -120,6 +120,7 @@
 		flex-direction: column;
 		gap: 5px;
 		padding: 0;
+		margin-top: var(--space-4);
 		width: 100%;
 		flex: 0 0 auto;
 	}
@@ -216,8 +217,8 @@
 		font-size: var(--font-size-lg);
 		text-align: center;
 		line-height: var(--line-height-tight);
-		margin-top: var(--space-4);
-		margin-bottom: var(--space-2);
+		margin: 0;
+		padding: var(--space-1) 0 var(--space-4);
 	}
 	
 	.sr-only {
