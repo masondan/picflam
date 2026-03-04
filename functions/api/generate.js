@@ -14,6 +14,13 @@ const DIMENSIONS = {
 	'9:16': { width: 768, height: 1344 }
 };
 
+const MAX_POLLS = 30;
+const POLL_INTERVAL = 2000;
+
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export async function onRequestPost(context) {
 	const apiKey = context.env.RUNWARE_API_KEY;
 	if (!apiKey) {
@@ -30,9 +37,7 @@ export async function onRequestPost(context) {
 		const model = MODELS[quality] || MODELS.fast;
 		const modelName = MODEL_NAMES[quality] || MODEL_NAMES.fast;
 		const dims = DIMENSIONS[aspectRatio] || DIMENSIONS['1:1'];
-
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 30000);
+		const taskUUID = crypto.randomUUID();
 
 		const response = await fetch('https://api.runware.ai/v1', {
 			method: 'POST',
@@ -42,19 +47,17 @@ export async function onRequestPost(context) {
 			},
 			body: JSON.stringify([{
 				taskType: 'imageInference',
-				taskUUID: crypto.randomUUID(),
+				taskUUID,
 				positivePrompt: prompt,
-				model: model,
+				model,
 				width: dims.width,
 				height: dims.height,
 				numberResults: 1,
 				outputFormat: 'PNG',
-				includeCost: true
-			}]),
-			signal: controller.signal
+				includeCost: true,
+				deliveryMethod: 'async'
+			}])
 		});
-
-		clearTimeout(timeout);
 
 		if (response.status === 429) {
 			return Response.json({ error: 'rateLimit' }, { status: 429 });
@@ -68,22 +71,48 @@ export async function onRequestPost(context) {
 				return Response.json({ error: 'contentRestriction' }, { status: 400 });
 			}
 
-			return Response.json({ error: 'general', message: errorMsg }, { status: response.status });
+			return Response.json({ error: 'general', message: errorMsg }, { status: 500 });
 		}
 
-		const result = await response.json();
-		const imageData = result?.data?.[0];
+		for (let i = 0; i < MAX_POLLS; i++) {
+			await sleep(POLL_INTERVAL);
 
-		if (!imageData || !imageData.imageURL) {
-			return Response.json({ error: 'general', message: 'No image returned from API' }, { status: 500 });
+			const pollResponse = await fetch('https://api.runware.ai/v1', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${apiKey}`
+				},
+				body: JSON.stringify([{
+					taskType: 'getResponse',
+					taskUUID
+				}])
+			});
+
+			if (!pollResponse.ok) continue;
+
+			const pollResult = await pollResponse.json();
+			const imageData = pollResult?.data?.[0];
+
+			if (imageData && imageData.imageURL) {
+				return Response.json({
+					imageUrl: imageData.imageURL,
+					cost: imageData.cost || null,
+					model: modelName,
+					timestamp: new Date().toISOString()
+				});
+			}
+
+			if (pollResult?.errors) {
+				const errorMsg = pollResult.errors[0]?.message || 'Generation failed';
+				if (errorMsg.toLowerCase().includes('content') || errorMsg.toLowerCase().includes('nsfw')) {
+					return Response.json({ error: 'contentRestriction' }, { status: 400 });
+				}
+				return Response.json({ error: 'general', message: errorMsg }, { status: 500 });
+			}
 		}
 
-		return Response.json({
-			imageUrl: imageData.imageURL,
-			cost: imageData.cost || null,
-			model: modelName,
-			timestamp: new Date().toISOString()
-		});
+		return Response.json({ error: 'timeout' }, { status: 504 });
 
 	} catch (error) {
 		if (error.name === 'AbortError') {
