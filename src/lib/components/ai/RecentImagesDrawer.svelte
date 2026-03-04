@@ -69,7 +69,10 @@
 
 		<div class="drawer-body">
 			{#if recentImages.length === 0}
-				<p class="empty-message">No recent images</p>
+				<p class="empty-message">Your last ten images will be saved here.<br/>Download to keep them safe.</p>
+				<div class="empty-icon-wrapper">
+					<img src="/icons/icon-ai.svg" alt="" class="empty-icon" />
+				</div>
 			{:else}
 				<div class="image-grid">
 					{#each recentImages as img}
@@ -219,13 +222,31 @@
 		flex: 1;
 		overflow-y: auto;
 		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
 	}
 
 	.empty-message {
 		text-align: center;
 		color: var(--color-text-muted);
 		font-size: var(--font-size-sm);
-		padding: var(--space-8) 0;
+		margin: 0;
+		padding: var(--space-4) var(--space-6) 0;
+		line-height: var(--line-height-relaxed);
+	}
+
+	.empty-icon-wrapper {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.empty-icon {
+		width: 220px;
+		height: 220px;
+		opacity: 0.08;
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
 	}
 
 	.image-grid {
