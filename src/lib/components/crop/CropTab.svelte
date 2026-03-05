@@ -751,6 +751,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		margin-top: var(--space-3);
 	}
 	
 	.cancel-btn {
@@ -770,6 +771,6 @@
 	}
 	
 	:global(.crop-canvas) {
-		margin-top: var(--space-3);
+		margin-top: 0;
 	}
 </style>

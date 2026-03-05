@@ -86,7 +86,7 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		padding: var(--space-4) var(--space-6);
+		padding: var(--space-2) var(--space-6);
 		overflow-y: auto;
 	}
 </style>

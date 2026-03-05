@@ -178,6 +178,7 @@
 				on:keypress={(e) => e.key === 'Enter' && handleUploadClick()}
 			>
 				<div class="upload-button">
+					<span class="upload-text">Upload image</span>
 					<img src="/icons/icon-upload.svg" alt="" class="upload-icon" />
 				</div>
 			</div>
@@ -435,7 +436,8 @@
 	.upload-button {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: space-between;
+		padding: 0 var(--space-4);
 		width: 100%;
 		height: 56px;
 		background-color: var(--color-primary);
@@ -449,10 +451,19 @@
 		opacity: 0.9;
 	}
 
+	.upload-text {
+		color: white;
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-medium);
+		flex: 1;
+		text-align: left;
+	}
+
 	.upload-icon {
 		width: 24px;
 		height: 24px;
 		filter: brightness(0) saturate(100%) invert(100%);
+		flex-shrink: 0;
 	}
 
 	.button-row {
