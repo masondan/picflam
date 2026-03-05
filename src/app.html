@@ -30,6 +30,12 @@
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/logos/logo-picflam-touch.png" />
 		<link rel="manifest" href="%sveltekit.assets%/manifest.json" />
 		
+		<!-- Preload critical images for faster initial load -->
+		<link rel="preload" as="image" type="image/webp" href="%sveltekit.assets%/images/crop-intro.webp" />
+		<link rel="preload" as="image" type="image/webp" href="%sveltekit.assets%/images/ai-intro-before.webp" />
+		<link rel="preload" as="image" type="image/webp" href="%sveltekit.assets%/images/ai-intro-after.webp" />
+		<link rel="preload" as="image" type="image/webp" href="%sveltekit.assets%/images/ai-upscale-before.webp" />
+		
 		<title>PicFlam</title>
 		%sveltekit.head%
 	</head>

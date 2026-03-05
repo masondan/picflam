@@ -101,6 +101,7 @@ const initialCropState = {
 	width: 0,
 	height: 0,
 	ratioLocked: false,
+	lockedRatio: null,
 	scale: 1,
 	offsetX: 0,
 	offsetY: 0,

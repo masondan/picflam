@@ -122,7 +122,8 @@
 			cropPending: false,
 			cropBox: { x: 0, y: 0, width: 100, height: 100 },
 			aspectRatio: 'custom',
-			ratioLocked: false
+			ratioLocked: false,
+			lockedRatio: null
 		}));
 	}
 	
@@ -194,6 +195,7 @@
 				aspectRatio: 'custom',
 				cropBox: { x: 0, y: 0, width: 100, height: 100 },
 				ratioLocked: false,
+				lockedRatio: null,
 				cropPending: false
 			}));
 			return;
@@ -243,7 +245,8 @@
 			cropBox: newCropBox,
 			cropPending: true,
 			isCropping: true,
-			ratioLocked: true
+			ratioLocked: true,
+			lockedRatio: null
 		}));
 	}
 	
@@ -297,10 +300,22 @@
 	}
 	
 	function handleLockToggle() {
-		cropState.silentUpdate(state => ({
-			...state,
-			ratioLocked: !state.ratioLocked
-		}));
+		cropState.silentUpdate(state => {
+			const newLockedState = !state.ratioLocked;
+			let lockedRatio = state.lockedRatio;
+			
+			if (newLockedState && state.aspectRatio === 'custom') {
+				const cropBoxWidthPx = (state.cropBox.width / 100) * state.imageWidth;
+				const cropBoxHeightPx = (state.cropBox.height / 100) * state.imageHeight;
+				lockedRatio = cropBoxWidthPx / cropBoxHeightPx;
+			}
+			
+			return {
+				...state,
+				ratioLocked: newLockedState,
+				lockedRatio
+			};
+		});
 	}
 	
 	async function handleFlip() {
@@ -334,25 +349,43 @@
 	function handleCropChange(e) {
 		const newCropBox = e.detail.cropBox;
 		
-		if ($cropState.ratioLocked && $cropState.aspectRatio !== 'custom') {
-			const aspectRatios = {
-				'9:16': 9 / 16,
-				'1:1': 1,
-				'16:9': 16 / 9
-			};
-			const targetRatio = aspectRatios[$cropState.aspectRatio];
-			const imageRatio = $cropState.imageWidth / $cropState.imageHeight;
+		if ($cropState.ratioLocked) {
+			let targetRatio;
 			
-			const currentCropRatio = (newCropBox.width * $cropState.imageWidth) / (newCropBox.height * $cropState.imageHeight);
+			if ($cropState.aspectRatio !== 'custom') {
+				const aspectRatios = {
+					'9:16': 9 / 16,
+					'1:1': 1,
+					'16:9': 16 / 9
+				};
+				targetRatio = aspectRatios[$cropState.aspectRatio];
+			} else if ($cropState.lockedRatio) {
+				targetRatio = $cropState.lockedRatio;
+			}
 			
-			if (Math.abs(currentCropRatio - targetRatio) > 0.01) {
-				const cropWidthPx = (newCropBox.width / 100) * $cropState.imageWidth;
-				const constrainedHeightPx = cropWidthPx / targetRatio;
-				const constrainedHeightPercent = (constrainedHeightPx / $cropState.imageHeight) * 100;
+			if (targetRatio) {
+				const currentCropRatio = (newCropBox.width * $cropState.imageWidth) / (newCropBox.height * $cropState.imageHeight);
 				
-				newCropBox.height = Math.min(100, constrainedHeightPercent);
-				if (newCropBox.y + newCropBox.height > 100) {
-					newCropBox.y = 100 - newCropBox.height;
+				if (Math.abs(currentCropRatio - targetRatio) > 0.01) {
+					const cropWidthPx = (newCropBox.width / 100) * $cropState.imageWidth;
+					const constrainedHeightPx = cropWidthPx / targetRatio;
+					const constrainedHeightPercent = (constrainedHeightPx / $cropState.imageHeight) * 100;
+					
+					const cropHeightPx = (newCropBox.height / 100) * $cropState.imageHeight;
+					const constrainedWidthPx = cropHeightPx * targetRatio;
+					const constrainedWidthPercent = (constrainedWidthPx / $cropState.imageWidth) * 100;
+					
+					if (constrainedHeightPercent <= 100) {
+						newCropBox.height = constrainedHeightPercent;
+						if (newCropBox.y + newCropBox.height > 100) {
+							newCropBox.y = 100 - newCropBox.height;
+						}
+					} else {
+						newCropBox.width = Math.min(100, constrainedWidthPercent);
+						if (newCropBox.x + newCropBox.width > 100) {
+							newCropBox.x = 100 - newCropBox.width;
+						}
+					}
 				}
 			}
 		}

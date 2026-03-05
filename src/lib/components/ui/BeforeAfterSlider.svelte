@@ -73,11 +73,17 @@
 	tabindex="0"
 >
 	<div class="before-image">
-		<img src={beforeImage} alt="Before" />
+		<picture>
+			<source srcset={beforeImage.replace('.png', '.webp')} type="image/webp" />
+			<img src={beforeImage} alt="Before" />
+		</picture>
 	</div>
 	
 	<div class="after-image" style="clip-path: inset(0 {100 - position}% 0 0)">
-		<img src={afterImage} alt="After" />
+		<picture>
+			<source srcset={afterImage.replace('.png', '.webp')} type="image/webp" />
+			<img src={afterImage} alt="After" />
+		</picture>
 	</div>
 	
 	<div 

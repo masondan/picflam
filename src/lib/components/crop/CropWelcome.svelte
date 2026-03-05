@@ -52,11 +52,15 @@
 <div class="crop-welcome">
 	<p class="helper-text">Crop, edit and add filters to images</p>
 
-	<img 
-		src="/images/crop-intro.png" 
-		alt="Welcome to Crop" 
-		class="welcome-image"
-	/>
+	<picture>
+		<source srcset="/images/crop-intro.webp" type="image/webp" />
+		<img 
+			src="/images/crop-intro.png" 
+			alt="Welcome to Crop" 
+			class="welcome-image"
+			loading="lazy"
+		/>
+	</picture>
 	
 	<div class="input-panel">
 		<div
