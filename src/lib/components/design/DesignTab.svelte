@@ -1109,7 +1109,7 @@
 	
 	.canvas-container {
 		width: 100%;
-		margin-top: var(--space-3);
+		margin-top: 0;
 	}
 	
 	.design-canvas {
@@ -1409,6 +1409,10 @@
 		left: 50%;
 		display: block;
 		pointer-events: none;
+	}
+
+	:global(.design-tab > .sub-menu-tabs) {
+		margin-top: var(--space-3);
 	}
 
 	.controls-panel {
