@@ -1,6 +1,7 @@
 /* PicFlam Design System Tokens */
 /* Single source of truth - see DESIGN_SYSTEM.md */
 
+/* Inter - Variable Font */
 @font-face {
   font-family: 'Inter';
   src: url('/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
@@ -9,7 +10,77 @@
   font-display: swap;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Lora:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto+Slab:wght@400;700&family=Saira+Condensed:wght@400;700&family=Special+Elite&display=swap');
+/* Roboto Slab - Variable Font */
+@font-face {
+  font-family: 'Roboto Slab';
+  src: url('/fonts/roboto-slab.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Saira Condensed - Regular */
+@font-face {
+  font-family: 'Saira Condensed';
+  src: url('/fonts/SairaCondensed-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Saira Condensed - Bold */
+@font-face {
+  font-family: 'Saira Condensed';
+  src: url('/fonts/SairaCondensed-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Lora - Variable Font */
+@font-face {
+  font-family: 'Lora';
+  src: url('/fonts/lora.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Playfair Display - Variable Font */
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('/fonts/playfair-display.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Special Elite - Single Weight */
+@font-face {
+  font-family: 'Special Elite';
+  src: url('/fonts/special-elite.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bebas Neue - Bold Only */
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/bebas-neue.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Alfa Slab One - For Quote Styling */
+@font-face {
+  font-family: 'Alfa Slab One';
+  src: url('/fonts/AlfaSlabOne-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   /* Colors - UI */

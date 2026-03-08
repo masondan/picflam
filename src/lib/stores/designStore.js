@@ -12,7 +12,7 @@ const CANVAS_COLORS = {
 	]
 };
 
-const FONTS = ['Inter', 'Roboto Slab', 'Saira Condensed', 'Lora', 'Playfair Display', 'Special Elite'];
+const FONTS = ['Inter', 'Roboto Slab', 'Saira Condensed', 'Lora', 'Playfair Display', 'Special Elite', 'Bebas Neue'];
 
 const GRADIENT_DIRECTIONS = {
 	up: 'to top',
