@@ -90,7 +90,7 @@
 	}
 	
 	.nav-btn:not(.active) .nav-icon {
-		filter: invert(15%) sepia(70%) saturate(2500%) hue-rotate(250deg) brightness(90%) contrast(115%);
+		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 	
 	.nav-btn.active .nav-icon {

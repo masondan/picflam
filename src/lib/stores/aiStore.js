@@ -1,5 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import { getGenerationCount, getStoredMonth } from '$lib/utils/generationStorage.js';
+import { saveAiState, loadAiState, clearAiState } from '$lib/utils/aiStateStorage.js';
 
 const initialAiState = {
 	originalImage: null,
@@ -14,10 +15,20 @@ const initialAiState = {
 
 function createStore() {
 	const { subscribe, set, update } = writable(initialAiState);
+
+	function persistAfterUpdate(updater) {
+		update(state => {
+			const newState = updater(state);
+			if (newState.currentImage && !newState.isProcessing) {
+				saveAiState(newState);
+			}
+			return newState;
+		});
+	}
 	
 	return {
 		subscribe,
-		setImage: (imageData) => update(state => ({
+		setImage: (imageData) => persistAfterUpdate(state => ({
 			...state,
 			originalImage: imageData,
 			currentImage: imageData,
@@ -29,13 +40,13 @@ function createStore() {
 			processingType: type,
 			showComparison: false
 		})),
-		promoteCurrentToOriginal: () => update(state => ({
+		promoteCurrentToOriginal: () => persistAfterUpdate(state => ({
 			...state,
 			originalImage: state.currentImage,
 			processedImage: null,
 			showComparison: false
 		})),
-		finishProcessing: (result) => update(state => ({
+		finishProcessing: (result) => persistAfterUpdate(state => ({
 			...state,
 			isProcessing: false,
 			processingType: null,
@@ -56,7 +67,22 @@ function createStore() {
 			...state,
 			comparisonPosition: position
 		})),
-		reset: () => set(initialAiState)
+		reset: () => {
+			clearAiState();
+			set(initialAiState);
+		},
+		restoreFromStorage: async () => {
+			const saved = await loadAiState();
+			if (saved) {
+				update(state => ({
+					...state,
+					originalImage: saved.originalImage,
+					currentImage: saved.currentImage,
+					processedImage: saved.processedImage,
+					showComparison: saved.showComparison
+				}));
+			}
+		}
 	};
 }
 

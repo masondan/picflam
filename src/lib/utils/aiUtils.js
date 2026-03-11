@@ -93,16 +93,39 @@ async function getSegmentationPipeline(onProgress) {
 
 
 
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+async function downsizeForProcessing(dataUrl, maxDim) {
+    const img = await dataUrlToImage(dataUrl);
+    if (img.width <= maxDim && img.height <= maxDim) return dataUrl;
+
+    const scale = maxDim / Math.max(img.width, img.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.9);
+}
+
 export async function removeBackground(imageDataUrl, onProgress) {
     try {
         console.log('[AI] Starting background removal...');
         onProgress?.('Starting engine ...');
 
+        let processInput = imageDataUrl;
+        if (isIOS()) {
+            onProgress?.('Optimising for device ...');
+            processInput = await downsizeForProcessing(imageDataUrl, 1024);
+        }
+
         const segmenter = await getSegmentationPipeline(onProgress);
 
         onProgress?.('Processing ...');
 
-        const result = await segmenter(imageDataUrl);
+        const result = await segmenter(processInput);
         console.log('[AI] Segmentation result:', result);
 
         if (!result || result.length === 0) {

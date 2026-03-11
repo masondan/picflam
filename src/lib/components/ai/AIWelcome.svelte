@@ -130,9 +130,10 @@
 	.slider-container {
 		width: 100%;
 		aspect-ratio: 9 / 16;
-		flex: 1;
+		flex: 1 1 0;
 		min-height: 0;
-		max-height: 69vh;
+		max-height: min(69vh, calc(100dvh - 260px));
+		overflow: hidden;
 	}
 	
 	.slider-container :global(.before-after-container) {
@@ -146,7 +147,7 @@
 		height: 100%;
 		width: 100%;
 		object-fit: cover;
-		object-position: center;
+		object-position: top;
 	}
 	
 	.input-panel {
@@ -252,7 +253,7 @@
 		width: 22px;
 		height: 22px;
 		flex-shrink: 0;
-		filter: brightness(0) saturate(100%) invert(22%) sepia(97%) saturate(3000%) hue-rotate(254deg) brightness(90%) contrast(105%);
+		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
 	}
 	
 	.sr-only {

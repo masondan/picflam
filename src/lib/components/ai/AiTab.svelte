@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import SubMenuTabs from '$lib/components/ui/SubMenuTabs.svelte';
 	import BeforeAfterSlider from '$lib/components/ui/BeforeAfterSlider.svelte';
@@ -9,6 +10,10 @@
 	import PexelsDrawer from '$lib/components/design/PexelsDrawer.svelte';
 	import { aiState, activeAiMenu, hasAiImage, imageGen, resetImageGen } from '$lib/stores/aiStore.js';
 	import { copyImageToClipboard, downloadImage, fileToDataUrl, resizeImage } from '$lib/utils/imageUtils.js';
+
+	onMount(() => {
+		aiState.restoreFromStorage();
+	});
 
 	let comparisonPosition = 50;
 	let showPexelsDrawer = false;

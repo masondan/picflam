@@ -30,13 +30,19 @@
 		<link rel="apple-touch-icon" href="/logos/logo-picflam-touch.png" />
 		<link rel="manifest" href="/manifest.json" />
 		
+		<!-- Preload critical images for faster initial load -->
+		<link rel="preload" as="image" type="image/webp" href="/images/crop-intro.webp" />
+		<link rel="preload" as="image" type="image/webp" href="/images/ai-intro-before.webp" />
+		<link rel="preload" as="image" type="image/webp" href="/images/ai-intro-after.webp" />
+		<link rel="preload" as="image" type="image/webp" href="/images/ai-upscale-before.webp" />
+		
 		<title>PicFlam</title>
 		
-		<link rel="modulepreload" href="/_app/immutable/entry/start.C_kFuv4B.js">
-		<link rel="modulepreload" href="/_app/immutable/chunks/DlRpv5qm.js">
+		<link rel="modulepreload" href="/_app/immutable/entry/start.DxW1EuNw.js">
+		<link rel="modulepreload" href="/_app/immutable/chunks/fBNZWqpP.js">
 		<link rel="modulepreload" href="/_app/immutable/chunks/ClU_WbYM.js">
 		<link rel="modulepreload" href="/_app/immutable/chunks/DCCG2r-c.js">
-		<link rel="modulepreload" href="/_app/immutable/entry/app.Cx1o3WUf.js">
+		<link rel="modulepreload" href="/_app/immutable/entry/app.Ca52Y_1n.js">
 		<link rel="modulepreload" href="/_app/immutable/chunks/CMOAwGAt.js">
 		<link rel="modulepreload" href="/_app/immutable/chunks/DJ2IIJxT.js">
 		<link rel="modulepreload" href="/_app/immutable/chunks/R5O7JTxP.js">
@@ -45,15 +51,15 @@
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_1lvh2je = {
+					__sveltekit_1a8nrjr = {
 						base: ""
 					};
 
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("/_app/immutable/entry/start.C_kFuv4B.js"),
-						import("/_app/immutable/entry/app.Cx1o3WUf.js")
+						import("/_app/immutable/entry/start.DxW1EuNw.js"),
+						import("/_app/immutable/entry/app.Ca52Y_1n.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element);
 					});
