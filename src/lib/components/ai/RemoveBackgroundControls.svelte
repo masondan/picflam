@@ -58,7 +58,7 @@
 			<button class="cancel-btn" on:click={handleCancel}>Cancel</button>
 		{:else}
 			<button class="remove-btn" on:click={handleRemoveBackground}>
-				<img src="/icons/icon-ai.svg" alt="" class="btn-icon" />
+				<span class="btn-icon" style="--icon-url: url(/icons/icon-ai.svg)"></span>
 				Remove background
 			</button>
 		{/if}
@@ -68,7 +68,7 @@
 			on:click={handleEraseRestore}
 			disabled={!hasProcessedImage}
 		>
-			<img src="/icons/icon-erase.svg" alt="" class="btn-icon" />
+			<span class="btn-icon" style="--icon-url: url(/icons/icon-erase.svg)"></span>
 			Erase and restore
 		</button>
 
@@ -149,7 +149,7 @@
 
 	.erase-btn .btn-icon {
 		flex-shrink: 0;
-		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+		background-color: #777777;
 	}
 
 	.erase-btn:not(:disabled) {
@@ -158,7 +158,7 @@
 	}
 
 	.erase-btn:not(:disabled) .btn-icon {
-		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
+		background-color: var(--color-primary);
 	}
 	
 	.erase-btn:hover:not(:disabled) {
@@ -168,7 +168,7 @@
 	}
 	
 	.erase-btn:hover:not(:disabled) .btn-icon {
-		filter: brightness(0) invert(1);
+		background-color: white;
 	}
 	
 	.erase-btn:disabled {
@@ -234,7 +234,16 @@
 	.btn-icon {
 		width: 20px;
 		height: 20px;
-		filter: brightness(0) invert(1);
+		display: inline-block;
+		background-color: white;
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 	
 	.error-message {

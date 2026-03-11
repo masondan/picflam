@@ -135,7 +135,7 @@
 			<img src={$imageGen.generatedImage} alt="Generated" class="generated-image" />
 		{:else}
 			<div class="placeholder">
-				<img src="/icons/icon-ai.svg" alt="" class="placeholder-icon" />
+				<span class="placeholder-icon" style="--icon-url: url(/icons/icon-ai.svg)"></span>
 			</div>
 		{/if}
 	</div>
@@ -190,7 +190,7 @@
 								class:selected={option.id === $imageGen.aspectRatio}
 								on:click={() => selectAspect(option.id)}
 							>
-								<img src={option.icon} alt="" class="aspect-option-icon" />
+								<span class="aspect-option-icon" style="--icon-url: url({option.icon})"></span>
 								<span>{option.label}</span>
 							</button>
 						{/each}
@@ -264,7 +264,16 @@
 		width: 192px;
 		height: 192px;
 		opacity: 0.15;
-		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 		animation: breathe 5s ease-in-out infinite;
 	}
 
@@ -430,11 +439,20 @@
 	.aspect-option-icon {
 		width: 18px;
 		height: 18px;
-		filter: brightness(0) saturate(100%) invert(33%);
+		display: inline-block;
+		background-color: #555555;
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 
 	.aspect-option.selected .aspect-option-icon {
-		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
+		background-color: var(--color-primary);
 	}
 
 	.generate-btn {

@@ -186,12 +186,12 @@
 			<div class="button-row">
 				<button class="action-button" on:click={() => showPexelsDrawer = true}>
 					<span class="button-text">Search</span>
-					<img src="/icons/icon-search.svg" alt="" class="button-icon" />
+					<span class="button-icon" style="--icon-url: url(/icons/icon-search.svg)"></span>
 				</button>
 				
 				<button class="action-button" on:click={handlePaste}>
 					<span class="button-text">Paste</span>
-					<img src="/icons/icon-paste.svg" alt="" class="button-icon" />
+					<span class="button-icon" style="--icon-url: url(/icons/icon-paste.svg)"></span>
 				</button>
 			</div>
 		</div>
@@ -506,7 +506,16 @@
 		width: 22px;
 		height: 22px;
 		flex-shrink: 0;
-		filter: brightness(0) saturate(100%) invert(22%) sepia(97%) saturate(3000%) hue-rotate(254deg) brightness(90%) contrast(105%);
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 
 	.sr-only {

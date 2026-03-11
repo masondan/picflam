@@ -64,7 +64,7 @@
 >
 	<p class="import-title">{title}{#if subtitle}<br />{subtitle}{/if}</p>
 	
-	<img src="/icons/icon-upload.svg" alt="" class="import-icon" />
+	<span class="import-icon" style="--icon-url: url(/icons/icon-upload.svg)"></span>
 	
 	<p class="import-hint">{hint}</p>
 	
@@ -115,7 +115,16 @@
 	.import-icon {
 		width: 48px;
 		height: 48px;
-		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 	
 	.import-hint {

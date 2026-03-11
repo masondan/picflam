@@ -71,7 +71,7 @@
 			{#if recentImages.length === 0}
 				<p class="empty-message">Your last ten images will be saved here.<br/>Download to keep them safe.</p>
 				<div class="empty-icon-wrapper">
-					<img src="/icons/icon-ai.svg" alt="" class="empty-icon" />
+					<span class="empty-icon" style="--icon-url: url(/icons/icon-ai.svg)"></span>
 				</div>
 			{:else}
 				<div class="image-grid">
@@ -246,7 +246,16 @@
 		width: 220px;
 		height: 220px;
 		opacity: 0.08;
-		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 
 	.image-grid {

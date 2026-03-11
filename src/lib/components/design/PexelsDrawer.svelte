@@ -126,7 +126,7 @@
 					class="search-input"
 				/>
 				<button type="submit" class="search-btn" aria-label="Search">
-					<img src="/icons/icon-search.svg" alt="" class="search-icon" />
+					<span class="search-icon" style="--icon-url: url(/icons/icon-search.svg)"></span>
 				</button>
 			</form>
 		</div>
@@ -283,7 +283,16 @@
 	.search-icon {
 		width: 18px;
 		height: 18px;
-		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 
 	.drawer-body {

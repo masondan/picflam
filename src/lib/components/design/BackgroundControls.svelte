@@ -133,7 +133,7 @@
 					on:click={() => selectDirection('up')}
 					aria-label="Gradient direction up"
 				>
-					<img src="/icons/icon-nudge-up.svg" alt="" class="direction-icon" />
+					<span class="direction-icon" style="--icon-url: url(/icons/icon-nudge-up.svg)"></span>
 				</button>
 				<button 
 					class="direction-btn"
@@ -141,7 +141,7 @@
 					on:click={() => selectDirection('down')}
 					aria-label="Gradient direction down"
 				>
-					<img src="/icons/icon-nudge-down.svg" alt="" class="direction-icon" />
+					<span class="direction-icon" style="--icon-url: url(/icons/icon-nudge-down.svg)"></span>
 				</button>
 				<button 
 					class="direction-btn"
@@ -149,7 +149,7 @@
 					on:click={() => selectDirection('left')}
 					aria-label="Gradient direction left"
 				>
-					<img src="/icons/icon-nudge-left.svg" alt="" class="direction-icon" />
+					<span class="direction-icon" style="--icon-url: url(/icons/icon-nudge-left.svg)"></span>
 				</button>
 				<button 
 					class="direction-btn"
@@ -157,7 +157,7 @@
 					on:click={() => selectDirection('right')}
 					aria-label="Gradient direction right"
 				>
-					<img src="/icons/icon-nudge-right.svg" alt="" class="direction-icon" />
+					<span class="direction-icon" style="--icon-url: url(/icons/icon-nudge-right.svg)"></span>
 				</button>
 			</div>
 		</div>
@@ -264,7 +264,16 @@
 	.direction-icon {
 		width: 22px;
 		height: 22px;
-		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+		display: inline-block;
+		background-color: #777777;
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 
 	.direction-btn.active {
@@ -272,7 +281,7 @@
 	}
 
 	.direction-btn.active .direction-icon {
-		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
+		background-color: var(--color-primary);
 	}
 
 	.direction-row.inactive {
@@ -284,7 +293,7 @@
 	}
 
 	.direction-row.inactive .direction-icon {
-		filter: brightness(0) saturate(100%) invert(54%) sepia(0%) saturate(0%) brightness(98%) contrast(88%);
+		background-color: #aaaaaa;
 	}
 
 </style>
