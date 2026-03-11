@@ -115,7 +115,7 @@
 	.import-icon {
 		width: 48px;
 		height: 48px;
-		filter: brightness(0) saturate(100%) invert(18%) sepia(75%) saturate(1500%) hue-rotate(255deg) brightness(95%) contrast(102%);
+		filter: brightness(0) saturate(100%) invert(11%) sepia(83%) saturate(5765%) hue-rotate(263deg) brightness(83%) contrast(108%);
 	}
 	
 	.import-hint {
