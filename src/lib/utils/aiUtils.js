@@ -127,58 +127,128 @@ async function downsizeForProcessing(dataUrl, maxDim) {
     return canvas.toDataURL('image/jpeg', 0.9);
 }
 
+async function removeBackgroundLocal(imageDataUrl, onProgress) {
+    console.log('[AI] Starting on-device background removal...');
+    onProgress?.('Starting engine ...');
+
+    let processInput = imageDataUrl;
+    if (isIOS()) {
+        onProgress?.('Optimising for device ...');
+        processInput = await downsizeForProcessing(imageDataUrl, 1024);
+    }
+
+    const segmenter = await getSegmentationPipeline(onProgress);
+
+    onProgress?.('Processing ...');
+
+    const result = await segmenter(processInput);
+    console.log('[AI] Segmentation result:', result);
+
+    releaseSegmentationPipeline();
+
+    if (!result || result.length === 0) {
+        throw new Error('No segmentation result returned');
+    }
+
+    const segment = result[0];
+    console.log('[AI] Segment keys:', Object.keys(segment));
+
+    let outputDataUrl;
+
+    if (segment.mask && segment.mask.toDataURL) {
+        outputDataUrl = await applyMaskToImage(processInput, segment.mask);
+    } else if (segment.mask && segment.mask.data) {
+        outputDataUrl = await applyMaskToImage(processInput, segment.mask);
+    } else if (typeof segment === 'string' && segment.startsWith('data:')) {
+        outputDataUrl = segment;
+    } else {
+        throw new Error('Unexpected segmentation result format');
+    }
+
+    if (!outputDataUrl || outputDataUrl.length < 100) {
+        throw new Error('Device ran out of memory generating the result image');
+    }
+
+    return outputDataUrl;
+}
+
+async function removeBackgroundCloud(imageDataUrl, onProgress) {
+    console.log('[AI] Using cloud background removal...');
+    onProgress?.('Uploading to cloud ...');
+
+    const response = await fetch('/api/remove-bg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageDataUrl })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.error || `Cloud API error: ${response.status}`);
+    }
+
+    if (result.status === 'succeeded' && result.output) {
+        onProgress?.('Final checks ...');
+        return await fetchImageAsDataUrl(result.output);
+    }
+
+    if (result.status === 'processing' || result.status === 'starting') {
+        onProgress?.('Processing in cloud ...');
+        return await pollForRemoveBgResult(result.pollUrl, onProgress);
+    }
+
+    throw new Error('Unexpected cloud response');
+}
+
+async function pollForRemoveBgResult(pollUrl, onProgress, maxAttempts = 60) {
+    for (let i = 0; i < maxAttempts; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+
+        const response = await fetch(`/api/remove-bg?pollUrl=${encodeURIComponent(pollUrl)}`);
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || `Polling error: ${response.status}`);
+        }
+
+        if (result.status === 'succeeded' && result.output) {
+            onProgress?.('Final checks ...');
+            return await fetchImageAsDataUrl(result.output);
+        }
+
+        if (result.status === 'failed') {
+            throw new Error(result.error || 'Cloud background removal failed');
+        }
+
+        onProgress?.(`Processing in cloud (${(i + 1) * 2}s)...`);
+    }
+
+    throw new Error('Timeout waiting for cloud result');
+}
+
 export async function removeBackground(imageDataUrl, onProgress) {
+    if (isIOS()) {
+        console.log('[AI] iOS detected, using cloud processing');
+        try {
+            return await removeBackgroundCloud(imageDataUrl, onProgress);
+        } catch (cloudError) {
+            console.error('[AI] Cloud removal failed:', cloudError.message);
+            throw new Error('Background removal failed: ' + cloudError.message);
+        }
+    }
+
     try {
-        console.log('[AI] Starting background removal...');
-        onProgress?.('Starting engine ...');
-
-        let processInput = imageDataUrl;
-        if (isIOS()) {
-            onProgress?.('Optimising for device ...');
-            processInput = await downsizeForProcessing(imageDataUrl, 1024);
+        return await removeBackgroundLocal(imageDataUrl, onProgress);
+    } catch (localError) {
+        console.warn('[AI] On-device removal failed, falling back to cloud:', localError.message);
+        try {
+            onProgress?.('Switching to cloud ...');
+            return await removeBackgroundCloud(imageDataUrl, onProgress);
+        } catch (cloudError) {
+            console.error('[AI] Cloud removal also failed:', cloudError.message);
+            throw new Error('Background removal failed on this device. Please try a smaller image.');
         }
-
-        const segmenter = await getSegmentationPipeline(onProgress);
-
-        onProgress?.('Processing ...');
-
-        const result = await segmenter(processInput);
-        console.log('[AI] Segmentation result:', result);
-
-        releaseSegmentationPipeline();
-
-        if (!result || result.length === 0) {
-            throw new Error('No segmentation result returned');
-        }
-
-        const segment = result[0];
-        console.log('[AI] Segment keys:', Object.keys(segment));
-
-        let outputDataUrl;
-
-        if (segment.mask && segment.mask.toDataURL) {
-            console.log('[AI] Background removal complete (RawImage mask)');
-            outputDataUrl = await applyMaskToImage(processInput, segment.mask);
-        } else if (segment.mask && segment.mask.data) {
-            console.log('[AI] Background removal complete (data mask)');
-            outputDataUrl = await applyMaskToImage(processInput, segment.mask);
-        } else if (typeof segment === 'string' && segment.startsWith('data:')) {
-            console.log('[AI] Background removal complete (direct output)');
-            outputDataUrl = segment;
-        } else {
-            console.log('[AI] Segment structure:', JSON.stringify(segment, null, 2).substring(0, 500));
-            throw new Error('Unexpected segmentation result format');
-        }
-
-        if (!outputDataUrl || outputDataUrl.length < 100) {
-            throw new Error('Device ran out of memory generating the result image');
-        }
-
-        return outputDataUrl;
-    } catch (error) {
-        console.error('[AI] Background removal failed:', error);
-        releaseSegmentationPipeline();
-        throw new Error('Background removal failed: ' + error.message);
     }
 }
 
