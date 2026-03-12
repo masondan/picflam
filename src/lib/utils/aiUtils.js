@@ -228,7 +228,7 @@ async function pollForRemoveBgResult(pollUrl, onProgress, maxAttempts = 60) {
 }
 
 export async function removeBackground(imageDataUrl, onProgress) {
-    if (isIOS()) {
+    if (isIOS() || window.__FORCE_CLOUD_BG) {
         console.log('[AI] iOS detected, using cloud processing');
         try {
             return await removeBackgroundCloud(imageDataUrl, onProgress);
