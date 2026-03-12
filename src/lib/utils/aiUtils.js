@@ -91,7 +91,24 @@ async function getSegmentationPipeline(onProgress) {
     return segmentationPipeline;
 }
 
+function releaseSegmentationPipeline() {
+    if (segmentationPipeline) {
+        console.log('[AI] Releasing segmentation pipeline to free memory');
+        try {
+            if (segmentationPipeline.dispose) segmentationPipeline.dispose();
+        } catch (e) {
+            console.warn('[AI] Pipeline dispose failed:', e);
+        }
+        segmentationPipeline = null;
+    }
+}
 
+function validateDataUrl(dataUrl) {
+    if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
+        throw new Error('Device ran out of memory generating the result image');
+    }
+    return dataUrl;
+}
 
 function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -128,6 +145,8 @@ export async function removeBackground(imageDataUrl, onProgress) {
         const result = await segmenter(processInput);
         console.log('[AI] Segmentation result:', result);
 
+        releaseSegmentationPipeline();
+
         if (!result || result.length === 0) {
             throw new Error('No segmentation result returned');
         }
@@ -135,25 +154,30 @@ export async function removeBackground(imageDataUrl, onProgress) {
         const segment = result[0];
         console.log('[AI] Segment keys:', Object.keys(segment));
 
+        let outputDataUrl;
+
         if (segment.mask && segment.mask.toDataURL) {
             console.log('[AI] Background removal complete (RawImage mask)');
-            return await applyMaskToImage(imageDataUrl, segment.mask);
-        }
-
-        if (segment.mask && segment.mask.data) {
+            outputDataUrl = await applyMaskToImage(processInput, segment.mask);
+        } else if (segment.mask && segment.mask.data) {
             console.log('[AI] Background removal complete (data mask)');
-            return await applyMaskToImage(imageDataUrl, segment.mask);
-        }
-
-        if (typeof segment === 'string' && segment.startsWith('data:')) {
+            outputDataUrl = await applyMaskToImage(processInput, segment.mask);
+        } else if (typeof segment === 'string' && segment.startsWith('data:')) {
             console.log('[AI] Background removal complete (direct output)');
-            return segment;
+            outputDataUrl = segment;
+        } else {
+            console.log('[AI] Segment structure:', JSON.stringify(segment, null, 2).substring(0, 500));
+            throw new Error('Unexpected segmentation result format');
         }
 
-        console.log('[AI] Segment structure:', JSON.stringify(segment, null, 2).substring(0, 500));
-        throw new Error('Unexpected segmentation result format');
+        if (!outputDataUrl || outputDataUrl.length < 100) {
+            throw new Error('Device ran out of memory generating the result image');
+        }
+
+        return outputDataUrl;
     } catch (error) {
         console.error('[AI] Background removal failed:', error);
+        releaseSegmentationPipeline();
         throw new Error('Background removal failed: ' + error.message);
     }
 }
@@ -188,7 +212,7 @@ async function applyMaskToImage(originalDataUrl, mask) {
                         applyMaskData(pixels, maskImageData.data, canvas.width, canvas.height, mask.width, mask.height, true);
 
                         ctx.putImageData(imageData, 0, 0);
-                        resolve(canvas.toDataURL('image/png'));
+                        resolve(validateDataUrl(canvas.toDataURL('image/png')));
                     };
                     maskImg.onerror = reject;
                     maskImg.src = mask.toDataURL();
@@ -203,7 +227,7 @@ async function applyMaskToImage(originalDataUrl, mask) {
                 applyMaskData(pixels, maskData, canvas.width, canvas.height, maskWidth, maskHeight, isRGBA);
 
                 ctx.putImageData(imageData, 0, 0);
-                resolve(canvas.toDataURL('image/png'));
+                resolve(validateDataUrl(canvas.toDataURL('image/png')));
             } catch (e) {
                 reject(e);
             }
