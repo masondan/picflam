@@ -454,6 +454,7 @@
 	function handleOverlayDragEnd() {
 		isDraggingOverlay = false;
 		slideState.setSkipHistory(false);
+		slideState.update(state => state);
 		window.removeEventListener('mousemove', handleOverlayDragMove);
 		window.removeEventListener('mouseup', handleOverlayDragEnd);
 		window.removeEventListener('touchmove', handleOverlayDragMove);
@@ -491,6 +492,7 @@
 	function handleResizeEnd() {
 		isResizingOverlay = false;
 		slideState.setSkipHistory(false);
+		slideState.update(state => state);
 		window.removeEventListener('mousemove', handleResizeMove);
 		window.removeEventListener('mouseup', handleResizeEnd);
 		window.removeEventListener('touchmove', handleResizeMove);
@@ -573,6 +575,7 @@
 	function handleText1DragEnd() {
 		isDraggingText1 = false;
 		slideState.setSkipHistory(false);
+		slideState.update(state => state);
 		window.removeEventListener('mousemove', handleText1DragMove);
 		window.removeEventListener('mouseup', handleText1DragEnd);
 		window.removeEventListener('touchmove', handleText1DragMove);
@@ -613,6 +616,7 @@
 	function handleText2DragEnd() {
 		isDraggingText2 = false;
 		slideState.setSkipHistory(false);
+		slideState.update(state => state);
 		window.removeEventListener('mousemove', handleText2DragMove);
 		window.removeEventListener('mouseup', handleText2DragEnd);
 		window.removeEventListener('touchmove', handleText2DragMove);
