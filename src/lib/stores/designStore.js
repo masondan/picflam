@@ -66,6 +66,7 @@ const initialSlideState = {
 function createHistoryStore(initialState) {
 	const history = [JSON.parse(JSON.stringify(initialState))];
 	let currentIndex = 0;
+	let skipHistory = false;
 	
 	const { subscribe, set, update } = writable(initialState);
 	
@@ -80,11 +81,16 @@ function createHistoryStore(initialState) {
 		update: (fn) => {
 			update(state => {
 				const newState = fn(state);
-				history.splice(currentIndex + 1);
-				history.push(JSON.parse(JSON.stringify(newState)));
-				currentIndex = history.length - 1;
+				if (!skipHistory) {
+					history.splice(currentIndex + 1);
+					history.push(JSON.parse(JSON.stringify(newState)));
+					currentIndex = history.length - 1;
+				}
 				return newState;
 			});
+		},
+		setSkipHistory: (skip) => {
+			skipHistory = skip;
 		},
 		undo: () => {
 			if (currentIndex > 0) {

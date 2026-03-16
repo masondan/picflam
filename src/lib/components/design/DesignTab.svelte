@@ -418,6 +418,7 @@
 		if (e.touches && e.touches.length > 1) return;
 		e.preventDefault();
 		isDraggingOverlay = true;
+		slideState.setSkipHistory(true);
 		const touch = e.touches?.[0] || e;
 		dragStartX = touch.clientX;
 		dragStartY = touch.clientY;
@@ -452,6 +453,7 @@
 
 	function handleOverlayDragEnd() {
 		isDraggingOverlay = false;
+		slideState.setSkipHistory(false);
 		window.removeEventListener('mousemove', handleOverlayDragMove);
 		window.removeEventListener('mouseup', handleOverlayDragEnd);
 		window.removeEventListener('touchmove', handleOverlayDragMove);
@@ -462,6 +464,7 @@
 		e.preventDefault();
 		e.stopPropagation();
 		isResizingOverlay = true;
+		slideState.setSkipHistory(true);
 		resizeStartX = e.touches?.[0].clientX || e.clientX;
 		resizeStartY = e.touches?.[0].clientY || e.clientY;
 		resizeStartSize = $slideState.overlaySize;
@@ -487,6 +490,7 @@
 
 	function handleResizeEnd() {
 		isResizingOverlay = false;
+		slideState.setSkipHistory(false);
 		window.removeEventListener('mousemove', handleResizeMove);
 		window.removeEventListener('mouseup', handleResizeEnd);
 		window.removeEventListener('touchmove', handleResizeMove);
@@ -540,6 +544,7 @@
 		e.preventDefault();
 		activeDesignMenu.set('text1');
 		isDraggingText1 = true;
+		slideState.setSkipHistory(true);
 		const touch = e.touches?.[0] || e;
 		textDragStartY = touch.clientY;
 		textDragStartPosition = $slideState.text1YPosition;
@@ -567,6 +572,7 @@
 
 	function handleText1DragEnd() {
 		isDraggingText1 = false;
+		slideState.setSkipHistory(false);
 		window.removeEventListener('mousemove', handleText1DragMove);
 		window.removeEventListener('mouseup', handleText1DragEnd);
 		window.removeEventListener('touchmove', handleText1DragMove);
@@ -578,6 +584,7 @@
 		e.preventDefault();
 		activeDesignMenu.set('text2');
 		isDraggingText2 = true;
+		slideState.setSkipHistory(true);
 		const touch = e.touches?.[0] || e;
 		textDragStartY = touch.clientY;
 		textDragStartPosition = $slideState.text2YPosition;
@@ -605,6 +612,7 @@
 
 	function handleText2DragEnd() {
 		isDraggingText2 = false;
+		slideState.setSkipHistory(false);
 		window.removeEventListener('mousemove', handleText2DragMove);
 		window.removeEventListener('mouseup', handleText2DragEnd);
 		window.removeEventListener('touchmove', handleText2DragMove);
