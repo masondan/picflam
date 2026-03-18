@@ -83,6 +83,19 @@ export async function copyImageToClipboard(dataUrl) {
 	}
 }
 
+export function generateFilename() {
+	const now = new Date();
+	const day = String(now.getDate()).padStart(2, '0');
+	const month = String(now.getMonth() + 1).padStart(2, '0');
+	const year = String(now.getFullYear()).slice(-2);
+	const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+	let random = '';
+	for (let i = 0; i < 4; i++) {
+		random += chars[Math.floor(Math.random() * 36)];
+	}
+	return `picflam-${day}${month}${year}-${random}.png`;
+}
+
 export async function downloadImage(dataUrl, filename = 'picflam-export.png') {
 	let url = dataUrl;
 	let objectUrl = null;

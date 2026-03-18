@@ -12,7 +12,7 @@
 	import { cropState, activeSubMenu, hasImage, resetCropState, FILTER_DEFINITIONS } from '$lib/stores/cropStore.js';
 	
 	const undoState = cropState.undoState;
-	import { copyImageToClipboard, downloadImage, getImageDimensions, applyCrop, flipImage, rotateImage, renderFinalImage } from '$lib/utils/imageUtils.js';
+	import { copyImageToClipboard, downloadImage, generateFilename, getImageDimensions, applyCrop, flipImage, rotateImage, renderFinalImage } from '$lib/utils/imageUtils.js';
 	
 	const subMenuTabs = [
 		{ id: 'crop', label: 'Crop' },
@@ -107,8 +107,7 @@
 		}
 		if ($cropState.currentImage) {
 			const finalImage = await getFinalImage();
-			const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-	downloadImage(finalImage, `picflam-crop-${timestamp}.png`);
+			downloadImage(finalImage, generateFilename());
 		}
 	}
 	

@@ -9,7 +9,7 @@
 	import Text2Controls from './Text2Controls.svelte';
 	import OverlayControls from './OverlayControls.svelte';
 	import { slideState, showTemplatePicker, activeDesignMenu, resetDesignState } from '$lib/stores/designStore.js';
-	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
+	import { copyImageToClipboard, downloadImage, generateFilename } from '$lib/utils/imageUtils.js';
 	import templatesData from '$lib/data/templates.json';
 	
 	let canvasEl;
@@ -305,8 +305,7 @@
 			if (mode === 'copy') {
 				await copyImageToClipboard(dataUrl);
 			} else {
-				const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-			downloadImage(dataUrl, `picflam-design-${timestamp}.png`);
+				downloadImage(dataUrl, generateFilename());
 			}
 		} catch (err) {
 			console.error('Failed to export canvas:', err);

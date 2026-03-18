@@ -2,7 +2,7 @@
 	import ActionBar from '$lib/components/ui/ActionBar.svelte';
 	import RecentImagesDrawer from '$lib/components/ai/RecentImagesDrawer.svelte';
 	import { imageGen, resetImageGen } from '$lib/stores/aiStore.js';
-	import { copyImageToClipboard, downloadImage } from '$lib/utils/imageUtils.js';
+	import { copyImageToClipboard, downloadImage, generateFilename } from '$lib/utils/imageUtils.js';
 	import { incrementGeneration, isLimitReached, addToRecentImages, getRecentImages, MONTHLY_LIMIT, getGenerationCount } from '$lib/utils/generationStorage.js';
 
 	let showRecentDrawer = false;
@@ -95,8 +95,7 @@
 
 	function handleExport() {
 		if ($imageGen.generatedImage) {
-			const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-			downloadImage($imageGen.generatedImage, `picflam-gen-${timestamp}.png`);
+			downloadImage($imageGen.generatedImage, generateFilename());
 		}
 	}
 

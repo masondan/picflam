@@ -9,7 +9,7 @@
 	import ImageGenControls from '$lib/components/ai/ImageGenControls.svelte';
 	import PexelsDrawer from '$lib/components/design/PexelsDrawer.svelte';
 	import { aiState, activeAiMenu, hasAiImage, imageGen, resetImageGen } from '$lib/stores/aiStore.js';
-	import { copyImageToClipboard, downloadImage, fileToDataUrl, resizeImage } from '$lib/utils/imageUtils.js';
+	import { copyImageToClipboard, downloadImage, fileToDataUrl, generateFilename, resizeImage } from '$lib/utils/imageUtils.js';
 
 	onMount(() => {
 		aiState.restoreFromStorage();
@@ -56,8 +56,7 @@
 	
 	function handleExport() {
 		if ($aiState.currentImage) {
-			const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-	downloadImage($aiState.currentImage, `picflam-ai-${timestamp}.png`);
+			downloadImage($aiState.currentImage, generateFilename());
 		}
 	}
 </script>

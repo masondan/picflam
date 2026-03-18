@@ -1,6 +1,6 @@
 <script>
 	import { getRecentImages, removeRecentImages } from '$lib/utils/generationStorage.js';
-	import { downloadImage } from '$lib/utils/imageUtils.js';
+	import { downloadImage, generateFilename } from '$lib/utils/imageUtils.js';
 
 	export let onClose = () => {};
 
@@ -26,8 +26,7 @@
 	function handleDownload() {
 		const selected = recentImages.filter(img => selectedIds.has(img.id));
 		selected.forEach((img, i) => {
-			const ts = new Date(img.timestamp).toISOString().slice(0, 19).replace(/:/g, '-');
-			downloadImage(img.imageUrl, `picflam-gen-${ts}.png`);
+			downloadImage(img.imageUrl, generateFilename());
 		});
 		exitSelection();
 	}
