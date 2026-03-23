@@ -57,7 +57,7 @@
 	}
 	
 	.header-logo {
-		height: 30px;
+		height: 26px;
 		width: auto;
 	}
 
@@ -73,33 +73,32 @@
 	}
 	
 	.nav-btn {
-		width: 40px;
-		height: 40px;
+		width: 36px;
+		height: 36px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		border-radius: var(--radius-full);
-		border: 1px solid #5422b0;
-		background: transparent;
-		transition: all var(--transition-fast);
+		border: none;
+		background-color: #f0f0f0;
+		transition: background-color var(--transition-fast);
 	}
 	
 	.nav-btn:hover:not(.active) {
-		background-color: var(--color-border-light);
+		background-color: #e4e4e4;
 	}
 	
 	.nav-btn.active {
 		background-color: #5422b0;
-		border-color: #5422b0;
 	}
 	
 	.nav-icon {
-		width: 24px;
-		height: 24px;
+		width: 22px;
+		height: 22px;
 	}
 	
 	.nav-btn:not(.active) .nav-icon {
-		filter: brightness(0) saturate(100%) invert(46%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
+		filter: brightness(0) saturate(100%) invert(25%) sepia(0%) saturate(0%) brightness(100%) contrast(90%);
 	}
 	
 	.nav-btn.active .nav-icon {
