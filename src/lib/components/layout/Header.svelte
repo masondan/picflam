@@ -7,11 +7,14 @@
 </script>
 
 <header class="header">
-	<img 
-		src="/logos/logo-picflam-logotype.png" 
-		alt="PicFlam" 
-		class="header-logo"
-	/>
+	<div class="header-left">
+		<flam-nav current="picflam"></flam-nav>
+		<img 
+			src="/logos/logo-picflam-logotype.png" 
+			alt="PicFlam" 
+			class="header-logo"
+		/>
+	</div>
 	
 	<nav class="header-nav">
 		<button
@@ -56,6 +59,12 @@
 	.header-logo {
 		height: 30px;
 		width: auto;
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 	}
 	
 	.header-nav {
