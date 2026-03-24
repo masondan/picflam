@@ -1806,7 +1806,7 @@ Test on:
 1. Merge `v2-sveltekit` → `main` in GitHub
 2. Cloudflare Pages sees new commit on main
 3. Triggers build: `npm run build`
-4. Output (`dist/`) deployed to picflam.com or current custom domain
+4. Output (`dist/`) deployed to picflam.flamtools.com or current custom domain
 5. Live immediately (no downtime)
 
 **Verify**:
@@ -1834,7 +1834,7 @@ Test on:
 | 4: AI Tab | 2-3 days | Enhance, upscale, bg removal | User tests AI features |
 | 5: Design Tab | 3-4 days | Canvas, text, quotes, overlay | User tests design workflow |
 | 6: Polish & Test | 1-2 days | Mobile, offline, perf, docs | User final approval |
-| 7: Deployment | 0.5 days | Live on picflam.com | Live verification |
+| 7: Deployment | 0.5 days | Live on picflam.flamtools.com | Live verification |
 | **Total** | **13-17 days** | **Production-ready v2** | |
 
 ---

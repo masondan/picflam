@@ -36,3 +36,17 @@
 - **DESIGN_SYSTEM.md**: Single source of truth for styling
 - **ANALYSIS.md**: Design system analysis from Flam apps
 - **tokens.css**: CSS custom properties
+
+## PWA & Manifest Configuration
+- **Location**: `static/manifest.json`, `src/app.html`
+- **Manifest requirements**:
+  - `"display": "standalone"` (removes browser chrome)
+  - `"scope": "/"` (proper PWA scope)
+  - `"theme_color"` & `"background_color"`: both `#5422b0`
+  - Icons: touch icon (192x192) + maskable icon (512x512) in `/logos/`
+- **Meta tags** (in `app.html`):
+  - `<meta name="theme-color" content="#5422b0" />`
+  - `<meta name="robots" content="noindex, nofollow" />` (training app—prevents indexing)
+  - OG tags use full URLs: `https://picflam.flamtools.com/...` (not `%sveltekit.assets%`)
+  - Canonical URL: `https://picflam.flamtools.com`
+- **Shared Navigation**: `static/flam-nav.js` Web Component (loaded in `app.html`)

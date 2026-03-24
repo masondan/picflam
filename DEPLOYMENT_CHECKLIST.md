@@ -55,6 +55,6 @@
 
 - **robots.txt with `Disallow: /`**: Prevents search engine crawling as requested
 - **OG image**: Using logotype (1642×413px) for social sharing; may want a square variant (1200×630px) for better platform support
-- **Canonical URL**: Set to `https://picflam.com` — update if domain differs
+- **Canonical URL**: Set to `https://picflam.flamtools.com` — update if domain differs
 - **No TypeScript errors**: Ready for production build
 
