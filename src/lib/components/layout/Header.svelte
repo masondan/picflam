@@ -52,7 +52,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 16px var(--space-6);
-		border-bottom: 1px solid #aaaaaa;
+		border-bottom: 1px solid #e0e0e0;
 		background-color: var(--color-surface);
 	}
 	
