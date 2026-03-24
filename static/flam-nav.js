@@ -31,30 +31,10 @@ class FlamNav extends HTMLElement {
 		this._open ? this.close() : this.open();
 	}
 
-	_getAppContainer() {
-		let el = this.closest('.app-container, .app, .page, .header, [class*="max-w"]');
-		if (!el) {
-			el = this.closest('[style*="max-width"]');
-		}
-		return el;
-	}
-
 	open() {
 		this._open = true;
 		const drawer = this.shadowRoot.querySelector('.drawer');
 		const overlay = this.shadowRoot.querySelector('.overlay');
-		const container = this._getAppContainer();
-
-		if (container) {
-			const rect = container.getBoundingClientRect();
-			drawer.style.left = rect.left + 'px';
-			drawer.style.top = rect.top + 'px';
-			drawer.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-			overlay.style.left = rect.left + 'px';
-			overlay.style.width = rect.width + 'px';
-			overlay.style.top = rect.top + 'px';
-			overlay.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-		}
 
 		drawer.classList.add('open');
 		overlay.classList.add('open');
@@ -67,16 +47,6 @@ class FlamNav extends HTMLElement {
 		const overlay = this.shadowRoot.querySelector('.overlay');
 		drawer.classList.remove('open');
 		overlay.classList.remove('open');
-		// Delay clearing inline styles until after fade transition completes
-		setTimeout(() => {
-			drawer.style.left = '';
-			drawer.style.top = '';
-			drawer.style.bottom = '';
-			overlay.style.left = '';
-			overlay.style.width = '';
-			overlay.style.top = '';
-			overlay.style.bottom = '';
-		}, 250);
 		document.removeEventListener('keydown', this._onKeyDown);
 	}
 
