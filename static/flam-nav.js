@@ -35,6 +35,12 @@ class FlamNav extends HTMLElement {
 		this._open = true;
 		const drawer = this.shadowRoot.querySelector('.drawer');
 		const overlay = this.shadowRoot.querySelector('.overlay');
+		const container = this.closest('.app, [class*="max-w"]') || document.documentElement;
+		const rect = container.getBoundingClientRect();
+
+		drawer.style.left = rect.left + 'px';
+		overlay.style.left = rect.left + 'px';
+		overlay.style.width = rect.width + 'px';
 
 		drawer.classList.add('open');
 		overlay.classList.add('open');
@@ -47,6 +53,11 @@ class FlamNav extends HTMLElement {
 		const overlay = this.shadowRoot.querySelector('.overlay');
 		drawer.classList.remove('open');
 		overlay.classList.remove('open');
+		setTimeout(() => {
+			drawer.style.left = '';
+			overlay.style.left = '';
+			overlay.style.width = '';
+		}, 250);
 		document.removeEventListener('keydown', this._onKeyDown);
 	}
 
