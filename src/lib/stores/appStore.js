@@ -6,16 +6,16 @@ import { writable } from 'svelte/store';
  * @type {import('svelte/store').Writable<'crop' | 'ai' | 'design'>}
  */
 function createActiveTabStore() {
-	// Get stored tab from localStorage, or default to 'crop'
-	const initialTab = typeof window !== 'undefined' 
-		? localStorage.getItem('activeTab') || 'crop'
-		: 'crop';
+	// Get stored tab from localStorage, or default to 'ai'
+	const initialTab = typeof window !== 'undefined'
+		? localStorage.getItem('activeTab') || 'ai'
+		: 'ai';
 	
 	const { subscribe, set, update } = writable(initialTab);
 	
 	return {
 		subscribe,
-		set: (value) => {
+		set: (value /** @type {'crop' | 'ai' | 'design'} */) => {
 			if (typeof window !== 'undefined') {
 				localStorage.setItem('activeTab', value);
 			}

@@ -19,20 +19,20 @@
 	<nav class="header-nav">
 		<button
 			class="nav-btn"
-			class:active={activeTab === 'crop'}
-			on:click={() => onTabChange('crop')}
-			aria-label="Crop tab"
-		>
-			<img src="/icons/icon-crop.svg" alt="" class="nav-icon" />
-		</button>
-		
-		<button
-			class="nav-btn"
 			class:active={activeTab === 'ai'}
 			on:click={() => onTabChange('ai')}
 			aria-label="AI tab"
 		>
 			<img src="/icons/icon-ai.svg" alt="" class="nav-icon" />
+		</button>
+		
+		<button
+			class="nav-btn"
+			class:active={activeTab === 'crop'}
+			on:click={() => onTabChange('crop')}
+			aria-label="Crop tab"
+		>
+			<img src="/icons/icon-crop.svg" alt="" class="nav-icon" />
 		</button>
 		
 		<button
