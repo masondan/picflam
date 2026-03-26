@@ -31,12 +31,12 @@
 		exitSelection();
 	}
 
-	function handleDownload() {
+	async function handleDownload() {
 		const selected = recentImages.filter(img => selectedIds.has(img.id));
-		selected.forEach((img, i) => {
-			downloadImage(img.imageUrl, generateFilename());
-		});
-		exitSelection();
+		for (const img of selected) {
+			await downloadImage(img.imageUrl, generateFilename());
+		}
+		setTimeout(() => exitSelection(), 500);
 	}
 
 	function handleDelete() {
