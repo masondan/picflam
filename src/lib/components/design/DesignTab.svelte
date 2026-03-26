@@ -958,6 +958,7 @@
 			tabs={subMenuTabs}
 			activeTab={$activeDesignMenu}
 			onTabChange={handleSubMenuChange}
+			variant="design"
 		/>
 		
 		<div class="controls-panel">
