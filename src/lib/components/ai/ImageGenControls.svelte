@@ -330,7 +330,7 @@
 		{#if showStylePanel}
 			<div class="style-panel">
 				<button class="style-arrow style-arrow-left" on:click={() => scrollStyles(-1)} aria-label="Scroll left">
-					<img src="/icons/icon-arrow-left-circle-fill.svg" alt="" />
+					<svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="var(--color-primary)"/><path d="M14 8l-4 4 4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
 				</button>
 				<div class="style-scroll" bind:this={styleScrollEl}>
 					{#each styleNames as name}
@@ -351,7 +351,7 @@
 					{/each}
 				</div>
 				<button class="style-arrow style-arrow-right" on:click={() => scrollStyles(1)} aria-label="Scroll right">
-					<img src="/icons/icon-arrow-right-circle-fill.svg" alt="" />
+					<svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="var(--color-primary)"/><path d="M10 8l4 4-4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
 				</button>
 			</div>
 		{/if}
@@ -761,17 +761,12 @@
 		cursor: pointer;
 		padding: 0;
 		line-height: 0;
-		opacity: 0.6;
+		opacity: 0.9;
 		transition: opacity var(--transition-fast);
 	}
 
 	.style-arrow:hover {
 		opacity: 1;
-	}
-
-	.style-arrow img {
-		width: 28px;
-		height: 28px;
 	}
 
 	.style-arrow-left {
