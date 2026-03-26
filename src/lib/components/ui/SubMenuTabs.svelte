@@ -19,30 +19,32 @@
 <style>
 	.sub-menu-tabs {
 		display: flex;
-		gap: var(--space-3);
+		gap: var(--space-2);
 		padding: var(--space-2) 0 var(--space-3) 0;
 	}
 	
 	.sub-menu-tab {
-		padding: 0;
+		flex: 1;
+		padding: var(--space-2) var(--space-3);
 		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-regular);
-		color: var(--color-text-muted);
-		background: none;
-		border: none;
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-primary);
+		background: var(--color-surface);
+		border: 1px solid var(--color-primary);
+		border-radius: var(--radius-md);
 		cursor: pointer;
 		transition: all var(--transition-fast);
-		text-align: left;
+		text-align: center;
 	}
 	
 	@media (hover: hover) {
 		.sub-menu-tab:hover:not(.active) {
-			color: var(--color-primary);
+			background: var(--color-primary-light, rgba(84, 34, 176, 0.08));
 		}
 	}
 	
 	.sub-menu-tab.active {
-		color: var(--color-primary);
-		font-weight: var(--font-weight-bold);
+		background: var(--color-primary);
+		color: var(--color-text-inverse);
 	}
 </style>
