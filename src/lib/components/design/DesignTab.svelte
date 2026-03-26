@@ -36,8 +36,14 @@
 	let isText1PreviewActive = false;
 	let isText2PreviewActive = false;
 	let isOverlayPreviewActive = false;
+	let showSaveTemplate = localStorage.getItem('picflam_admin') === 'true';
 	
 	onMount(() => {
+		window.picflamAdmin = (enable = true) => {
+			localStorage.setItem('picflam_admin', enable ? 'true' : 'false');
+			showSaveTemplate = enable;
+			return enable ? 'Admin mode ON' : 'Admin mode OFF';
+		};
 		if (canvasEl) {
 			resizeObserver = new ResizeObserver(([entry]) => {
 				const { width, height } = entry.contentRect;
@@ -1019,7 +1025,7 @@
 			{/if}
 		</div>
 
-		{#if import.meta.env.DEV}
+		{#if showSaveTemplate}
 			<div class="admin-footer">
 				<button class="save-template-btn" on:click={handleSaveTemplate}>
 					💾 Save as Template
