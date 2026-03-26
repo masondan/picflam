@@ -4,9 +4,10 @@
 	export let onChange = (val) => {};
 	export let showLabels = true;
 	export let centered = false;
+	export let compact = false;
 </script>
 
-<div class="toggle-group" class:centered>
+<div class="toggle-group" class:centered class:compact>
 	{#each options as option}
 		<div class="toggle-item" class:active={value === option.id}>
 			<button 
@@ -85,5 +86,15 @@
 	
 	.toggle-item.active .toggle-label {
 		color: #555555;
+	}
+
+	.toggle-group.compact .toggle-btn {
+		width: 38px;
+		height: 38px;
+	}
+
+	.toggle-group.compact .toggle-icon {
+		width: 22px;
+		height: 22px;
 	}
 </style>

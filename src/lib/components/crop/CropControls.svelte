@@ -16,13 +16,14 @@
 	export let onRotate = () => {};
 	export let onScaleChange = (scale) => {};
 	export let onApply = () => {};
+	export let onCancel = () => {};
 	export let disabled = false;
 
 	const ratioOptions = [
 		{ id: '9:16', label: '9:16', icon: 'icon-vertical' },
 		{ id: '1:1', label: '1:1', icon: 'icon-square' },
 		{ id: '16:9', label: '16:9', icon: 'icon-horizontal' },
-		{ id: 'custom', label: 'Custom', icon: 'icon-custom' }
+		{ id: 'custom', label: 'Free', icon: 'icon-custom' }
 	];
 
 	function handleWidthChange(val) {
@@ -37,13 +38,21 @@
 </script>
 
 <div class="crop-controls" class:disabled>
-	<ToggleButtonGroup 
-		options={ratioOptions} 
-		value={aspectRatio} 
-		onChange={disabled ? () => {} : onRatioChange}
-		showLabels={true}
-		centered={true}
-	/>
+	<div class="ratio-row">
+		<ToggleButtonGroup 
+			options={ratioOptions} 
+			value={aspectRatio} 
+			onChange={disabled ? () => {} : onRatioChange}
+			showLabels={true}
+			compact={true}
+		/>
+		{#if cropPending}
+			<div class="crop-actions">
+				<button class="crop-apply-btn" on:click={onApply}>Apply</button>
+				<button class="crop-cancel-btn" on:click={onCancel}>Cancel</button>
+			</div>
+		{/if}
+	</div>
 
 	<div class="dimensions-row">
 		<div class="dimension-input">
@@ -118,7 +127,55 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);
-		margin-top: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	.ratio-row {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+	}
+
+	.crop-actions {
+		display: flex;
+		gap: var(--space-2);
+		align-items: flex-start;
+	}
+
+	.crop-apply-btn {
+		height: 38px;
+		padding: 0 var(--space-3);
+		background-color: var(--color-primary);
+		border: 1px solid var(--color-primary);
+		border-radius: var(--radius-md);
+		color: white;
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+		white-space: nowrap;
+	}
+
+	.crop-apply-btn:hover {
+		opacity: 0.9;
+	}
+
+	.crop-cancel-btn {
+		height: 38px;
+		padding: 0 var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid #555555;
+		border-radius: var(--radius-md);
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+		white-space: nowrap;
+	}
+
+	.crop-cancel-btn:hover {
+		background-color: var(--color-border-light);
 	}
 
 	.dimensions-row {

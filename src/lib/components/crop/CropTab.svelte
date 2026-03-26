@@ -635,10 +635,8 @@
 	<ActionBar 
 		canUndo={$hasImage && $undoState.canUndo}
 		canRedo={$hasImage && $undoState.canRedo}
-		cropPending={$cropState.cropPending}
 		onUndo={handleUndo}
 		onRedo={handleRedo}
-		onApply={handleApplyCrop}
 		onStartAgain={handleStartAgain}
 		onCopy={handleCopy}
 		onExport={handleExport}
@@ -675,11 +673,6 @@
 			on:blurPaint={handleBlurPaint}
 		/>
 		
-		{#if $cropState.cropPending}
-			<div class="cancel-wrapper">
-				<button class="cancel-btn" on:click={handleCancelCrop}>Cancel</button>
-			</div>
-		{/if}
 	{/if}
 
 	{#if $activeSubMenu === 'crop'}
@@ -698,6 +691,7 @@
 			onRotate={handleRotate}
 			onScaleChange={handleScaleChange}
 			onApply={handleApplyCrop}
+			onCancel={handleCancelCrop}
 		/>
 	{:else if $activeSubMenu === 'edit'}
 		<div class="controls-panel">
@@ -863,27 +857,6 @@
 		mask-position: center;
 	}
 	
-	.cancel-wrapper {
-		display: flex;
-		justify-content: flex-end;
-		padding-right: var(--space-2);
-	}
-	
-	.cancel-btn {
-		background: none;
-		border: none;
-		padding: var(--space-1) 0;
-		padding-right: var(--space-2);
-		color: var(--color-text-secondary);
-		font-size: var(--font-size-base);
-		font-weight: var(--font-weight-medium);
-		cursor: pointer;
-		transition: color var(--transition-fast);
-	}
-	
-	.cancel-btn:hover {
-		color: var(--color-primary);
-	}
 	
 	:global(.crop-canvas) {
 		margin-top: 0;
