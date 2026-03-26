@@ -13,18 +13,25 @@
 	let error = null;
 	let nextPageUrl = null;
 	let searchInputEl;
+	let currentPage = 1;
+	let currentSearchTerm = '';
 	const defaultSearchTerm = 'Wallpaper';
+	const PER_PAGE = 15;
+
+	function buildUrl(searchTerm, page) {
+		return searchTerm
+			? `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchTerm)}&per_page=${PER_PAGE}&page=${page}`
+			: `https://api.pexels.com/v1/curated?per_page=${PER_PAGE}&page=${page}`;
+	}
 
 	async function fetchImages(query) {
 		loading = true;
 		error = null;
-		const searchTerm = query || defaultSearchTerm;
-		const baseUrl = searchTerm
-			? `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchTerm)}&per_page=15`
-			: 'https://api.pexels.com/v1/curated?per_page=15';
+		currentSearchTerm = query || defaultSearchTerm;
+		currentPage = 1;
 
 		try {
-			const response = await fetch(baseUrl, {
+			const response = await fetch(buildUrl(currentSearchTerm, currentPage), {
 				headers: {
 					Authorization: PEXELS_API_KEY,
 					Accept: 'application/json'
@@ -53,25 +60,21 @@
 		if (!nextPageUrl) return;
 		isLoadingMore = true;
 		error = null;
+		currentPage += 1;
 
 		try {
-			console.log('Loading more from:', nextPageUrl);
-			const response = await fetch(nextPageUrl, {
+			const response = await fetch(buildUrl(currentSearchTerm, currentPage), {
 				headers: {
 					Authorization: PEXELS_API_KEY,
 					Accept: 'application/json'
 				}
 			});
 
-			console.log('Load more response status:', response.status);
 			if (!response.ok) {
-				const errorText = await response.text();
-				console.error('Load more error response:', errorText);
 				throw new Error(`Failed to fetch next page from Pexels: ${response.status}`);
 			}
 
 			const data = await response.json();
-			console.log('Load more success! Received', data.photos?.length || 0, 'additional photos');
 			results = [...results, ...(data.photos || [])];
 			nextPageUrl = data.next_page || null;
 		} catch (err) {

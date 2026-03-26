@@ -21,8 +21,21 @@
   - `/src/lib/styles/` - CSS (tokens.css, global.css)
   - `/src/routes/` - SvelteKit routes (+page.svelte, +layout.svelte)
   - `/static/` - Static assets (icons, logos, manifest)
+  - `/src/lib/utils/stylePrompts.json` - AI style definitions (name, prompt suffix, negative prompt)
+  - `/src/lib/utils/generationStorage.js` - Generation count tracking (50/month localStorage limit)
+  - `/functions/api/` - Cloudflare Worker API functions
 - **State**: Svelte stores for shared state
 - **Design System**: See DESIGN_SYSTEM.md for all tokens and specs
+
+## AI Image Generation
+- **API**: Runware API (`https://api.runware.ai/v1`) via Cloudflare Workers (`functions/api/generate.js`)
+- **Standard generation**: `taskType: 'imageInference'` with Flux Klein 9B (fast) or Flux.2 Dev (better)
+- **Reference image generation**: Uses `model: 'runware:400@1'` (Flux.2 Dev) with `inputs: { referenceImages: [url] }` — preserves identity from uploaded photo
+  - Requires `CFGScale: 3.5`, `scheduler: 'FlowMatchEulerDiscreteScheduler'`, `acceleration: 'high'`
+  - Reference image must be uploaded first via `taskType: 'imageUpload'` to get a Runware URL
+  - Do NOT use PhotoMaker, ACE++, or PuLID — they don't preserve identity reliably
+- **Styles**: Defined in `stylePrompts.json` — each style appends to the user's prompt and adds negative prompts
+- **Limit**: 50 generations/month per user (localStorage-based, reset via `localStorage.setItem('picflam_gen_count', '0')`)
 
 ## Code Style
 - **Language**: JavaScript (ES modules), Svelte components
