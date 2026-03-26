@@ -31,30 +31,16 @@ class FlamNav extends HTMLElement {
 		this._open ? this.close() : this.open();
 	}
 
-	_getAppContainer() {
-		let el = this.closest('.app-container, .app, .page, [class*="max-w"]');
-		if (!el) {
-			el = this.closest('[style*="max-width"]');
-		}
-		return el;
-	}
-
 	open() {
 		this._open = true;
 		const drawer = this.shadowRoot.querySelector('.drawer');
 		const overlay = this.shadowRoot.querySelector('.overlay');
-		const container = this._getAppContainer();
+		const container = this.closest('.app, [class*="max-w"]') || document.documentElement;
+		const rect = container.getBoundingClientRect();
 
-		if (container) {
-			const rect = container.getBoundingClientRect();
-			drawer.style.left = rect.left + 'px';
-			drawer.style.top = rect.top + 'px';
-			drawer.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-			overlay.style.left = rect.left + 'px';
-			overlay.style.width = rect.width + 'px';
-			overlay.style.top = rect.top + 'px';
-			overlay.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-		}
+		drawer.style.left = rect.left + 'px';
+		overlay.style.left = rect.left + 'px';
+		overlay.style.width = rect.width + 'px';
 
 		drawer.classList.add('open');
 		overlay.classList.add('open');
@@ -67,6 +53,11 @@ class FlamNav extends HTMLElement {
 		const overlay = this.shadowRoot.querySelector('.overlay');
 		drawer.classList.remove('open');
 		overlay.classList.remove('open');
+		setTimeout(() => {
+			drawer.style.left = '';
+			overlay.style.left = '';
+			overlay.style.width = '';
+		}, 250);
 		document.removeEventListener('keydown', this._onKeyDown);
 	}
 
@@ -85,6 +76,12 @@ class FlamNav extends HTMLElement {
 
 		this.shadowRoot.innerHTML = `
 			<style>
+				@font-face {
+					font-family: 'Saira';
+					src: url('/fonts/saira.ttf') format('truetype');
+					font-weight: normal;
+				}
+
 				:host {
 					display: flex;
 					align-items: center;
@@ -103,7 +100,7 @@ class FlamNav extends HTMLElement {
 				}
 
 				.menu-btn:hover {
-					color: #5422b0;
+					color: var(--flam-nav-hover, #5422b0);
 				}
 
 				.menu-btn svg {
@@ -134,15 +131,17 @@ class FlamNav extends HTMLElement {
 					width: 180px;
 					background: #fff;
 					z-index: 9999;
-					transform: translateX(-100%);
-					transition: transform 250ms ease;
+					opacity: 0;
+					visibility: hidden;
+					transition: opacity 250ms ease, visibility 250ms ease;
 					display: flex;
 					flex-direction: column;
 					box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
 				}
 
 				.drawer.open {
-					transform: translateX(0);
+					opacity: 1;
+					visibility: visible;
 				}
 
 				.drawer-header {
@@ -156,9 +155,9 @@ class FlamNav extends HTMLElement {
 					gap: 8px;
 					text-decoration: none;
 					color: #5422b0;
-					font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+					font-family: 'Saira', -apple-system, BlinkMacSystemFont, sans-serif;
 					font-size: 15px;
-					font-weight: 600;
+					font-weight: 750;
 				}
 
 				.drawer-header img {
@@ -178,9 +177,9 @@ class FlamNav extends HTMLElement {
 					display: block;
 					padding: 10px 16px;
 					text-decoration: none;
-					font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+					font-family: 'Saira', -apple-system, BlinkMacSystemFont, sans-serif;
 					font-size: 15px;
-					font-weight: 450;
+					font-weight: 550;
 					color: #333;
 					transition: background-color 150ms ease;
 				}
@@ -191,12 +190,12 @@ class FlamNav extends HTMLElement {
 
 				.drawer-list li a.current {
 					color: #5422b0;
-					font-weight: 600;
+					font-weight: 750;
 					background-color: #f0e6f7;
 				}
 
 				.drawer-list li a.training {
-					color: #999;
+					color: #777;
 				}
 
 				.drawer-list li a.training.current {

@@ -8,6 +8,9 @@ const MODEL_NAMES = {
 	better: 'Flux.2 Dev'
 };
 
+const REFERENCE_MODEL = 'runware:400@1';
+const REFERENCE_MODEL_NAME = 'Flux.2 Dev (Reference)';
+
 const DIMENSIONS = {
 	'1:1': { width: 1024, height: 1024 },
 	'16:9': { width: 1344, height: 768 },
@@ -28,24 +31,41 @@ export async function onRequestPost(context) {
 	}
 
 	try {
-		const { prompt, quality, aspectRatio } = await context.request.json();
+		const { prompt, quality, aspectRatio, referenceImage } = await context.request.json();
 
-		if (!prompt || prompt.length < 10 || prompt.length > 2000) {
-			return Response.json({ error: 'general', message: 'Prompt must be 10-2000 characters' }, { status: 400 });
+		if (!prompt || prompt.length < 10 || prompt.length > 3000) {
+			return Response.json({ error: 'general', message: 'Prompt must be 10-3000 characters' }, { status: 400 });
 		}
 
-		const model = MODELS[quality] || MODELS.fast;
-		const modelName = MODEL_NAMES[quality] || MODEL_NAMES.fast;
 		const dims = DIMENSIONS[aspectRatio] || DIMENSIONS['1:1'];
 		const taskUUID = crypto.randomUUID();
 
-		const response = await fetch('https://api.runware.ai/v1', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${apiKey}`
-			},
-			body: JSON.stringify([{
+		let taskPayload;
+		let modelName;
+
+		if (referenceImage) {
+			taskPayload = {
+				taskType: 'imageInference',
+				taskUUID,
+				model: REFERENCE_MODEL,
+				positivePrompt: prompt,
+				width: dims.width,
+				height: dims.height,
+				numberResults: 1,
+				outputFormat: 'PNG',
+				CFGScale: 3.5,
+				scheduler: 'FlowMatchEulerDiscreteScheduler',
+				includeCost: true,
+				deliveryMethod: 'async',
+				inputs: {
+					referenceImages: [referenceImage]
+				},
+				acceleration: 'high'
+			};
+			modelName = REFERENCE_MODEL_NAME;
+		} else {
+			const model = MODELS[quality] || MODELS.fast;
+			taskPayload = {
 				taskType: 'imageInference',
 				taskUUID,
 				positivePrompt: prompt,
@@ -56,7 +76,17 @@ export async function onRequestPost(context) {
 				outputFormat: 'PNG',
 				includeCost: true,
 				deliveryMethod: 'async'
-			}])
+			};
+			modelName = MODEL_NAMES[quality] || MODEL_NAMES.fast;
+		}
+
+		const response = await fetch('https://api.runware.ai/v1', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${apiKey}`
+			},
+			body: JSON.stringify([taskPayload])
 		});
 
 		if (response.status === 429) {

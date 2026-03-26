@@ -8,6 +8,7 @@
 	import RemoveBackgroundControls from '$lib/components/ai/RemoveBackgroundControls.svelte';
 	import ImageGenControls from '$lib/components/ai/ImageGenControls.svelte';
 	import PexelsDrawer from '$lib/components/design/PexelsDrawer.svelte';
+	import RecentImagesDrawer from '$lib/components/ai/RecentImagesDrawer.svelte';
 	import { aiState, activeAiMenu, hasAiImage, imageGen, resetImageGen } from '$lib/stores/aiStore.js';
 	import { copyImageToClipboard, downloadImage, fileToDataUrl, generateFilename, resizeImage } from '$lib/utils/imageUtils.js';
 
@@ -17,6 +18,7 @@
 
 	let comparisonPosition = 50;
 	let showPexelsDrawer = false;
+	let showRecentDrawer = false;
 	
 	function handleComparisonChange(newPosition) {
 		comparisonPosition = newPosition;
@@ -24,9 +26,9 @@
 	}
 	
 	const subMenuTabs = [
-		{ id: 'background', label: 'BG remove' },
-		{ id: 'upscale', label: 'Upscale' },
-		{ id: 'imageGen', label: 'Image gen' }
+		{ id: 'background', label: 'Background' },
+		{ id: 'imageGen', label: 'Image gen' },
+		{ id: 'upscale', label: 'Upscale' }
 	];
 	
 	function handleImageImport(dataUrl) {
@@ -76,7 +78,7 @@
 	/>
 
 	{#if $activeAiMenu === 'imageGen'}
-		<ImageGenControls />
+		<ImageGenControls onArchiveOpen={() => showRecentDrawer = true} />
 	{:else if !$hasAiImage}
 		<AIWelcome 
 			onImageImport={handleImageImport}
@@ -84,10 +86,9 @@
 		/>
 	{:else}
 		<ActionBar 
-			canUndo={false}
-			canRedo={false}
-			onUndo={() => {}}
-			onRedo={() => {}}
+			showUndoRedo={false}
+			showArchive={true}
+			onArchive={() => showRecentDrawer = true}
 			onStartAgain={() => aiState.reset()}
 			onCopy={handleCopy}
 			onExport={handleExport}
@@ -115,6 +116,10 @@
 		{:else if $activeAiMenu === 'background'}
 			<RemoveBackgroundControls />
 		{/if}
+	{/if}
+
+	{#if showRecentDrawer}
+		<RecentImagesDrawer onClose={() => showRecentDrawer = false} />
 	{/if}
 </div>
 

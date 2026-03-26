@@ -45,9 +45,25 @@ export function getRecentImages() {
 	}
 }
 
-export function addToRecentImages(entry) {
+/**
+ * Add image to recent with source metadata
+ * @param {Object} entry - Image entry
+ * @param {string} entry.imageUrl - Image URL
+ * @param {string} entry.prompt - Generation prompt
+ * @param {string} entry.model - Model used
+ * @param {string} entry.id - Unique ID
+ * @param {'ai' | 'crop' | 'design'} source - Source of the image
+ * @param {Object} sourceData - Source-specific metadata (prompt, style, etc.)
+ */
+export function addToRecentImages(entry, source = 'ai', sourceData = {}) {
 	const recent = getRecentImages();
-	recent.unshift(entry);
+	const enrichedEntry = {
+		...entry,
+		source,
+		sourceData,
+		timestamp: Date.now()
+	};
+	recent.unshift(enrichedEntry);
 	if (recent.length > MAX_RECENT) recent.pop();
 	localStorage.setItem(STORAGE_KEY_RECENT, JSON.stringify(recent));
 	return recent;

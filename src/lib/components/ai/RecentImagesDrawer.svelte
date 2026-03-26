@@ -1,6 +1,6 @@
 <script>
 	import { getRecentImages, removeRecentImages } from '$lib/utils/generationStorage.js';
-	import { downloadImage, generateFilename } from '$lib/utils/imageUtils.js';
+	import { copyImageToClipboard, downloadImage, generateFilename } from '$lib/utils/imageUtils.js';
 
 	export let onClose = () => {};
 
@@ -21,6 +21,14 @@
 			selectedIds.add(id);
 			selectedIds = selectedIds;
 		}
+	}
+
+	async function handleCopyImage() {
+		const selected = recentImages.filter(img => selectedIds.has(img.id));
+		if (selected.length > 0) {
+			await copyImageToClipboard(selected[0].imageUrl);
+		}
+		exitSelection();
 	}
 
 	function handleDownload() {
@@ -45,6 +53,22 @@
 	function handleCopyPrompt(prompt) {
 		navigator.clipboard.writeText(prompt);
 	}
+
+	/**
+	 * Get display label for image source
+	 * @param {'ai' | 'crop' | 'design'} source
+	 * @returns {string}
+	 */
+	function getSourceLabel(source) {
+		const labels = {
+			ai: 'Generated',
+			background: 'BG removed',
+			upscale: 'Upscaled',
+			crop: 'Cropped',
+			design: 'Designed'
+		};
+		return labels[source] || 'Archived';
+	}
 </script>
 
 <div class="drawer-overlay" on:click={onClose} role="presentation">
@@ -56,6 +80,9 @@
 			<span class="drawer-title">Recent images</span>
 			<div class="header-actions">
 				{#if selectionMode}
+					<button class="header-action-btn" on:click={handleCopyImage} aria-label="Copy to clipboard">
+						<img src="/icons/icon-copy.svg" alt="" class="header-icon" />
+					</button>
 					<button class="header-action-btn" on:click={handleDownload} aria-label="Download selected">
 						<img src="/icons/icon-export.svg" alt="" class="header-icon" />
 					</button>
@@ -196,7 +223,7 @@
 	.header-actions {
 		display: flex;
 		gap: var(--space-2);
-		min-width: 72px;
+		min-width: 108px;
 		justify-content: flex-end;
 	}
 

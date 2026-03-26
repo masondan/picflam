@@ -96,6 +96,7 @@ const initialImageGen = {
 	prompt: '',
 	quality: 'fast',
 	aspectRatio: '1:1',
+	referenceImage: null,
 	generatedImage: null,
 	loading: false,
 	error: null,
@@ -108,6 +109,7 @@ export function resetImageGen() {
 	imageGen.update(state => ({
 		...state,
 		prompt: '',
+		referenceImage: null,
 		generatedImage: null,
 		error: null,
 		loading: false

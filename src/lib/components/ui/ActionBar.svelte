@@ -2,17 +2,29 @@
 	export let canUndo = false;
 	export let canRedo = false;
 	export let showUndoRedo = true;
+	export let showArchive = false;
 	export let cropPending = false;
 	export let onUndo = () => {};
 	export let onRedo = () => {};
 	export let onApply = () => {};
+	export let onArchive = () => {};
 	export let onStartAgain = () => {};
 	export let onCopy = () => {};
 	export let onExport = () => {};
 </script>
 
 <div class="action-bar">
-	{#if showUndoRedo}
+	{#if showArchive}
+	<div class="action-group">
+		<button 
+			class="action-btn"
+			on:click={onArchive}
+			aria-label="Archive"
+		>
+			<img src="/icons/icon-archive.svg" alt="" class="action-icon" />
+		</button>
+	</div>
+	{:else if showUndoRedo}
 	<div class="action-group">
 		<button 
 			class="action-btn" 

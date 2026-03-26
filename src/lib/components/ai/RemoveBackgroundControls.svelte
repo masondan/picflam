@@ -1,6 +1,7 @@
 <script>
 	import { aiState } from '$lib/stores/aiStore.js';
 	import { removeBackground } from '$lib/utils/aiUtils.js';
+	import { addToRecentImages } from '$lib/utils/generationStorage.js';
 	import EraseRestoreDrawer from '$lib/components/ai/EraseRestoreDrawer.svelte';
 	
 	let isProcessing = false;
@@ -24,6 +25,15 @@
 			});
 			
 			aiState.finishProcessing(resultDataUrl);
+
+			addToRecentImages(
+				{
+					id: crypto.randomUUID(),
+					imageUrl: resultDataUrl
+				},
+				'background',
+				{ timestamp: Date.now() }
+			);
 		} catch (err) {
 			error = err.message || 'Background removal failed';
 			aiState.cancelProcessing();

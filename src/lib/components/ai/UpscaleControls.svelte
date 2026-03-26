@@ -1,6 +1,7 @@
 <script>
 	import { aiState } from '$lib/stores/aiStore.js';
 	import { upscaleImageCloud } from '$lib/utils/aiUtils.js';
+	import { addToRecentImages } from '$lib/utils/generationStorage.js';
 	import { loadImage } from '$lib/utils/imageUtils.js';
 	
 	const scaleFactor = 4;
@@ -40,6 +41,15 @@
 			);
 			
 			aiState.finishProcessing(resultDataUrl);
+
+			addToRecentImages(
+				{
+					id: crypto.randomUUID(),
+					imageUrl: resultDataUrl
+				},
+				'upscale',
+				{ scaleFactor, timestamp: Date.now() }
+			);
 		} catch (err) {
 			error = err.message || 'Upscaling failed';
 			aiState.cancelProcessing();
