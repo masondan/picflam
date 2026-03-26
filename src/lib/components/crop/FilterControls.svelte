@@ -9,11 +9,12 @@
 	export let onFilterChange = (filterId) => {};
 	export let onStrengthChange = (value) => {};
 	export let onReset = () => {};
+	export let disabled = false;
 
 	$: isNormal = activeFilter === 'normal';
 </script>
 
-<div class="filter-controls">
+<div class="filter-controls" class:disabled>
 	<FilterGrid 
 		filters={FILTER_DEFINITIONS}
 		value={activeFilter}
@@ -105,5 +106,10 @@
 	.reset-icon {
 		width: 20px;
 		height: 20px;
+	}
+
+	.filter-controls.disabled {
+		opacity: 0.4;
+		pointer-events: none;
 	}
 </style>

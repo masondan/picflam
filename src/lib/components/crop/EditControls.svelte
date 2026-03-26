@@ -26,6 +26,7 @@
 	export let onBlurToggle = (enabled) => {};
 	export let onBrushPreviewChange = (visible) => {};
 	export let onEditEnd = () => {};
+	export let disabled = false;
 
 	let activeEnhancement = 'brightness';
 	let blurExpanded = blurEnabled;
@@ -135,7 +136,7 @@
 	}
 </script>
 
-<div class="edit-controls">
+<div class="edit-controls" class:disabled>
 	<div class="enhancement-row">
 		{#each enhancements as item}
 			<button 
@@ -510,4 +511,9 @@
                 height: 22px;
                 filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
         }
+
+	.edit-controls.disabled {
+		opacity: 0.4;
+		pointer-events: none;
+	}
 </style>

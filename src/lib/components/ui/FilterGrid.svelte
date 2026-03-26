@@ -77,22 +77,28 @@
 				title={filter.label}
 			>
 				<div class="filter-preview">
-					<img 
-						src={imageUrl}
-						alt={filter.label}
-						class="preview-image"
-						style="filter: {filter.css || 'none'};"
-						loading="lazy"
-					/>
-					{#if filter.overlay}
-						<div
-							class="filter-overlay"
-							style="
-								background-color: {filter.overlay};
-								opacity: {filter.opacity};
-								mix-blend-mode: {filter.blendMode || 'multiply'};
-							"
-						></div>
+					{#if imageUrl}
+						<img 
+							src={imageUrl}
+							alt={filter.label}
+							class="preview-image"
+							style="filter: {filter.css || 'none'};"
+							loading="lazy"
+						/>
+						{#if filter.overlay}
+							<div
+								class="filter-overlay"
+								style="
+									background-color: {filter.overlay};
+									opacity: {filter.opacity};
+									mix-blend-mode: {filter.blendMode || 'multiply'};
+								"
+							></div>
+						{/if}
+					{:else}
+						<div class="preview-placeholder">
+							<span class="preview-placeholder-icon"></span>
+						</div>
 					{/if}
 				</div>
 				<span class="filter-label">{filter.label}</span>
@@ -185,6 +191,31 @@
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
+	}
+
+	.preview-placeholder {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: radial-gradient(circle at center, #f5f0fa, #efefef);
+	}
+
+	.preview-placeholder-icon {
+		width: 24px;
+		height: 24px;
+		opacity: 0.15;
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: url(/icons/icon-crop.svg);
+		mask-image: url(/icons/icon-crop.svg);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 
 	.filter-button.active .filter-preview {

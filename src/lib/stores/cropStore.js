@@ -132,13 +132,12 @@ const initialCropState = {
 
 export const cropState = createHistoryStore(initialCropState);
 
-export const activeSubMenu = writable('none');
+export const activeSubMenu = writable('crop');
 
 export const hasImage = derived(cropState, $state => $state.currentImage !== null);
 
 export function resetCropState() {
 	cropState.reset();
-	activeSubMenu.set('none');
 }
 
 export function updateCropBox(updates) {

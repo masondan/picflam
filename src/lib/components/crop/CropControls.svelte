@@ -16,6 +16,7 @@
 	export let onRotate = () => {};
 	export let onScaleChange = (scale) => {};
 	export let onApply = () => {};
+	export let disabled = false;
 
 	const ratioOptions = [
 		{ id: '9:16', label: '9:16', icon: 'icon-vertical' },
@@ -35,11 +36,11 @@
 	}
 </script>
 
-<div class="crop-controls">
+<div class="crop-controls" class:disabled>
 	<ToggleButtonGroup 
 		options={ratioOptions} 
 		value={aspectRatio} 
-		onChange={onRatioChange}
+		onChange={disabled ? () => {} : onRatioChange}
 		showLabels={true}
 		centered={true}
 	/>
@@ -50,13 +51,14 @@
 				label="Width"
 				type="number"
 				value={cropWidth.toString()}
-				onChange={handleWidthChange}
+				onChange={disabled ? () => {} : handleWidthChange}
 			/>
 		</div>
 
 		<button 
 			class="icon-btn"
 			on:click={onLockToggle}
+			{disabled}
 			aria-label={ratioLocked ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
 		>
 			<img 
@@ -71,13 +73,14 @@
 				label="Height"
 				type="number"
 				value={cropHeight.toString()}
-				onChange={handleHeightChange}
+				onChange={disabled ? () => {} : handleHeightChange}
 			/>
 		</div>
 
 		<button 
 			class="icon-btn"
 			on:click={onFlip}
+			{disabled}
 			aria-label="Flip horizontal"
 		>
 			<img src="/icons/icon-flip-horizontal.svg" alt="" class="icon-btn-img" />
@@ -86,6 +89,7 @@
 		<button 
 			class="icon-btn"
 			on:click={onRotate}
+			{disabled}
 			aria-label="Rotate"
 		>
 			<img src="/icons/icon-rotate.svg" alt="" class="icon-btn-img" />
@@ -100,10 +104,10 @@
 				max={200}
 				value={scale}
 				step={1}
-				onChange={onScaleChange}
+				onChange={disabled ? () => {} : onScaleChange}
 			/>
 		</div>
-		<button class="reset-btn" on:click={() => onScaleChange(100)} aria-label="Reset scale to 100%">
+		<button class="reset-btn" on:click={() => onScaleChange(100)} {disabled} aria-label="Reset scale to 100%">
 			<img src="/icons/icon-reset.svg" alt="" class="reset-icon" />
 		</button>
 	</div>
@@ -195,4 +199,8 @@
 		filter: brightness(0) saturate(100%) invert(33%) sepia(0%) saturate(0%) brightness(102%) contrast(88%);
 	}
 
+	.crop-controls.disabled {
+		opacity: 0.4;
+		pointer-events: none;
+	}
 </style>

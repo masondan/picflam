@@ -4,7 +4,6 @@
 	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
 	import AlertModal from '$lib/components/ui/AlertModal.svelte';
 	import PexelsDrawer from '$lib/components/design/PexelsDrawer.svelte';
-	import CropWelcome from './CropWelcome.svelte';
 	import CropCanvas from './CropCanvas.svelte';
 	import CropControls from './CropControls.svelte';
 	import EditControls from './EditControls.svelte';
@@ -12,7 +11,7 @@
 	import { cropState, activeSubMenu, hasImage, resetCropState, FILTER_DEFINITIONS } from '$lib/stores/cropStore.js';
 	
 	const undoState = cropState.undoState;
-	import { copyImageToClipboard, downloadImage, generateFilename, getImageDimensions, applyCrop, flipImage, rotateImage, renderFinalImage } from '$lib/utils/imageUtils.js';
+	import { copyImageToClipboard, downloadImage, generateFilename, getImageDimensions, applyCrop, flipImage, rotateImage, renderFinalImage, pasteImageFromClipboard, fileToDataUrl, resizeImage } from '$lib/utils/imageUtils.js';
 	
 	const subMenuTabs = [
 		{ id: 'crop', label: 'Crop' },
@@ -24,6 +23,48 @@
 	let pendingAction = null;
 	let modalAction = null;
 	let showPexelsDrawer = false;
+	let fileInput;
+	let isDragging = false;
+	
+	async function handleFile(file) {
+		if (!file || !file.type.startsWith('image/')) return;
+		const dataUrl = await fileToDataUrl(file);
+		const resized = await resizeImage(dataUrl, 2048);
+		handleImageImport(resized);
+	}
+	
+	function handleFileSelect(e) {
+		const file = e.target.files?.[0];
+		if (file) handleFile(file);
+	}
+	
+	function handleDrop(e) {
+		e.preventDefault();
+		isDragging = false;
+		const file = e.dataTransfer?.files?.[0];
+		if (file) handleFile(file);
+	}
+	
+	function handleDragOver(e) {
+		e.preventDefault();
+		isDragging = true;
+	}
+	
+	function handleDragLeave() {
+		isDragging = false;
+	}
+	
+	async function handlePaste() {
+		const dataUrl = await pasteImageFromClipboard();
+		if (dataUrl) {
+			const resized = await resizeImage(dataUrl, 2048);
+			handleImageImport(resized);
+		}
+	}
+	
+	function handleUploadClick() {
+		fileInput?.click();
+	}
 	
 	$: cropWidth = Math.round($cropState.imageWidth * $cropState.cropBox.width / 100);
 	$: cropHeight = Math.round($cropState.imageHeight * $cropState.cropBox.height / 100);
@@ -39,13 +80,12 @@
 			width: dims.width,
 			height: dims.height,
 			cropBox: { x: 0, y: 0, width: 100, height: 100 },
-			isCropping: true,
+			isCropping: $activeSubMenu === 'crop',
 			cropPending: false,
 			aspectRatio: 'custom',
 			ratioLocked: false
 		});
 		cropState.setBaseState();
-		activeSubMenu.set('crop');
 	}
 
 	function handlePexelsImageSelect(imageUrl) {
@@ -75,7 +115,7 @@
 			}));
 		}
 		
-		activeSubMenu.set($activeSubMenu === tab ? 'none' : tab);
+		activeSubMenu.set(tab);
 	}
 	
 	async function getFinalImage() {
@@ -586,24 +626,31 @@
 		/>
 	{/if}
 
+	<SubMenuTabs 
+		tabs={subMenuTabs}
+		activeTab={$activeSubMenu}
+		onTabChange={handleSubMenuChange}
+	/>
+
+	<ActionBar 
+		canUndo={$hasImage && $undoState.canUndo}
+		canRedo={$hasImage && $undoState.canRedo}
+		cropPending={$cropState.cropPending}
+		onUndo={handleUndo}
+		onRedo={handleRedo}
+		onApply={handleApplyCrop}
+		onStartAgain={handleStartAgain}
+		onCopy={handleCopy}
+		onExport={handleExport}
+	/>
+
 	{#if !$hasImage}
-		<CropWelcome 
-			onImageImport={handleImageImport}
-			onSearchClick={() => showPexelsDrawer = true}
-		/>
+		<div class="image-display">
+			<div class="placeholder">
+				<span class="placeholder-icon" style="--icon-url: url(/icons/icon-crop.svg)"></span>
+			</div>
+		</div>
 	{:else}
-		<ActionBar 
-			canUndo={$undoState.canUndo}
-			canRedo={$undoState.canRedo}
-			cropPending={$cropState.cropPending}
-			onUndo={handleUndo}
-			onRedo={handleRedo}
-			onApply={handleApplyCrop}
-			onStartAgain={handleStartAgain}
-			onCopy={handleCopy}
-			onExport={handleExport}
-		/>
-		
 		<CropCanvas
 			imageSrc={$cropState.currentImage}
 			cropBox={$cropState.cropBox}
@@ -628,75 +675,112 @@
 			on:blurPaint={handleBlurPaint}
 		/>
 		
-		<div class="submenu-wrapper">
-			<SubMenuTabs 
-				tabs={subMenuTabs}
-				activeTab={$activeSubMenu}
-				onTabChange={handleSubMenuChange}
-			/>
-			{#if $cropState.cropPending}
+		{#if $cropState.cropPending}
+			<div class="cancel-wrapper">
 				<button class="cancel-btn" on:click={handleCancelCrop}>Cancel</button>
-			{/if}
-		</div>
-		
-		{#if $activeSubMenu === 'crop'}
-			<CropControls
-				aspectRatio={$cropState.aspectRatio}
-				cropWidth={cropWidth}
-				cropHeight={cropHeight}
-				ratioLocked={$cropState.ratioLocked}
-				scale={Math.round($cropState.scale * 100)}
-				cropPending={$cropState.cropPending}
-				onRatioChange={handleRatioChange}
-				onDimensionsChange={handleDimensionsChange}
-				onLockToggle={handleLockToggle}
-				onFlip={handleFlip}
-				onRotate={handleRotate}
-				onScaleChange={handleScaleChange}
-				onApply={handleApplyCrop}
-			/>
-		{:else if $activeSubMenu === 'edit'}
-			<div class="controls-panel">
-				<EditControls
-					brightness={$cropState.brightness}
-					shadows={$cropState.shadows}
-					contrast={$cropState.contrast}
-					hdr={$cropState.hdr}
-					blurEnabled={$cropState.blurEnabled}
-					blurBrushSize={$cropState.blurBrushSize}
-					blurStrength={$cropState.blurStrength}
-					blurSoften={$cropState.blurSoften}
-					blurInvert={$cropState.blurInvert}
-					zoomLevel={$cropState.zoomLevel}
-					onBrightnessChange={handleBrightnessChange}
-					onShadowsChange={handleShadowsChange}
-					onContrastChange={handleContrastChange}
-					onHdrChange={handleHdrChange}
-					onBlurToggle={handleBlurToggle}
-					onBlurBrushSizeChange={handleBlurBrushSizeChange}
-					onBlurStrengthChange={handleBlurStrengthChange}
-					onBlurSoftenChange={handleBlurSoftenChange}
-					onBlurInvertChange={handleBlurInvertChange}
-					onZoomChange={handleZoomChange}
-					onNudge={handleNudge}
-					onResetZoom={handleResetZoom}
-					onBrushPreviewChange={handleBrushPreviewChange}
-					onEditEnd={handleEditEnd}
-				/>
-			</div>
-		{:else if $activeSubMenu === 'filter'}
-			<div class="controls-panel">
-				<FilterControls
-					imageUrl={$cropState.currentImage}
-					activeFilter={$cropState.activeFilter}
-					filterStrength={$cropState.filterStrength}
-					onFilterChange={handleFilterChange}
-					onStrengthChange={handleStrengthChange}
-					onReset={handleFilterReset}
-				/>
 			</div>
 		{/if}
 	{/if}
+
+	{#if $activeSubMenu === 'crop'}
+		<CropControls
+			aspectRatio={$cropState.aspectRatio}
+			cropWidth={cropWidth}
+			cropHeight={cropHeight}
+			ratioLocked={$cropState.ratioLocked}
+			scale={Math.round($cropState.scale * 100)}
+			cropPending={$cropState.cropPending}
+			disabled={!$hasImage}
+			onRatioChange={handleRatioChange}
+			onDimensionsChange={handleDimensionsChange}
+			onLockToggle={handleLockToggle}
+			onFlip={handleFlip}
+			onRotate={handleRotate}
+			onScaleChange={handleScaleChange}
+			onApply={handleApplyCrop}
+		/>
+	{:else if $activeSubMenu === 'edit'}
+		<div class="controls-panel">
+			<EditControls
+				brightness={$cropState.brightness}
+				shadows={$cropState.shadows}
+				contrast={$cropState.contrast}
+				hdr={$cropState.hdr}
+				blurEnabled={$cropState.blurEnabled}
+				blurBrushSize={$cropState.blurBrushSize}
+				blurStrength={$cropState.blurStrength}
+				blurSoften={$cropState.blurSoften}
+				blurInvert={$cropState.blurInvert}
+				zoomLevel={$cropState.zoomLevel}
+				onBrightnessChange={handleBrightnessChange}
+				onShadowsChange={handleShadowsChange}
+				onContrastChange={handleContrastChange}
+				onHdrChange={handleHdrChange}
+				onBlurToggle={handleBlurToggle}
+				onBlurBrushSizeChange={handleBlurBrushSizeChange}
+				onBlurStrengthChange={handleBlurStrengthChange}
+				onBlurSoftenChange={handleBlurSoftenChange}
+				onBlurInvertChange={handleBlurInvertChange}
+				onZoomChange={handleZoomChange}
+				onNudge={handleNudge}
+				onResetZoom={handleResetZoom}
+				onBrushPreviewChange={handleBrushPreviewChange}
+				onEditEnd={handleEditEnd}
+				disabled={!$hasImage}
+			/>
+		</div>
+	{:else if $activeSubMenu === 'filter'}
+		<div class="controls-panel">
+			<FilterControls
+				imageUrl={$cropState.currentImage}
+				activeFilter={$cropState.activeFilter}
+				filterStrength={$cropState.filterStrength}
+				onFilterChange={handleFilterChange}
+				onStrengthChange={handleStrengthChange}
+				onReset={handleFilterReset}
+				disabled={!$hasImage}
+			/>
+		</div>
+	{/if}
+
+	<div class="import-cluster" class:inactive={$hasImage}>
+		<div
+			class="upload-border"
+			class:dragging={isDragging}
+			on:click={$hasImage ? null : handleUploadClick}
+			on:drop={$hasImage ? null : handleDrop}
+			on:dragover={$hasImage ? null : handleDragOver}
+			on:dragleave={$hasImage ? null : handleDragLeave}
+			role="button"
+			tabindex="0"
+			on:keypress={(e) => !$hasImage && e.key === 'Enter' && handleUploadClick()}
+		>
+			<div class="upload-button">
+				<span class="upload-text">Upload image</span>
+				<img src="/icons/icon-upload.svg" alt="" class="upload-icon" />
+			</div>
+		</div>
+		
+		<div class="button-row">
+			<button class="action-button" on:click={() => !$hasImage && (showPexelsDrawer = true)} disabled={$hasImage}>
+				<span class="button-text">Search</span>
+				<span class="button-icon" style="--icon-url: url(/icons/icon-search.svg)"></span>
+			</button>
+			
+			<button class="action-button" on:click={$hasImage ? null : handlePaste} disabled={$hasImage}>
+				<span class="button-text">Paste</span>
+				<span class="button-icon" style="--icon-url: url(/icons/icon-paste.svg)"></span>
+			</button>
+		</div>
+	</div>
+	
+	<input 
+		type="file" 
+		accept="image/*" 
+		bind:this={fileInput}
+		on:change={handleFileSelect}
+		class="sr-only"
+	/>
 	
 	{#if modalType === 'save'}
 		<ConfirmModal
@@ -745,12 +829,44 @@
 	.controls-panel {
 		padding: var(--space-4) 0;
 	}
-	
-	.submenu-wrapper {
+
+	.image-display {
+		width: 100%;
+		aspect-ratio: 4/3;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		margin-top: var(--space-3);
+		justify-content: center;
+		background: radial-gradient(circle at center, #f5f0fa, #efefef);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+	}
+
+	.placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.placeholder-icon {
+		width: 148px;
+		height: 148px;
+		opacity: 0.15;
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
+	}
+	
+	.cancel-wrapper {
+		display: flex;
+		justify-content: flex-end;
+		padding-right: var(--space-2);
 	}
 	
 	.cancel-btn {
@@ -771,5 +887,127 @@
 	
 	:global(.crop-canvas) {
 		margin-top: 0;
+	}
+
+	.import-cluster {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		margin-top: var(--space-4);
+		width: 100%;
+	}
+
+	.import-cluster.inactive {
+		opacity: 0.4;
+		pointer-events: none;
+	}
+
+	.upload-border {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 4px;
+		margin: 5px 0;
+		border: 1px dashed var(--color-primary);
+		border-radius: var(--radius-xl);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.upload-border:hover {
+		opacity: 0.9;
+	}
+
+	.upload-border.dragging {
+		opacity: 0.8;
+	}
+
+	.upload-button {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 var(--space-4);
+		width: 100%;
+		height: 56px;
+		background-color: var(--color-primary);
+		border: none;
+		border-radius: var(--radius-lg);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.upload-text {
+		color: white;
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-medium);
+		flex: 1;
+		text-align: left;
+	}
+
+	.upload-icon {
+		width: 24px;
+		height: 24px;
+		filter: brightness(0) saturate(100%) invert(100%);
+		flex-shrink: 0;
+	}
+
+	.button-row {
+		display: flex;
+		gap: var(--space-4);
+		padding: 0 2px;
+	}
+
+	.action-button {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 38px;
+		padding: 0 var(--space-4);
+		background-color: var(--color-primary-light);
+		border: 1px solid var(--color-primary);
+		border-radius: var(--radius-lg);
+		color: var(--color-primary);
+		font-size: 12px;
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.action-button:hover:not(:disabled) {
+		background-color: #e6d5f0;
+	}
+
+	.button-text {
+		flex: 1;
+		text-align: left;
+	}
+
+	.button-icon {
+		width: 22px;
+		height: 22px;
+		flex-shrink: 0;
+		display: inline-block;
+		background-color: var(--color-primary);
+		-webkit-mask-image: var(--icon-url);
+		mask-image: var(--icon-url);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border-width: 0;
 	}
 </style>
