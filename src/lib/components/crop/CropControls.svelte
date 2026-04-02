@@ -1,4 +1,4 @@
-amp<script>
+<script>
 	import ToggleButtonGroup from '$lib/components/ui/ToggleButtonGroup.svelte';
 	import InputField from '$lib/components/ui/InputField.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
