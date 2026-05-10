@@ -41,8 +41,8 @@
 			);
 			
 			aiState.finishProcessing(resultDataUrl);
-
-			addToRecentImages(
+	
+			await addToRecentImages(
 				{
 					id: crypto.randomUUID(),
 					imageUrl: resultDataUrl

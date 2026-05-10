@@ -1,13 +1,37 @@
 <script>
-	import { getRecentImages, removeRecentImages } from '$lib/utils/generationStorage.js';
+	import { getRecentImages, removeRecentImages, getRecentImageData } from '$lib/utils/generationStorage.js';
 	import { copyImageToClipboard, downloadImage, generateFilename } from '$lib/utils/imageUtils.js';
 
 	export let onClose = () => {};
 
 	let recentImages = getRecentImages();
+	let imageDataMap = {};
 	let selectedIds = new Set();
 	let selectionMode = false;
 	let promptInfoImage = null;
+	let loadingIds = new Set();
+
+	async function loadImageData() {
+		for (const img of recentImages) {
+			if (!imageDataMap[img.id] && !loadingIds.has(img.id)) {
+				loadingIds.add(img.id);
+				try {
+					const data = await getRecentImageData(img.id);
+					if (data) {
+						imageDataMap[img.id] = data;
+						imageDataMap = imageDataMap;
+					}
+				} catch (e) {
+					console.warn('Failed to load image data:', e);
+				}
+				loadingIds.delete(img.id);
+			}
+		}
+	}
+
+	if (recentImages.length > 0) {
+		loadImageData();
+	}
 
 	function toggleSelect(id) {
 		if (!selectionMode) {
@@ -26,7 +50,10 @@
 	async function handleCopyImage() {
 		const selected = recentImages.filter(img => selectedIds.has(img.id));
 		if (selected.length > 0) {
-			await copyImageToClipboard(selected[0].imageUrl);
+			const imageUrl = imageDataMap[selected[0].id];
+			if (imageUrl) {
+				await copyImageToClipboard(imageUrl);
+			}
 		}
 		exitSelection();
 	}
@@ -34,14 +61,17 @@
 	async function handleDownload() {
 		const selected = recentImages.filter(img => selectedIds.has(img.id));
 		for (const img of selected) {
-			await downloadImage(img.imageUrl, generateFilename());
+			const imageUrl = imageDataMap[img.id];
+			if (imageUrl) {
+				await downloadImage(imageUrl, generateFilename());
+			}
 		}
 		setTimeout(() => exitSelection(), 500);
 	}
 
-	function handleDelete() {
+	async function handleDelete() {
 		const ids = [...selectedIds];
-		recentImages = removeRecentImages(ids);
+		recentImages = await removeRecentImages(ids);
 		exitSelection();
 	}
 
@@ -108,7 +138,13 @@
 								class:selected={selectedIds.has(img.id)}
 								on:click={() => toggleSelect(img.id)}
 							>
-								<img src={img.imageUrl} alt={img.prompt} class="grid-thumb" />
+								{#if imageDataMap[img.id]}
+									<img src={imageDataMap[img.id]} alt={img.prompt} class="grid-thumb" />
+								{:else}
+									<div class="grid-thumb grid-loading">
+										<div class="spinner-small"></div>
+									</div>
+								{/if}
 								{#if selectionMode}
 									<div class="select-circle" class:checked={selectedIds.has(img.id)}>
 										{#if selectedIds.has(img.id)}✓{/if}
@@ -316,6 +352,28 @@
 		height: 100%;
 		object-fit: cover;
 		display: block;
+	}
+
+	.grid-thumb.grid-loading {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--color-border-light);
+	}
+
+	.spinner-small {
+		width: 24px;
+		height: 24px;
+		border: 2px solid var(--color-border);
+		border-top-color: var(--color-primary);
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.select-circle {

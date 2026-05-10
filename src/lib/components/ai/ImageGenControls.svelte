@@ -111,8 +111,8 @@
 			}
 
 			const count = incrementGeneration();
-
-			addToRecentImages(
+	
+			await addToRecentImages(
 				{
 					id: crypto.randomUUID(),
 					imageUrl: result.imageUrl,
