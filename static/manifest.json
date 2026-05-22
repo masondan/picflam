@@ -2,7 +2,7 @@
   "name": "PicFlam",
   "short_name": "PicFlam",
   "start_url": "/",
-  "display": "browser",
+  "display": "standalone",
   "scope": "/",
   "background_color": "#5422b0",
   "theme_color": "#5422b0",

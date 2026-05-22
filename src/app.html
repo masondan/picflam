@@ -43,5 +43,11 @@
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 	<script src="%sveltekit.assets%/flam-nav.js" defer></script>
+	<script>
+		// Suppress PWA install prompt
+		window.addEventListener('beforeinstallprompt', (e) => {
+			e.preventDefault();
+		});
+	</script>
 	</body>
 </html>
