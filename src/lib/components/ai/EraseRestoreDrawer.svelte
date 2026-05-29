@@ -10,6 +10,7 @@
 	
 	let canvasElement;
 	let canvasWrapper;
+	let canvasContainer;
 	let ctx;
 	let isEraseMode = true;
 	let brushSize = 20;
@@ -28,7 +29,7 @@
 	let showCompare = false;
 	let initialHistoryIndex = 0;
 	
-	$: brushDisplaySize = (brushSize / 100) * Math.min(displayWidth || 300, displayHeight || 300) * 0.5;
+	$: brushDisplaySize = (brushSize / 100) * Math.min(displayWidth || 300, displayHeight || 300) * 0.5 * zoomLevel;
 	$: hasChanges = historyIndex !== initialHistoryIndex;
 	
 	onMount(async () => {
@@ -50,8 +51,8 @@
 	});
 	
 	function updateDisplayDimensions() {
-		if (canvasWrapper) {
-			const rect = canvasWrapper.getBoundingClientRect();
+		if (canvasContainer) {
+			const rect = canvasContainer.getBoundingClientRect();
 			displayWidth = rect.width;
 			displayHeight = rect.height;
 		}
@@ -87,11 +88,12 @@
 	}
 	
 	function getCanvasCoordinates(e) {
-		const rect = canvasWrapper.getBoundingClientRect();
-		const scaleX = canvasElement.width / rect.width;
-		const scaleY = canvasElement.height / rect.height;
-		const x = (e.clientX - rect.left) * scaleX;
-		const y = (e.clientY - rect.top) * scaleY;
+		const containerRect = canvasContainer.getBoundingClientRect();
+		const wrapperRect = canvasWrapper.getBoundingClientRect();
+		const scaleX = canvasElement.width / wrapperRect.width;
+		const scaleY = canvasElement.height / wrapperRect.height;
+		const x = (e.clientX - wrapperRect.left) * scaleX;
+		const y = (e.clientY - wrapperRect.top) * scaleY;
 		return { x, y };
 	}
 	
@@ -102,7 +104,7 @@
 	}
 	
 	function handleMouseMove(e) {
-		const rect = canvasWrapper.getBoundingClientRect();
+		const rect = canvasContainer.getBoundingClientRect();
 		brushPosition = {
 			x: e.clientX - rect.left,
 			y: e.clientY - rect.top,
@@ -140,14 +142,15 @@
 
 	function handleTouchMove(e) {
 		e.preventDefault();
-		if (!isDrawing || e.touches.length !== 1) return;
+		if (e.touches.length !== 1) return;
 		const touch = e.touches[0];
-		const rect = canvasWrapper.getBoundingClientRect();
+		const rect = canvasContainer.getBoundingClientRect();
 		brushPosition = {
 			x: touch.clientX - rect.left,
 			y: touch.clientY - rect.top,
 			visible: true
 		};
+		if (!isDrawing) return;
 		const { x, y } = getCanvasCoordinates({ clientX: touch.clientX, clientY: touch.clientY });
 		paint(x, y);
 	}
@@ -162,8 +165,7 @@
 	}
 	
 	function paint(x, y) {
-		const scaleX = canvasElement.width / canvasWrapper.getBoundingClientRect().width;
-		const radius = (brushDisplaySize / 2) * scaleX;
+		const radius = (brushSize / 100) * Math.min(canvasElement.width, canvasElement.height) * 0.25;
 		const softness = softenEdges / 100;
 		const innerRadius = Math.min(radius - 0.001, radius * (1 - softness));
 		
@@ -294,54 +296,58 @@
 			</button>
 		</div>
 		
-		<div class="canvas-container">
-			<div 
+		<div
+			class="canvas-container"
+			bind:this={canvasContainer}
+			on:mousedown={handleMouseDown}
+			on:mousemove={handleMouseMove}
+			on:mouseup={handleMouseUp}
+			on:mouseleave={handleMouseLeave}
+			on:touchstart={handleTouchStart}
+			on:touchmove={handleTouchMove}
+			on:touchend={handleTouchEnd}
+			role="presentation"
+		>
+			<div
 				class="canvas-wrapper"
 				bind:this={canvasWrapper}
-				on:mousedown={handleMouseDown}
-				on:mousemove={handleMouseMove}
-				on:mouseup={handleMouseUp}
-				on:mouseleave={handleMouseLeave}
-				on:touchstart={handleTouchStart}
-				on:touchmove={handleTouchMove}
-				on:touchend={handleTouchEnd}
 				style="transform: scale({zoomLevel}) translate({offsetX}px, {offsetY}px)"
 				role="presentation"
 			>
 				<canvas bind:this={canvasElement}></canvas>
 				
 				{#if showCompare && originalFullImage}
-					<img 
-						src={originalFullImage} 
-						alt="Original" 
+					<img
+						src={originalFullImage}
+						alt="Original"
 						class="compare-overlay"
 					/>
 				{/if}
-				
-				{#if brushPosition.visible && displayWidth > 0}
-					<div 
-						class="brush-indicator"
-						style="
-							left: {brushPosition.x}px;
-							top: {brushPosition.y}px;
-							width: {brushDisplaySize}px;
-							height: {brushDisplaySize}px;
-						"
-					></div>
-				{/if}
-				
-				{#if showBrushPreview && displayWidth > 0 && displayHeight > 0}
-					<div 
-						class="brush-preview"
-						style="
-						left: {displayWidth / 2}px;
-						top: {displayHeight / 2}px;
+			</div>
+			
+			{#if brushPosition.visible && displayWidth > 0}
+				<div
+					class="brush-indicator"
+					style="
+						left: {brushPosition.x}px;
+						top: {brushPosition.y}px;
 						width: {brushDisplaySize}px;
 						height: {brushDisplaySize}px;
 					"
-					></div>
-				{/if}
-			</div>
+				></div>
+			{/if}
+			
+			{#if showBrushPreview && displayWidth > 0 && displayHeight > 0}
+				<div
+					class="brush-preview"
+					style="
+					left: {displayWidth / 2}px;
+					top: {displayHeight / 2}px;
+					width: {brushDisplaySize}px;
+					height: {brushDisplaySize}px;
+				"
+				></div>
+			{/if}
 		</div>
 		
 		<div class="controls-section">
@@ -533,6 +539,7 @@
 		margin: var(--space-4) var(--space-6);
 		width: calc(100% - var(--space-6) * 2);
 		border: 1px solid #555555;
+		position: relative;
 	}
 	
 	.canvas-wrapper {
