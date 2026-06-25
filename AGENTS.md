@@ -2,7 +2,7 @@
 
 ## Commands
 - **Dev server**: `npm run dev` (Vite dev server on port 5173)
-- **Build**: `npm run build` (production build to `dist/`)
+- **Build**: `npm run build` (production build to `build/`)
 - **Preview**: `npm run preview` (preview production build)
 - **Check**: `npm run check` (Svelte type checking)
 - **No tests configured**: This project has no test suite
@@ -28,14 +28,22 @@
 - **Design System**: See DESIGN_SYSTEM.md for all tokens and specs
 
 ## AI Image Generation
-- **API**: Runware API (`https://api.runware.ai/v1`) via Cloudflare Workers (`functions/api/generate.js`)
-- **Standard generation**: `taskType: 'imageInference'` with Flux Klein 9B (fast) or Flux.2 Dev (better)
-- **Reference image generation**: Uses `model: 'runware:400@1'` (Flux.2 Dev) with `inputs: { referenceImages: [url] }` — preserves identity from uploaded photo
-  - Requires `CFGScale: 3.5`, `scheduler: 'FlowMatchEulerDiscreteScheduler'`, `acceleration: 'high'`
-  - Reference image must be uploaded first via `taskType: 'imageUpload'` to get a Runware URL
-  - Do NOT use PhotoMaker, ACE++, or PuLID — they don't preserve identity reliably
-- **Styles**: Defined in `stylePrompts.json` — each style appends to the user's prompt and adds negative prompts
-- **Limit**: 50 generations/month per user (localStorage-based, reset via `localStorage.setItem('picflam_gen_count', '0')`)
+- **Image generation**: Runware API (`https://api.runware.ai/v1`) via Cloudflare Workers (`functions/api/generate.js`)
+  - **Standard generation**: `taskType: 'imageInference'` with Flux Klein 9B (fast: `runware:400@3`) or Flux.2 Dev (better: `runware:400@1`)
+  - **Reference image generation**: Uses `model: 'runware:400@1'` (Flux.2 Dev) with `inputs: { referenceImages: [url] }` — preserves identity from uploaded photo
+    - Requires `CFGScale: 3.5`, `scheduler: 'FlowMatchEulerDiscreteScheduler'`, `acceleration: 'high'`
+    - Reference image must be uploaded first via `taskType: 'imageUpload'` to get a Runware URL
+    - Do NOT use PhotoMaker, ACE++, or PuLID — they don't preserve identity reliably
+  - **Styles**: Defined in `stylePrompts.json` — each style appends to the user's prompt and adds negative prompts
+- **Upscaling**: Replicate API via Cloudflare Workers (`functions/api/upscale.js`)
+  - Uses Real-ESRGAN model (4x upscale)
+  - Supports polling for async results
+- **Background removal**: Replicate API via Cloudflare Workers (`functions/api/remove-bg.js`)
+  - Uses RMBG model
+  - Supports polling for async results
+- **Generation limit**: 50 generations/month per user (localStorage-based with IndexedDB for image storage)
+  - Reset via `localStorage.setItem('picflam_gen_count', '0')`
+  - Recent images stored in IndexedDB (max 10 items) with metadata in localStorage
 
 ## Code Style
 - **Language**: JavaScript (ES modules), Svelte components
