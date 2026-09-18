@@ -1,13 +1,28 @@
 let segmentationPipeline = null;
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)}s`);
+        }
+        throw err;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 export async function upscaleImageCloud(imageDataUrl, scale = 4, onProgress) {
     onProgress?.('Invoking AI ...');
 
-    const response = await fetch('/api/face-enhance', {
+    const response = await fetchWithTimeout('/api/face-enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageDataUrl, scale, faceEnhance: 0.5 })
-    });
+    }, 65000);
 
     const result = await response.json();
 
@@ -17,7 +32,7 @@ export async function upscaleImageCloud(imageDataUrl, scale = 4, onProgress) {
 
     if (result.status === 'succeeded' && result.output) {
         onProgress?.('Final checks ...');
-        return await fetchImageAsDataUrl(result.output);
+        return await fetchImageAsDataUrl(result.output, onProgress);
     }
 
     if (result.status === 'processing' || result.status === 'starting') {
@@ -32,7 +47,7 @@ async function pollForResult(pollUrl, onProgress, maxAttempts = 60) {
     for (let i = 0; i < maxAttempts; i++) {
         await new Promise(r => setTimeout(r, 2000));
         
-        const response = await fetch(`/api/upscale?pollUrl=${encodeURIComponent(pollUrl)}`);
+        const response = await fetchWithTimeout(`/api/upscale?pollUrl=${encodeURIComponent(pollUrl)}`, {}, 15000);
         const result = await response.json();
         
         if (!response.ok) {
@@ -41,7 +56,7 @@ async function pollForResult(pollUrl, onProgress, maxAttempts = 60) {
         
         if (result.status === 'succeeded' && result.output) {
             onProgress?.('Final checks ...');
-            return await fetchImageAsDataUrl(result.output);
+            return await fetchImageAsDataUrl(result.output, onProgress);
         }
         
         if (result.status === 'failed') {
@@ -54,13 +69,21 @@ async function pollForResult(pollUrl, onProgress, maxAttempts = 60) {
     throw new Error('Timeout waiting for result');
 }
 
-async function fetchImageAsDataUrl(url) {
-    const imageResponse = await fetch(url);
+async function fetchImageAsDataUrl(url, onProgress, timeoutMs = 45000) {
+    const imageResponse = await fetchWithTimeout(url, {}, timeoutMs);
+    if (!imageResponse.ok) {
+        throw new Error(`Failed to download result image: ${imageResponse.status}`);
+    }
     const blob = await imageResponse.blob();
+    onProgress?.('Final checks ...');
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
+        const readerTimeout = setTimeout(() => {
+            reader.abort();
+            reject(new Error('Timed out converting result image (file may be too large for this device)'));
+        }, timeoutMs);
+        reader.onload = () => { clearTimeout(readerTimeout); resolve(reader.result); };
+        reader.onerror = () => { clearTimeout(readerTimeout); reject(reader.error || new Error('Failed to read result image')); };
         reader.readAsDataURL(blob);
     });
 }
