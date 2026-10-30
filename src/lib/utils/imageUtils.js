@@ -73,8 +73,26 @@ export async function copyImageToClipboard(dataUrl) {
 	try {
 		const response = await fetch(dataUrl);
 		const blob = await response.blob();
+		
+		let clipboardBlob = blob;
+		if (blob.type === 'image/jpeg') {
+			const bitmap = await createImageBitmap(blob);
+			const canvas = document.createElement('canvas');
+			canvas.width = bitmap.width;
+			canvas.height = bitmap.height;
+			const ctx = canvas.getContext('2d');
+			ctx.drawImage(bitmap, 0, 0);
+			bitmap.close();
+			clipboardBlob = await new Promise((resolve, reject) => {
+				canvas.toBlob(result => {
+					if (result) resolve(result);
+					else reject(new Error('Failed to convert to PNG'));
+				}, 'image/png');
+			});
+		}
+		
 		await navigator.clipboard.write([
-			new ClipboardItem({ [blob.type]: blob })
+			new ClipboardItem({ [clipboardBlob.type]: clipboardBlob })
 		]);
 		return true;
 	} catch (err) {
@@ -93,23 +111,33 @@ export function generateFilename() {
 	for (let i = 0; i < 4; i++) {
 		random += chars[Math.floor(Math.random() * 36)];
 	}
-	return `picflam-${day}${month}${year}-${random}.png`;
+	return `picflam-${day}${month}${year}-${random}`;
 }
 
-export async function downloadImage(dataUrl, filename = 'picflam-export.png') {
+export async function downloadImage(dataUrl, filename = 'picflam-export') {
 	let url = dataUrl;
 	let objectUrl = null;
+	let mimeType = 'image/png';
 
 	if (!dataUrl.startsWith('data:') && !dataUrl.startsWith('blob:')) {
 		const response = await fetch(dataUrl);
 		const blob = await response.blob();
+		mimeType = blob.type;
 		objectUrl = URL.createObjectURL(blob);
 		url = objectUrl;
+	} else if (dataUrl.startsWith('data:')) {
+		const mimeMatch = dataUrl.match(/^data:([^;]+)/);
+		if (mimeMatch) {
+			mimeType = mimeMatch[1];
+		}
 	}
+
+	const extension = mimeType === 'image/jpeg' ? 'jpg' : 'png';
+	const finalFilename = filename.includes('.') ? filename : `${filename}.${extension}`;
 
 	const link = document.createElement('a');
 	link.href = url;
-	link.download = filename;
+	link.download = finalFilename;
 	document.body.appendChild(link);
 	link.click();
 	document.body.removeChild(link);

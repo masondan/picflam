@@ -1,5 +1,5 @@
 const MODELS = {
-	fast: 'runware:400@3',
+	fast: 'runware:400@2',
 	better: 'runware:400@1'
 };
 
@@ -17,12 +17,6 @@ const DIMENSIONS = {
 	'9:16': { width: 768, height: 1344 }
 };
 
-const MAX_POLLS = 30;
-const POLL_INTERVAL = 2000;
-
-function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 export async function onRequestPost(context) {
 	const apiKey = context.env.RUNWARE_API_KEY;
@@ -31,7 +25,14 @@ export async function onRequestPost(context) {
 	}
 
 	try {
-		const { prompt, quality, aspectRatio, referenceImage } = await context.request.json();
+		let body;
+		try {
+			body = await context.request.json();
+		} catch (e) {
+			console.error('Failed to parse JSON:', e);
+			return Response.json({ error: 'general', message: 'Invalid JSON in request body' }, { status: 400 });
+		}
+		const { prompt, quality, aspectRatio, referenceImage } = body;
 
 		if (!prompt || prompt.length < 10 || prompt.length > 3000) {
 			return Response.json({ error: 'general', message: 'Prompt must be 10-3000 characters' }, { status: 400 });
@@ -52,11 +53,11 @@ export async function onRequestPost(context) {
 				width: dims.width,
 				height: dims.height,
 				numberResults: 1,
-				outputFormat: 'PNG',
+				outputFormat: 'JPG',
+				outputQuality: 90,
 				CFGScale: 3.5,
 				scheduler: 'FlowMatchEulerDiscreteScheduler',
 				includeCost: true,
-				deliveryMethod: 'async',
 				inputs: {
 					referenceImages: [referenceImage]
 				},
@@ -73,9 +74,9 @@ export async function onRequestPost(context) {
 				width: dims.width,
 				height: dims.height,
 				numberResults: 1,
-				outputFormat: 'PNG',
-				includeCost: true,
-				deliveryMethod: 'async'
+				outputFormat: 'JPG',
+				outputQuality: 90,
+				includeCost: true
 			};
 			modelName = MODEL_NAMES[quality] || MODEL_NAMES.fast;
 		}
@@ -96,53 +97,35 @@ export async function onRequestPost(context) {
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
 			const errorMsg = errorData?.errors?.[0]?.message || `API error: ${response.status}`;
-
+	
 			if (errorMsg.toLowerCase().includes('content') || errorMsg.toLowerCase().includes('nsfw')) {
 				return Response.json({ error: 'contentRestriction' }, { status: 400 });
 			}
-
+	
 			return Response.json({ error: 'general', message: errorMsg }, { status: 500 });
 		}
-
-		for (let i = 0; i < MAX_POLLS; i++) {
-			await sleep(POLL_INTERVAL);
-
-			const pollResponse = await fetch('https://api.runware.ai/v1', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${apiKey}`
-				},
-				body: JSON.stringify([{
-					taskType: 'getResponse',
-					taskUUID
-				}])
-			});
-
-			if (!pollResponse.ok) continue;
-
-			const pollResult = await pollResponse.json();
-			const imageData = pollResult?.data?.[0];
-
-			if (imageData && imageData.imageURL) {
-				return Response.json({
-					imageUrl: imageData.imageURL,
-					cost: imageData.cost || null,
-					model: modelName,
-					timestamp: new Date().toISOString()
-				});
+	
+		const result = await response.json();
+	
+		if (result?.errors) {
+			const errorMsg = result.errors[0]?.message || 'Generation failed';
+			if (errorMsg.toLowerCase().includes('content') || errorMsg.toLowerCase().includes('nsfw')) {
+				return Response.json({ error: 'contentRestriction' }, { status: 400 });
 			}
-
-			if (pollResult?.errors) {
-				const errorMsg = pollResult.errors[0]?.message || 'Generation failed';
-				if (errorMsg.toLowerCase().includes('content') || errorMsg.toLowerCase().includes('nsfw')) {
-					return Response.json({ error: 'contentRestriction' }, { status: 400 });
-				}
-				return Response.json({ error: 'general', message: errorMsg }, { status: 500 });
-			}
+			return Response.json({ error: 'general', message: errorMsg }, { status: 500 });
 		}
-
-		return Response.json({ error: 'timeout' }, { status: 504 });
+	
+		const imageData = result?.data?.[0];
+		if (!imageData || !imageData.imageURL) {
+			return Response.json({ error: 'general', message: 'No image in response' }, { status: 500 });
+		}
+	
+		return Response.json({
+			imageUrl: imageData.imageURL,
+			cost: imageData.cost || null,
+			model: modelName,
+			timestamp: new Date().toISOString()
+		});
 
 	} catch (error) {
 		if (error.name === 'AbortError') {

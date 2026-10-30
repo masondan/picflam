@@ -29,10 +29,12 @@
 
 ## AI Image Generation
 - **Image generation**: Runware API (`https://api.runware.ai/v1`) via Cloudflare Workers (`functions/api/generate.js`)
-  - **Standard generation**: `taskType: 'imageInference'` with Flux Klein 9B (fast: `runware:400@3`) or Flux.2 Dev (better: `runware:400@1`)
+  - **Standard generation**: `taskType: 'imageInference'` with Flux Klein 9B (fast: `runware:400@2`, 4-step distilled) or Flux.2 Dev (better: `runware:400@1`)
+    - Fast model uses sync delivery with JPEG output (quality 90) for bandwidth optimization
+    - Better model uses sync delivery with JPEG output (quality 90)
   - **Reference image generation**: Uses `model: 'runware:400@1'` (Flux.2 Dev) with `inputs: { referenceImages: [url] }` — preserves identity from uploaded photo
     - Requires `CFGScale: 3.5`, `scheduler: 'FlowMatchEulerDiscreteScheduler'`, `acceleration: 'high'`
-    - Reference image must be uploaded first via `taskType: 'imageUpload'` to get a Runware URL
+    - Reference image passed as data URL directly (no separate upload step needed)
     - Do NOT use PhotoMaker, ACE++, or PuLID — they don't preserve identity reliably
   - **Styles**: Defined in `stylePrompts.json` — each style appends to the user's prompt and adds negative prompts
 - **Upscaling**: Replicate API via Cloudflare Workers (`functions/api/upscale.js`)
