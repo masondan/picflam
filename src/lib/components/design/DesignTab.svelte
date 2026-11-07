@@ -134,6 +134,15 @@
 	
 	function handleSubMenuChange(tab) {
 		activeDesignMenu.set(tab);
+		if (tab === 'image' && $slideState.overlay) {
+			slideState.setSkipHistory(true);
+			slideState.update(state => ({ ...state, overlayLayer: 'above' }));
+			slideState.setSkipHistory(false);
+		} else if ((tab === 'text1' || tab === 'text2') && $slideState.overlay) {
+			slideState.setSkipHistory(true);
+			slideState.update(state => ({ ...state, overlayLayer: 'below' }));
+			slideState.setSkipHistory(false);
+		}
 	}
 	
 	function drawOverlayOnCanvas(ctx, canvasW, canvasH, measurements) {
@@ -422,8 +431,10 @@
 		if (e.target.closest('.delete-btn') || e.target.closest('.resize-handle')) return;
 		if (e.touches && e.touches.length > 1) return;
 		e.preventDefault();
-		isDraggingOverlay = true;
+		activeDesignMenu.set('image');
 		slideState.setSkipHistory(true);
+		slideState.update(state => ({ ...state, overlayLayer: 'above' }));
+		isDraggingOverlay = true;
 		const touch = e.touches?.[0] || e;
 		dragStartX = touch.clientX;
 		dragStartY = touch.clientY;
@@ -469,8 +480,10 @@
 	function handleResizeStart(e) {
 		e.preventDefault();
 		e.stopPropagation();
-		isResizingOverlay = true;
+		activeDesignMenu.set('image');
 		slideState.setSkipHistory(true);
+		slideState.update(state => ({ ...state, overlayLayer: 'above' }));
+		isResizingOverlay = true;
 		resizeStartX = e.touches?.[0].clientX || e.clientX;
 		resizeStartY = e.touches?.[0].clientY || e.clientY;
 		resizeStartSize = $slideState.overlaySize;
@@ -550,6 +563,9 @@
 		if (e.touches && e.touches.length > 1) return;
 		e.preventDefault();
 		activeDesignMenu.set('text1');
+		if ($slideState.overlay) {
+			slideState.update(state => ({ ...state, overlayLayer: 'below' }));
+		}
 		isDraggingText1 = true;
 		slideState.setSkipHistory(true);
 		const touch = e.touches?.[0] || e;
@@ -591,6 +607,9 @@
 		if (e.touches && e.touches.length > 1) return;
 		e.preventDefault();
 		activeDesignMenu.set('text2');
+		if ($slideState.overlay) {
+			slideState.update(state => ({ ...state, overlayLayer: 'below' }));
+		}
 		isDraggingText2 = true;
 		slideState.setSkipHistory(true);
 		const touch = e.touches?.[0] || e;
@@ -632,12 +651,30 @@
 		const target = e.target;
 		if (target.closest('.overlay-wrapper')) {
 			activeDesignMenu.set('image');
+			slideState.setSkipHistory(true);
+			slideState.update(state => ({ ...state, overlayLayer: 'above' }));
+			slideState.setSkipHistory(false);
 		} else if (target.closest('.text1-flow-container') || target.closest('.text1-drag-handle')) {
 			activeDesignMenu.set('text1');
+			if ($slideState.overlay) {
+				slideState.setSkipHistory(true);
+				slideState.update(state => ({ ...state, overlayLayer: 'below' }));
+				slideState.setSkipHistory(false);
+			}
 		} else if (target.closest('.canvas-text.text2') || target.closest('.text2-drag-handle')) {
 			activeDesignMenu.set('text2');
+			if ($slideState.overlay) {
+				slideState.setSkipHistory(true);
+				slideState.update(state => ({ ...state, overlayLayer: 'below' }));
+				slideState.setSkipHistory(false);
+			}
 		} else if (target.closest('.canvas-quote')) {
 			activeDesignMenu.set('text1');
+			if ($slideState.overlay) {
+				slideState.setSkipHistory(true);
+				slideState.update(state => ({ ...state, overlayLayer: 'below' }));
+				slideState.setSkipHistory(false);
+			}
 		}
 	}
 
@@ -863,7 +900,7 @@
 							top: {$slideState.overlayY}%;
 							width: {overlayDimensions.width}%;
 							opacity: {$slideState.overlayOpacity / 100};
-							z-index: {$activeDesignMenu === 'image' ? 11 : ($slideState.overlayLayer === 'below' ? 1 : 10)};
+							z-index: {$slideState.overlayLayer === 'below' ? 1 : 10};
 						"
 						on:mousedown={handleOverlayDragStart}
 						on:touchstart={(e) => {
