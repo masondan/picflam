@@ -291,9 +291,11 @@
 
 			const deleteButtons = canvasEl.querySelectorAll('.delete-btn');
 			const resizeHandles = canvasEl.querySelectorAll('.resize-handle');
+			const textDragHandles = canvasEl.querySelectorAll('.text1-drag-handle, .text2-drag-handle');
 			const boundingBoxes = canvasEl.querySelectorAll('.overlay-wrapper.active .overlay-bounding-box');
 			deleteButtons.forEach(btn => btn.style.display = 'none');
 			resizeHandles.forEach(handle => handle.style.display = 'none');
+			textDragHandles.forEach(handle => handle.style.display = 'none');
 			boundingBoxes.forEach(box => box.style.outline = 'none');
 
 			if (needsManualOverlay) {
@@ -309,6 +311,7 @@
 			if (needsManualOverlay && overlayEl) overlayEl.style.display = '';
 			deleteButtons.forEach(btn => btn.style.display = '');
 			resizeHandles.forEach(handle => handle.style.display = '');
+			textDragHandles.forEach(handle => handle.style.display = '');
 			boundingBoxes.forEach(box => box.style.outline = '');
 
 			if (measurements) {
